@@ -207,6 +207,35 @@ td svg{display:block}
 .code{font:700 16px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.03em;word-break:normal;overflow-wrap:normal;background:var(--soft);border-radius:8px;padding:10px 12px}
 @media(max-width:520px){.sy-grid{grid-template-columns:1fr}.qr{width:200px}}
 @media (prefers-reduced-motion:reduce){.sdot.busy{animation:none}}
+.co{cursor:pointer;transition:border-color .15s}.co:hover{border-color:var(--c1)}.chev2{color:var(--muted);flex:none}
+.kbtn{justify-content:flex-start;gap:8px;font-weight:500;color:var(--muted);min-height:38px;box-shadow:none;background:var(--bg)}
+kbd{margin-left:auto;font:600 11px Inter,sans-serif;color:var(--muted);background:var(--soft);border:1px solid var(--line);border-radius:5px;padding:1px 6px;white-space:nowrap}
+.libh a{font-size:12px;color:var(--c1);text-decoration:none;font-weight:600}.libh a:hover{text-decoration:underline}
+.sw-wrap{align-items:start;padding-top:12vh}.sw{width:min(620px,100%);padding:0;overflow:hidden;display:flex;flex-direction:column;max-height:70vh}
+.swh{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);color:var(--muted)}
+.swh input{flex:1;border:0;background:none;font:16px Inter,sans-serif;color:var(--ink);outline:none;min-height:36px}
+#sw-list{overflow:auto;padding:6px}
+.swg{font-size:11px;font-weight:700;color:var(--muted);margin:10px 10px 4px;text-transform:none}
+.swi{display:flex;width:100%;align-items:center;gap:10px;padding:8px 10px;border:0;box-shadow:none;background:none;border-radius:9px;justify-content:flex-start;text-align:left;font-weight:500;min-height:48px}
+.swi.act{background:var(--tint)}.swi .av{width:30px;height:30px;font-size:11px;border-radius:8px}
+.swi .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;line-height:1.25}.swi .nm small{display:block;font-size:12px;color:var(--muted);font-weight:400}
+.swi .sc{font-size:12px;font-weight:700;color:var(--muted);background:var(--soft);border-radius:6px;padding:2px 7px}
+.tag2{font-size:11px;font-weight:600;color:var(--c1);background:var(--tint);border-radius:6px;padding:2px 7px}
+.swf{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}.swf a{color:var(--c1);font-weight:600;text-decoration:none}
+.pin{min-height:28px;width:28px;padding:0;border:0;box-shadow:none;background:none;color:var(--muted);font-size:16px}.pin.on{color:#eab308}
+.cobar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px;margin-bottom:12px}
+.srch{display:flex;align-items:center;gap:8px;flex:1 1 200px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:0 10px;color:var(--muted)}
+.srch input{border:0;background:none;font:15px Inter,sans-serif;color:var(--ink);min-height:40px;flex:1;outline:none}
+.cobar select{font:14px Inter,sans-serif;min-height:42px;padding:0 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+.mini-f{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}.mini-f input{width:62px;font:14px Inter,sans-serif;min-height:40px;padding:0 8px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);min-height:40px}
+.cohead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.cotab td.cb,.cotab th.cb{width:40px;min-width:40px!important;text-align:center;padding:0 6px}.cotab th:nth-child(2),.cotab td:nth-child(2){position:sticky;left:40px;background:var(--card);z-index:1;text-align:left;min-width:200px}
+.cotab th:first-child,.cotab td:first-child{min-width:40px}
+.cotab tr.cur td{background:var(--tint)}
+.lnk2{border:0;box-shadow:none;background:none;padding:0;min-height:0;font-weight:600;color:var(--ink);text-align:left}.lnk2:hover{color:var(--c1);text-decoration:underline}
+.secin{font:13px Inter,sans-serif;width:120px;padding:5px 8px;border:1px solid transparent;border-radius:7px;background:none;color:var(--ink)}.secin:hover,.secin:focus{border-color:var(--line);background:var(--bg)}
 #drop{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(4px);display:none;place-items:center;font-size:20px;font-weight:700;z-index:9;border:3px dashed var(--c1);border-radius:16px;margin:10px}
 #drop.on{display:grid}
 #toast{position:fixed;bottom:20px;left:50%;max-width:min(560px,92vw);text-align:center;transform:translate(-50%,8px);background:var(--tip);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:10;box-shadow:0 8px 24px rgb(0 0 0/.18)}
@@ -231,6 +260,7 @@ section{animation:fade .25s ease}
  .brand{display:flex}
  .li .x{opacity:1}
  .dcf{grid-template-columns:1fr}.fig{height:240px}.fig.big{height:270px}th:first-child,td:first-child{min-width:130px}}
+@media(max-width:900px){.kbtn kbd{display:none}.sw-wrap{padding-top:4vh}}
 @media(max-width:900px) and (prefers-reduced-motion:reduce){aside,#scrim{transition:none}}
 @media(max-width:1000px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.kpi{padding:12px}.kpi>b{font-size:22px}.kf svg{width:64px}.kf{flex-direction:column;align-items:flex-start}.gcard{flex-direction:column;align-items:flex-start}.pill{width:100%;justify-content:space-between}.fields{grid-template-columns:1fr}}
@@ -239,6 +269,10 @@ section{animation:fade .25s ease}
 <body>
 <div id="drop">Drop to load: screener.in Excel or NSE price CSV</div>
 <div id="toast" role="status"></div>
+<div id="sw" class="dlg sw-wrap" hidden><div class="dlg-box card sw" role="dialog" aria-modal="true" aria-label="Switch company">
+  <div class="swh"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="sw-q" placeholder="Search saved companies or sectors…" autocomplete="off" aria-label="Search companies" aria-controls="sw-list"><kbd>Esc</kbd></div>
+  <div id="sw-list" role="listbox"></div>
+  <div class="swf"><a href="#companies">Manage all companies →</a><span>↑ ↓ to move · Enter to open</span></div></div></div>
 <div id="sync-dlg" class="dlg" hidden><div class="dlg-box card" role="dialog" aria-modal="true" aria-labelledby="sync-t">
   <div class="ch"><h3 id="sync-t">Sync across devices</h3><button class="xbtn2" id="sync-x" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div id="sync-body"></div></div></div>
@@ -252,8 +286,9 @@ section{animation:fade .25s ease}
 <div class="app">
 <aside id="side">
   <div class="brand"><svg class="logo" width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--c1)"/><stop offset="1" stop-color="var(--c4)"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="url(#lg)"/><path d="M16 4.5v6.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M16 11l6 8-6 9-6-9z" fill="#fff"/></svg><span class="wm"><b>Plumb</b><small>Get to the bottom of any stock</small></span><button class="xbtn" id="xbtn" aria-label="Close menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-  <div class="co"><div class="av" id="av">—</div><div><b id="cname">Loading…</b><span id="src">Sample data</span></div></div>
-  <div class="lib"><p class="libh">Saved companies <span id="libn"></span></p><div id="lib" class="lib"></div></div>
+  <div class="co" id="co-card" role="button" tabindex="0" aria-haspopup="dialog" title="Switch company (Ctrl+K)"><div class="av" id="av">—</div><div style="flex:1;min-width:0"><b id="cname">Loading…</b><span id="src">Sample data</span></div><svg class="chev2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg></div>
+  <button class="kbtn" id="sw-open" aria-haspopup="dialog"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>Find company<kbd>Ctrl K</kbd></button>
+  <div class="lib"><p class="libh"><span id="libt">Pinned</span><a href="#companies" id="liball">All →</a></p><div id="lib" class="lib"></div></div>
   <label class="btn pri up-btn" for="file"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M4 15v5h16v-5"/></svg>Upload Excel<input type="file" id="file" accept=".xlsx,.xls,.xlsm" multiple></label>
   <nav id="nav">
     <a href="#overview"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Overview</a>
@@ -263,13 +298,14 @@ section{animation:fade .25s ease}
     <a href="#valuation"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Valuation</a>
     <a href="#score"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>SOIC score</a>
     <a href="#compare"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 20V10M12 20V4M18 20v-7"/></svg>Compare</a>
+    <a href="#companies"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>Companies</a>
     <a href="#data"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg>Edit data</a>
   </nav>
   <div class="sfoot">
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 15 Nov 2026, 22:12 IST</p>
+    <p class="tiny" id="build">Version: 15 Nov 2026, 22:34 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -386,6 +422,22 @@ section{animation:fade .25s ease}
 
   <section id="compare" hidden>
     <div id="cmp-body"></div>
+  </section>
+
+  <section id="companies" hidden>
+    <div class="card cobar" id="co-bar">
+      <label class="srch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="co-q" placeholder="Search companies" aria-label="Search companies"></label>
+      <select id="co-sec" aria-label="Sector"></select>
+      <label class="mini-f">SOIC ≥<input id="co-soic" inputmode="decimal" placeholder="any"></label>
+      <label class="mini-f">ROCE ≥ %<input id="co-roce" inputmode="decimal" placeholder="any"></label>
+      <label class="mini-f">P/E ≤<input id="co-pe" inputmode="decimal" placeholder="any"></label>
+      <label class="chk"><input type="checkbox" id="co-old">Hide out-of-date</label>
+      <button class="sm" id="co-clear">Clear filters</button>
+    </div>
+    <div class="cohead"><p class="note" id="co-count" style="margin:0"></p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="sm" id="co-cmp" disabled>Compare selected</button><button class="sm" id="co-rm" disabled>Remove selected</button></div></div>
+    <datalist id="co-secs"></datalist>
+    <div class="scroll cmp cotab"><table id="co-tab"></table></div>
+    <p class="note">☆ pins a company to the sidebar. Type a sector (for example “Hospitals”) to group and filter. Pins and sectors sync across your devices. Press Ctrl + K anywhere to jump to a company.</p>
   </section>
 
   <section id="data" hidden>
@@ -786,8 +838,8 @@ function load(rows, name, srcText, meta = {}) {
   recompute();
 }
 
-const VIEWS = ['overview', 'quarterly', 'ratios', 'quality', 'valuation', 'score', 'compare', 'data'];
-const VNAME = {overview: 'Overview', quarterly: 'Quarterly results', ratios: 'Ratio analysis', quality: 'Quality and returns', valuation: 'Valuation', score: 'SOIC score', compare: 'Compare companies', data: 'Edit data'};
+const VIEWS = ['overview', 'quarterly', 'ratios', 'quality', 'valuation', 'score', 'compare', 'companies', 'data'];
+const VNAME = {overview: 'Overview', quarterly: 'Quarterly results', ratios: 'Ratio analysis', quality: 'Quality and returns', valuation: 'Valuation', score: 'SOIC score', compare: 'Compare companies', companies: 'Saved companies', data: 'Edit data'};
 let lastView = null;
 function renderView() {
   if (!M) return;
@@ -796,7 +848,7 @@ function renderView() {
   document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + v));
   $('#crumb').textContent = VNAME[v]; $('#tb-view').textContent = VNAME[v]; $('#tb-name').textContent = title(); $('#tb-av').textContent = $('#av').textContent; $('#tb-av').style.background = $('#av').style.background || ''; closeDrawer(); $('#kpis').hidden = v !== 'overview';
   if (lastView !== v && lastView !== null) scrollTo(0, 0); lastView = v;
-  ({overview: renderOverview, quarterly: renderQuarterly, ratios: renderRatios, quality: renderQuality, valuation: renderValuation, score: renderScore, compare: renderCompare, data: renderData})[v]();
+  ({overview: renderOverview, quarterly: renderQuarterly, ratios: renderRatios, quality: renderQuality, valuation: renderValuation, score: renderScore, compare: renderCompare, companies: renderCompanies, data: renderData})[v]();
 }
 
 async function sheetRows(f) {
@@ -822,7 +874,7 @@ async function readFiles(files) {
   // save every company except the last straight into the library, then open the last one
   ok.slice(0, -1).forEach(({rows, f, mod}) => {
     const k = parse(rows).name, isNew = !LIB[k];
-    LIB[k] = {rows: packRows(rows), file: f.name.replace(/\.\w+$/, ''), ts: LIB[k]?.ts || Date.now(), seen: Date.now(), mod, up: Date.now()}; markDirty(k);
+    LIB[k] = {rows: packRows(rows), file: f.name.replace(/\.\w+$/, ''), ts: LIB[k]?.ts || Date.now(), seen: Date.now(), mod, up: Date.now(), pin: LIB[k]?.pin, sector: LIB[k]?.sector, col: LIB[k]?.col}; markDirty(k);
     if (isNew && CMP.size && CMP.size < 6) CMP.add(k);
   });
   if (ok.length > 1) libStore();
@@ -1292,13 +1344,21 @@ const packRows = rows => rows.map(r => (r || []).map(v => v instanceof Date ? `D
 function libStore() { try { localStorage.setItem('fx-lib', JSON.stringify(LIB)); return true; } catch (e) { toast('Browser storage is full; remove a saved company'); return false; } }
 function libSave() {
   const k = M.name, isNew = !LIB[k], rows = packRows(orig), changed = isNew || JSON.stringify(LIB[k].rows) !== JSON.stringify(rows) || LIB[k].mod !== CUR.mod;
-  LIB[k] = {rows, file: fileName, ts: LIB[k]?.ts || Date.now(), seen: Date.now(), mod: CUR.mod, up: CUR.up}; libStore();
+  LIB[k] = {rows, file: fileName, ts: LIB[k]?.ts || Date.now(), seen: Date.now(), mod: CUR.mod, up: CUR.up, pin: LIB[k]?.pin, sector: LIB[k]?.sector, col: LIB[k]?.col}; libStore();
   if (isNew && typeof CMP !== 'undefined' && CMP.size && CMP.size < 6) CMP.add(k);
   if (CUR.sample) { if (!SYU[k]) { SYU[k] = 1; syncSave(); } } else if (changed) markDirty(k);
 }
 const libKeys = () => Object.keys(LIB).sort((a, b) => LIB[a].ts - LIB[b].ts);
 const PAL = ['--c1', '--c2', '--c3', '--c4', '--c5', '--c6', '--c7'];
-const colOf = k => PAL[Math.max(0, libKeys().indexOf(k)) % PAL.length];
+// each company keeps one colour for life: assigned once (least-used first), stored with it
+function colOf(k) {
+  const e = LIB[k]; if (!e) return PAL[0];
+  if (e.col == null || e.col >= PAL.length) {
+    const used = PAL.map((_, i) => Object.keys(LIB).filter(n => n !== k && LIB[n].col === i).length);
+    e.col = used.indexOf(Math.min(...used)); try { localStorage.setItem('fx-lib', JSON.stringify(LIB)); } catch (er) {}
+  }
+  return PAL[e.col];
+}
 const niceName = n => String(n).replace(/\b(LTD|LIMITED)\b\.?/i, '').trim().toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
 const initials = n => niceName(n).split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 function snap(k) {
@@ -1310,23 +1370,8 @@ function snap(k) {
   } catch (e) { console.error(e); return null; }
   finally { ({M, C, SANS, TECH, PX, EDITS, aoa, orig} = keep); }
 }
-function renderLib() {
-  const ks = libKeys();
-  $('#libn').textContent = ks.length ? ks.length : '';
-  $('#lib').innerHTML = ks.map(k => { const sn = snap(k); const sc = sn ? sn.S.total : '—';
-    return `<div class="li btn${k === M.name ? ' on' : ''}" role="button" tabindex="0" data-lib="${k.replace(/"/g, '&quot;')}" title="${niceName(k)}${LIB[k].mod ? ' · Excel updated ' + dfmt(LIB[k].mod) : ''}"><span class="av" style="background:var(${colOf(k)})">${initials(k)}</span><span class="nm">${niceName(k)}<small>${sn ? (() => { const d = dataDates(sn.M); return (d.q ? 'Qtr ' + ql(d.q) : fy(d.a)) + (d.stale ? ' · old' : ''); })() : ''}</small></span><span class="sc" title="SOIC score">${sc}</span><span class="x" data-rm="1" role="button" aria-label="Remove ${niceName(k)}" title="Remove">✕</span></div>`; }).join('');
-}
 function openLib(k) { if (!LIB[k]) return; if (k === M.name) return; load(LIB[k].rows, LIB[k].file || k, '', {mod: LIB[k].mod, up: LIB[k].up || LIB[k].ts}); toast('Opened ' + niceName(k)); }
-$('#lib').addEventListener('click', e => {
-  const it = e.target.closest('[data-lib]'); if (!it) return; const k = it.dataset.lib;
-  if (e.target.closest('[data-rm]')) {
-    delete LIB[k]; libStore(); try { ['fx-edits:', 'fx-soic:', 'fx-px:'].forEach(p => localStorage.removeItem(p + k)); } catch (er) {} markDirty(k);
-    CMP.delete(k); toast('Removed ' + niceName(k));
-    if (k === M.name) { const nx = libKeys()[0]; if (nx) { M.name = '__gone__'; openLib(nx); } else load(SAMPLE, 'Cenlub Industries', '', {mod: Date.parse('2026-11-15T02:45:14Z'), sample: true}); } else { renderLib(); renderView(); }
-    return;
-  }
-  openLib(k);
-});
+$('#lib').addEventListener('click', e => { const it = e.target.closest('[data-lib]'); if (it) openLib(it.dataset.lib); });
 $('#lib').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const it = e.target.closest('[data-lib]'); if (it) { e.preventDefault(); openLib(it.dataset.lib); } } });
 
 // ---- Compare ----
@@ -1555,6 +1600,122 @@ function syncInit() {
   setInterval(() => { if (document.visibilityState === 'visible') syncPull(); renderSyncBtn(); }, 60000);
 }
 
+
+// ---- Company switcher (Ctrl/Cmd + K) and Companies page ----
+const SNAPC = new Map();
+function snapC(k) {   // cached snapshot for companies other than the open one
+  if (k === M.name) return snap(k);
+  const sig = (SYU[k] || 0) + '|' + (LIB[k]?.seen || 0) + '|' + (LIB[k]?.rows?.length || 0);
+  const c = SNAPC.get(k); if (c && c.sig === sig) return c.s;
+  const s = snap(k); SNAPC.set(k, {sig, s}); return s;
+}
+function libRemove(k) {
+  delete LIB[k]; libStore(); SNAPC.delete(k);
+  try { ['fx-edits:', 'fx-soic:', 'fx-px:'].forEach(p => localStorage.removeItem(p + k)); } catch (er) {}
+  markDirty(k); CMP.delete(k);
+  if (k === M.name) { const nx = libKeys()[0]; if (nx) { M.name = '__gone__'; openLib(nx); } else load(SAMPLE, 'Cenlub Industries', '', {mod: Date.parse('2026-11-15T02:45:14Z'), sample: true}); }
+}
+function libMeta(k, patch) { if (!LIB[k]) return; Object.assign(LIB[k], patch); libStore(); markDirty(k); }
+const byRecent = ks => ks.slice().sort((a, b) => (LIB[b].seen || 0) - (LIB[a].seen || 0));
+const qOf = k => { const d = LIB[k] && snapC(k); return d ? dataDates(d.M) : null; };
+const escA = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+// sidebar: pinned companies, or the 3 most recent
+function renderLib() {
+  const ks = libKeys(), pinned = ks.filter(k => LIB[k].pin), list = pinned.length ? pinned : byRecent(ks).filter(k => k !== M.name).slice(0, 3);
+  $('#libt').textContent = pinned.length ? 'Pinned' : 'Recent';
+  $('#liball').textContent = `All ${ks.length} →`;
+  $('#lib').innerHTML = list.map(k => { const sn = snapC(k), d = sn ? dataDates(sn.M) : null;
+    return `<div class="li btn${k === M.name ? ' on' : ''}" role="button" tabindex="0" data-lib="${escA(k)}" title="${escA(niceName(k))}${LIB[k].mod ? ' · Excel updated ' + dfmt(LIB[k].mod) : ''}"><span class="av" style="background:var(${colOf(k)})">${initials(k)}</span><span class="nm">${niceName(k)}<small>${d ? (d.q ? 'Qtr ' + ql(d.q) : fy(d.a)) + (d.stale ? ' · old' : '') : ''}</small></span><span class="sc" title="SOIC score">${sn ? sn.S.total : '—'}</span></div>`; }).join('') ||
+    `<p class="tiny" style="margin:2px 6px">Upload more exports, then pin favourites on the Companies page.</p>`;
+}
+
+// switcher
+let SWI = 0, SWL = [];
+function swRows(q) {
+  const ks = libKeys(); q = q.trim().toLowerCase();
+  if (q) return [['Results', ks.filter(k => niceName(k).toLowerCase().includes(q) || initials(k).toLowerCase() === q || (LIB[k].sector || '').toLowerCase().includes(q)).sort((a, b) => niceName(a).localeCompare(niceName(b)))]];
+  const pin = ks.filter(k => LIB[k].pin), rec = byRecent(ks).filter(k => !LIB[k].pin).slice(0, 8);
+  return [['Pinned', pin], ['Recent', rec]].filter(g => g[1].length);
+}
+function renderSw() {
+  const groups = swRows($('#sw-q').value); SWL = groups.flatMap(g => g[1]); SWI = Math.min(SWI, Math.max(0, SWL.length - 1));
+  let i = 0;
+  $('#sw-list').innerHTML = groups.map(([t, ks]) => `<p class="swg">${t}</p>` + ks.map(k => { const sn = snapC(k), d = sn ? dataDates(sn.M) : null, idx = i++;
+    return `<button class="swi${idx === SWI ? ' act' : ''}${k === M.name ? ' cur' : ''}" role="option" aria-selected="${idx === SWI}" data-k="${escA(k)}" data-i="${idx}"><span class="av" style="background:var(${colOf(k)})">${initials(k)}</span><span class="nm">${niceName(k)}<small>${[LIB[k].sector, d ? (d.q ? 'Qtr ' + ql(d.q) : fy(d.a)) + (d.stale ? ' · old' : '') : ''].filter(Boolean).join(' · ')}</small></span>${LIB[k].pin ? '<span class="pin on" aria-label="Pinned">★</span>' : ''}<span class="sc">${sn ? sn.S.total : '—'}</span>${k === M.name ? '<span class="tag2">Open</span>' : ''}</button>`; }).join('')).join('') ||
+    `<p class="note" style="padding:12px 16px">No saved company matches “${escA($('#sw-q').value)}”.</p>`;
+  const a = $('#sw-list .act'); a && a.scrollIntoView({block: 'nearest'});
+}
+function openSw() { closeDrawer(); $('#sw').hidden = false; $('#sw-q').value = ''; SWI = 0; renderSw(); setTimeout(() => $('#sw-q').focus(), 20); }
+function closeSw() { $('#sw').hidden = true; }
+function pickSw(k) { closeSw(); if (k && k !== M.name) openLib(k); }
+$('#sw-q').addEventListener('input', () => { SWI = 0; renderSw(); });
+$('#sw').addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); SWI = (SWI + (e.key === 'ArrowDown' ? 1 : -1) + SWL.length) % Math.max(1, SWL.length); renderSw(); }
+  else if (e.key === 'Enter') { e.preventDefault(); pickSw(SWL[SWI]); }
+  else if (e.key === 'Escape') { e.preventDefault(); closeSw(); }
+});
+$('#sw').addEventListener('click', e => { if (e.target.id === 'sw') return closeSw(); const b = e.target.closest('.swi'); if (b) pickSw(b.dataset.k); if (e.target.closest('a')) closeSw(); });
+$('#sw').addEventListener('mousemove', e => { const b = e.target.closest('.swi'); if (b && +b.dataset.i !== SWI) { SWI = +b.dataset.i; $('#sw-list .act')?.classList.remove('act'); b.classList.add('act'); } });
+addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); $('#sw').hidden ? openSw() : closeSw(); } });
+$('#co-card').addEventListener('click', openSw);
+$('#co-card').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openSw(); } });
+$('.tb-t').addEventListener('click', openSw);
+
+// Companies page
+let COS = {k: 'soic', d: -1}; const COSEL = new Set(); let coRmArm = 0;
+const COCOL = [['soic', 'SOIC', 1], ['mcap', 'Mcap, ₹ Cr', 0], ['pe', 'P/E', -1], ['roce', 'ROCE', 1], ['de', 'Debt / equity', -1], ['sg', 'Sales CAGR 5y', 1], ['q', 'Latest quarter', 0], ['mod', 'Excel updated', 0]];
+function coRows() {
+  return libKeys().map(k => { const s = snapC(k); if (!s) return null; const C2 = s.C, L = C2.n - 1, R = n => C2.R.find(r => r.k === n).v[L], d = dataDates(s.M);
+    return {k, name: s.name, sector: LIB[k].sector || '', pin: !!LIB[k].pin, soic: s.S.total, max: s.S.max, mcap: C2.now.mcap, pe: C2.now.pe > 0 ? C2.now.pe : null, roce: R('ROCE'), de: R('Debt / equity'), sg: C2.cagr(C2.S, Math.min(5, L)), q: d.q ? +d.q : +d.a, qd: d, mod: LIB[k].mod || null}; }).filter(Boolean);
+}
+function renderCompanies() {
+  const all = coRows(), f = id => $(id).value.trim(), num = id => { const v = parseFloat(f(id)); return isNaN(v) ? null : v; };
+  const q = f('#co-q').toLowerCase(), sec = $('#co-sec').value, minS = num('#co-soic'), minR = num('#co-roce'), maxP = num('#co-pe'), hideOld = $('#co-old').checked;
+  const secs = [...new Set(all.map(r => r.sector).filter(Boolean))].sort();
+  $('#co-sec').innerHTML = `<option value="">All sectors</option>` + secs.map(s => `<option${s === sec ? ' selected' : ''}>${escA(s)}</option>`).join('') + (all.some(r => !r.sector) ? `<option value="__none"${sec === '__none' ? ' selected' : ''}>No sector</option>` : '');
+  $('#co-secs').innerHTML = secs.map(s => `<option value="${escA(s)}">`).join('');
+  let rows = all.filter(r => (!q || r.name.toLowerCase().includes(q)) && (!sec || (sec === '__none' ? !r.sector : r.sector === sec)) &&
+    (minS == null || r.soic >= minS) && (minR == null || (r.roce != null && r.roce * 100 >= minR)) && (maxP == null || (r.pe != null && r.pe <= maxP)) && (!hideOld || !r.qd.stale));
+  rows.sort((a, b) => b.pin - a.pin || (((a[COS.k] ?? -Infinity * COS.d) > (b[COS.k] ?? -Infinity * COS.d) ? 1 : (a[COS.k] ?? -Infinity * COS.d) < (b[COS.k] ?? -Infinity * COS.d) ? -1 : 0) * COS.d) || a.name.localeCompare(b.name));
+  [...COSEL].forEach(k => { if (!LIB[k]) COSEL.delete(k); });
+  $('#co-count').textContent = rows.length === all.length ? `${all.length} saved compan${all.length === 1 ? 'y' : 'ies'}` : `Showing ${rows.length} of ${all.length}`;
+  $('#co-cmp').disabled = COSEL.size < 2; $('#co-cmp').textContent = COSEL.size >= 2 ? `Compare ${Math.min(6, COSEL.size)} selected` : 'Compare selected';
+  $('#co-rm').disabled = !COSEL.size; $('#co-rm').textContent = coRmArm > Date.now() ? `Click again to remove ${COSEL.size}` : COSEL.size ? `Remove ${COSEL.size} selected` : 'Remove selected';
+  const cell = (r, k) => k === 'soic' ? `<div class="sbarc">${r.soic}<div class="trk"><i style="width:${Math.max(0, r.soic) / r.max * 100}%;background:var(${colOf(r.k)})"></i></div></div>`
+    : k === 'mcap' ? inr(r.mcap) : k === 'pe' || k === 'de' ? fmt(r[k], 'x') : k === 'roce' || k === 'sg' ? pct(r[k])
+    : k === 'q' ? (r.qd.q ? ql(r.qd.q) : fy(r.qd.a)) + (r.qd.stale ? ' <span class="stale" style="margin-left:4px">old</span>' : '') : r.mod ? dfmt(r.mod) : '—';
+  const allSel = rows.length && rows.every(r => COSEL.has(r.k));
+  $('#co-tab').innerHTML = `<thead><tr><th class="cb"><input type="checkbox" id="co-all" aria-label="Select all"${allSel ? ' checked' : ''}></th><th>Company</th><th>Sector</th>${COCOL.map(([k, l]) => `<th data-cs="${k}" class="${COS.k === k ? 'sorted' : ''}">${l}${COS.k === k ? (COS.d > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>` +
+    rows.map(r => `<tr class="${r.k === M.name ? 'cur' : ''}"><td class="cb"><input type="checkbox" data-sel="${escA(r.k)}" aria-label="Select ${escA(r.name)}"${COSEL.has(r.k) ? ' checked' : ''}></td>
+      <td><span class="who"><button class="pin${r.pin ? ' on' : ''}" data-pin="${escA(r.k)}" aria-label="${r.pin ? 'Unpin' : 'Pin'} ${escA(r.name)}" title="${r.pin ? 'Unpin from sidebar' : 'Pin to sidebar'}">${r.pin ? '★' : '☆'}</button><i style="background:var(${colOf(r.k)})"></i><button class="lnk2" data-open="${escA(r.k)}">${r.name}</button></span></td>
+      <td><input class="secin" list="co-secs" data-sec="${escA(r.k)}" value="${escA(r.sector)}" placeholder="Add sector" aria-label="Sector for ${escA(r.name)}"></td>
+      ${COCOL.map(([k]) => `<td>${cell(r, k)}</td>`).join('')}</tr>`).join('') + '</tbody>';
+  if (!rows.length) $('#co-tab').insertAdjacentHTML('beforeend', `<tbody><tr><td colspan="${COCOL.length + 3}" style="text-align:center;padding:24px;color:var(--muted)">No company matches these filters.</td></tr></tbody>`);
+}
+$('#co-bar').addEventListener('input', renderCompanies);
+$('#co-bar').addEventListener('change', renderCompanies);
+$('#co-clear').addEventListener('click', () => { ['#co-q', '#co-soic', '#co-roce', '#co-pe'].forEach(i => $(i).value = ''); $('#co-sec').value = ''; $('#co-old').checked = false; renderCompanies(); });
+$('#co-tab').addEventListener('click', e => {
+  const h = e.target.closest('[data-cs]'); if (h) { const k = h.dataset.cs; COS = COS.k === k ? {k, d: -COS.d} : {k, d: ['pe', 'de'].includes(k) ? 1 : -1}; renderCompanies(); return; }
+  const p = e.target.closest('[data-pin]'); if (p) { const k = p.dataset.pin; libMeta(k, {pin: !LIB[k].pin}); renderLib(); renderCompanies(); return; }
+  const o = e.target.closest('[data-open]'); if (o) { openLib(o.dataset.open); location.hash = 'overview'; return; }
+});
+$('#co-tab').addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'co-all') { const vis = [...document.querySelectorAll('#co-tab [data-sel]')].map(x => x.dataset.sel); vis.forEach(k => t.checked ? COSEL.add(k) : COSEL.delete(k)); renderCompanies(); return; }
+  if (t.dataset.sel) { t.checked ? COSEL.add(t.dataset.sel) : COSEL.delete(t.dataset.sel); coRmArm = 0; renderCompanies(); return; }
+  if (t.dataset.sec != null) { libMeta(t.dataset.sec, {sector: t.value.trim()}); renderCompanies(); }
+});
+$('#co-cmp').addEventListener('click', () => { CMP.clear(); libKeys().filter(k => COSEL.has(k)).slice(0, 6).forEach(k => CMP.add(k)); if (COSEL.size > 6) toast('Comparing the first 6 selected'); location.hash = 'compare'; });
+$('#co-rm').addEventListener('click', () => {
+  if (coRmArm < Date.now()) { coRmArm = Date.now() + 4000; renderCompanies(); setTimeout(() => { if (coRmArm && coRmArm <= Date.now()) { coRmArm = 0; if (!$('#companies').hidden) renderCompanies(); } }, 4100); return; }
+  const ks = [...COSEL]; coRmArm = 0; COSEL.clear();
+  ks.filter(k => k !== M.name).forEach(libRemove); if (ks.includes(M.name)) libRemove(M.name);
+  toast(`Removed ${ks.length} compan${ks.length === 1 ? 'y' : 'ies'}`); renderLib(); renderCompanies();
+});
+
+$('#sw-open').addEventListener('click', openSw);
 // ---- Theme ----
 let THEME = 'auto'; try { THEME = localStorage.getItem('fx-theme') || 'auto'; } catch (e) {}
 function applyTheme() {
