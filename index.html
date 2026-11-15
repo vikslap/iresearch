@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <style>
 /* VOICE: a calm, modern analytics product: quiet surfaces, crisp numbers, nothing decorative.
    IDEA: an equity research terminal: sidebar of views, figure cards with trend lines, one big chart per question.
@@ -190,6 +191,22 @@ td svg{display:block}
 .seg button[aria-pressed=true]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
 .brand .logo{flex:none;border-radius:9px;box-shadow:0 2px 8px color-mix(in srgb,var(--c1) 35%,transparent)}
 .wm{display:flex;flex-direction:column;line-height:1.1;min-width:0}.wm b{font-size:19px;font-weight:800;letter-spacing:-.03em}.wm small{font-size:11px;color:var(--muted);font-weight:500;margin-top:2px;white-space:nowrap}
+.syncb{justify-content:flex-start;gap:10px;font-weight:500}
+.sdot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none}.sdot.ok{background:var(--pos)}.sdot.busy{background:var(--c1);animation:pulse 1s infinite}.sdot.err{background:var(--neg)}
+@keyframes pulse{50%{opacity:.35}}
+.dlg{position:fixed;inset:0;z-index:40;background:rgb(0 0 0/.45);display:grid;place-items:center;padding:16px}
+.dlg-box{width:min(560px,100%);max-height:90dvh;overflow:auto;padding:20px}
+.dlg-box p{font-size:14px;line-height:1.5}
+.xbtn2{width:36px;min-height:36px;padding:0;margin-left:auto;box-shadow:none;border-color:transparent;background:none}
+.dlg-a{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.dlg-row{display:flex;gap:8px}.dlg-row input,.fl2 input{flex:1;font:15px Inter,sans-serif;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);min-height:44px;letter-spacing:.04em}
+.fl2{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)}
+.or{margin:18px 0 8px;font-weight:600;font-size:13px!important;color:var(--muted)}
+.sy-grid{display:grid;grid-template-columns:180px minmax(0,1fr);gap:18px;align-items:start}
+.qr{background:#fff;border-radius:12px;padding:6px;border:1px solid var(--line)}.qr svg{display:block;width:100%;height:auto}
+.code{font:700 16px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.03em;word-break:normal;overflow-wrap:normal;background:var(--soft);border-radius:8px;padding:10px 12px}
+@media(max-width:520px){.sy-grid{grid-template-columns:1fr}.qr{width:200px}}
+@media (prefers-reduced-motion:reduce){.sdot.busy{animation:none}}
 #drop{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(4px);display:none;place-items:center;font-size:20px;font-weight:700;z-index:9;border:3px dashed var(--c1);border-radius:16px;margin:10px}
 #drop.on{display:grid}
 #toast{position:fixed;bottom:20px;left:50%;max-width:min(560px,92vw);text-align:center;transform:translate(-50%,8px);background:var(--tip);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:10;box-shadow:0 8px 24px rgb(0 0 0/.18)}
@@ -222,6 +239,9 @@ section{animation:fade .25s ease}
 <body>
 <div id="drop">Drop to load: screener.in Excel or NSE price CSV</div>
 <div id="toast" role="status"></div>
+<div id="sync-dlg" class="dlg" hidden><div class="dlg-box card" role="dialog" aria-modal="true" aria-labelledby="sync-t">
+  <div class="ch"><h3 id="sync-t">Sync across devices</h3><button class="xbtn2" id="sync-x" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div id="sync-body"></div></div></div>
 <header class="topbar">
   <button class="menu" id="menu" aria-label="Open menu" aria-expanded="false" aria-controls="side"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
   <svg width="26" height="26" viewBox="0 0 32 32" aria-label="Plumb" style="flex:none;border-radius:7px"><rect width="32" height="32" rx="9" fill="url(#lg)"/><path d="M16 4.5v6.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M16 11l6 8-6 9-6-9z" fill="#fff"/></svg>
@@ -246,9 +266,10 @@ section{animation:fade .25s ease}
     <a href="#data"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg>Edit data</a>
   </nav>
   <div class="sfoot">
+    <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 15 Nov 2026, 21:47 IST</p>
+    <p class="tiny" id="build">Version: 15 Nov 2026, 21:56 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -734,7 +755,7 @@ function runDCF() {
 let EDITS = {};
 const ekey = () => 'fx-edits:' + M.name;
 function loadEdits() { try { EDITS = JSON.parse(localStorage.getItem(ekey()) || '{}'); } catch (e) { EDITS = {}; } }
-function storeEdits() { try { localStorage.setItem(ekey(), JSON.stringify(EDITS)); } catch (e) {} }
+function storeEdits() { try { localStorage.setItem(ekey(), JSON.stringify(EDITS)); } catch (e) {} markDirty(M.name); }
 function applyEdits() { aoa = orig.map(r => r.slice()); for (const k in EDITS) { const [r, c] = k.split(',').map(Number); if (!aoa[r]) continue; while (aoa[r].length <= c) aoa[r].push(null); aoa[r][c] = EDITS[k]; } }
 
 function renderData() {
@@ -758,7 +779,7 @@ function renderData() {
 function recompute() { M = parse(aoa); C = calc(); headline(); renderAsOf(); kpis(); renderLib(); renderView(); const n = Object.keys(EDITS).length; $('#reset').hidden = !n; $('#reset').textContent = n ? `Reset ${n} edit${n > 1 ? 's' : ''}` : 'Reset edits'; }
 function load(rows, name, srcText, meta = {}) {
   orig = rows.map(r => (r || []).slice()); aoa = orig; M = parse(orig); fileName = name;
-  CUR = {mod: meta.mod ?? LIB[M.name]?.mod ?? null, up: meta.up ?? LIB[M.name]?.up ?? null};
+  CUR = {mod: meta.mod ?? LIB[M.name]?.mod ?? null, up: meta.up ?? LIB[M.name]?.up ?? null, sample: !!meta.sample};
   loadEdits(); applyEdits(); dcfInit = false; erInit = false; loadSoic(); loadPx();
   $('#src').textContent = srcText;
   libSave(); try { localStorage.setItem('fx-last', M.name); } catch (e) {}
@@ -801,7 +822,7 @@ async function readFiles(files) {
   // save every company except the last straight into the library, then open the last one
   ok.slice(0, -1).forEach(({rows, f, mod}) => {
     const k = parse(rows).name, isNew = !LIB[k];
-    LIB[k] = {rows: packRows(rows), file: f.name.replace(/\.\w+$/, ''), ts: LIB[k]?.ts || Date.now(), seen: Date.now(), mod, up: Date.now()};
+    LIB[k] = {rows: packRows(rows), file: f.name.replace(/\.\w+$/, ''), ts: LIB[k]?.ts || Date.now(), seen: Date.now(), mod, up: Date.now()}; markDirty(k);
     if (isNew && CMP.size && CMP.size < 6) CMP.add(k);
   });
   if (ok.length > 1) libStore();
@@ -838,7 +859,7 @@ $('#dcfin').addEventListener('input', runDCF);
 let PX = null, TECH = null;
 const pkey = () => 'fx-px:' + M.name;
 function loadPx() { try { PX = JSON.parse(localStorage.getItem(pkey()) || 'null'); } catch (e) { PX = null; } TECH = PX ? techCalc() : null; }
-function storePx() { try { PX ? localStorage.setItem(pkey(), JSON.stringify(PX)) : localStorage.removeItem(pkey()); } catch (e) {} }
+function storePx() { try { PX ? localStorage.setItem(pkey(), JSON.stringify(PX)) : localStorage.removeItem(pkey()); } catch (e) {} markDirty(M.name); }
 const MONI = {jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11};
 function pdate(v) {
   if (v instanceof Date && !isNaN(v)) return Date.UTC(v.getFullYear(), v.getMonth(), v.getDate());
@@ -1032,7 +1053,7 @@ const soicPts = (it, a) => { const f = it.o.find(x => x[0] === a); return f ? f[
 let SANS = {};
 const skey = () => 'fx-soic:' + M.name;
 function loadSoic() { try { SANS = JSON.parse(localStorage.getItem(skey()) || '{}'); } catch (e) { SANS = {}; } }
-function storeSoic() { try { localStorage.setItem(skey(), JSON.stringify(SANS)); } catch (e) {} }
+function storeSoic() { try { localStorage.setItem(skey(), JSON.stringify(SANS)); } catch (e) {} markDirty(M.name); }
 
 function soicAuto() {
   const out = {}, L = C.n - 1, k3 = Math.min(3, L), R = k => C.R.find(r => r.k === k).v;
@@ -1269,7 +1290,12 @@ try { LIB = JSON.parse(localStorage.getItem('fx-lib') || '{}'); } catch (e) { LI
 const pad2 = n => String(n).padStart(2, '0');
 const packRows = rows => rows.map(r => (r || []).map(v => v instanceof Date ? `D:${v.getFullYear()}-${pad2(v.getMonth() + 1)}-${pad2(v.getDate())}` : v));
 function libStore() { try { localStorage.setItem('fx-lib', JSON.stringify(LIB)); return true; } catch (e) { toast('Browser storage is full; remove a saved company'); return false; } }
-function libSave() { const k = M.name, isNew = !LIB[k]; LIB[k] = {rows: packRows(orig), file: fileName, ts: LIB[k]?.ts || Date.now(), seen: Date.now(), mod: CUR.mod, up: CUR.up}; libStore(); if (isNew && typeof CMP !== 'undefined' && CMP.size && CMP.size < 6) CMP.add(k); }
+function libSave() {
+  const k = M.name, isNew = !LIB[k], rows = packRows(orig), changed = isNew || JSON.stringify(LIB[k].rows) !== JSON.stringify(rows) || LIB[k].mod !== CUR.mod;
+  LIB[k] = {rows, file: fileName, ts: LIB[k]?.ts || Date.now(), seen: Date.now(), mod: CUR.mod, up: CUR.up}; libStore();
+  if (isNew && typeof CMP !== 'undefined' && CMP.size && CMP.size < 6) CMP.add(k);
+  if (CUR.sample) { if (!SYU[k]) { SYU[k] = 1; syncSave(); } } else if (changed) markDirty(k);
+}
 const libKeys = () => Object.keys(LIB).sort((a, b) => LIB[a].ts - LIB[b].ts);
 const PAL = ['--c1', '--c2', '--c3', '--c4', '--c5', '--c6', '--c7'];
 const colOf = k => PAL[Math.max(0, libKeys().indexOf(k)) % PAL.length];
@@ -1294,9 +1320,9 @@ function openLib(k) { if (!LIB[k]) return; if (k === M.name) return; load(LIB[k]
 $('#lib').addEventListener('click', e => {
   const it = e.target.closest('[data-lib]'); if (!it) return; const k = it.dataset.lib;
   if (e.target.closest('[data-rm]')) {
-    delete LIB[k]; libStore(); try { ['fx-edits:', 'fx-soic:', 'fx-px:'].forEach(p => localStorage.removeItem(p + k)); } catch (er) {}
+    delete LIB[k]; libStore(); try { ['fx-edits:', 'fx-soic:', 'fx-px:'].forEach(p => localStorage.removeItem(p + k)); } catch (er) {} markDirty(k);
     CMP.delete(k); toast('Removed ' + niceName(k));
-    if (k === M.name) { const nx = libKeys()[0]; if (nx) { M.name = '__gone__'; openLib(nx); } else load(SAMPLE, 'Cenlub Industries', '', {mod: Date.parse('2026-11-15T02:45:14Z')}); } else { renderLib(); renderView(); }
+    if (k === M.name) { const nx = libKeys()[0]; if (nx) { M.name = '__gone__'; openLib(nx); } else load(SAMPLE, 'Cenlub Industries', '', {mod: Date.parse('2026-11-15T02:45:14Z'), sample: true}); } else { renderLib(); renderView(); }
     return;
   }
   openLib(k);
@@ -1358,6 +1384,177 @@ $('#nav').addEventListener('click', e => { if (e.target.closest('a')) closeDrawe
 $('#lib').addEventListener('click', e => { if (e.target.closest('[data-lib]') && !e.target.closest('[data-rm]')) closeDrawer(); });
 $('#file').addEventListener('change', closeDrawer);
 
+
+// ---- Sync across devices (end-to-end encrypted, paired with a code / QR) ----
+const SYNC_DEFAULT_URL = '';   // set to the deployed sync-worker URL, e.g. https://plumb-sync.<you>.workers.dev
+const SYNC_ON = !window.claude;   // the Claude preview can't reach other servers
+const ALPH = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+const te = new TextEncoder(), tdx = new TextDecoder();
+let SY = null, SYU = {}, SK = null, syncApplying = false, syncTimer = null, syncBusy = false;
+const syncDirty = new Set(); let syncState = {st: 'off', at: null, err: ''};
+try { SY = JSON.parse(localStorage.getItem('fx-sync') || 'null'); SYU = JSON.parse(localStorage.getItem('fx-sync-u') || '{}'); } catch (e) {}
+const syncSave = () => { try { SY ? localStorage.setItem('fx-sync', JSON.stringify(SY)) : localStorage.removeItem('fx-sync'); localStorage.setItem('fx-sync-u', JSON.stringify(SYU)); } catch (e) {} };
+const hexb = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+const b64e = b => { const u = new Uint8Array(b); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode(...u.subarray(i, i + 0x8000)); return btoa(s); };
+const b64d = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const newCode = () => [...crypto.getRandomValues(new Uint8Array(20))].map(x => ALPH[x % 32]).join('');   // 100 bits
+const normCode = c => String(c || '').toUpperCase().replace(/^\s*PLUMB-?/, '').replace(/[ILO]/g, ch => ({I: '1', L: '1', O: '0'})[ch]).replace(/[^0-9A-Z]/g, '');
+const fmtCode = c => 'PLUMB-' + c.match(/.{1,4}/g).join('-');
+const syncURL = () => (SY && SY.url) || localStorage.getItem('fx-sync-url') || SYNC_DEFAULT_URL;
+async function syncKeys(code) {
+  const ikm = await crypto.subtle.importKey('raw', te.encode(code), 'HKDF', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({name: 'HKDF', hash: 'SHA-256', salt: te.encode('plumb-sync-v1'), info: te.encode('aes-gcm')}, ikm, {name: 'AES-GCM', length: 256}, false, ['encrypt', 'decrypt']);
+  return {key, id: hexb(await crypto.subtle.digest('SHA-256', te.encode('plumb-id-v1:' + code)))};
+}
+const itemKey = async name => hexb(await crypto.subtle.digest('SHA-256', te.encode('plumb-item-v1:' + SY.code + ':' + name))).slice(0, 32);
+async function seal(obj) {
+  let bytes = te.encode(JSON.stringify(obj)), z = 0;
+  if (window.CompressionStream) { bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer()); z = 1; }
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  return z + '.' + b64e(iv) + '.' + b64e(await crypto.subtle.encrypt({name: 'AES-GCM', iv}, SK.key, bytes));
+}
+async function unseal(s) {
+  const [z, iv, ct] = s.split('.');
+  let bytes = new Uint8Array(await crypto.subtle.decrypt({name: 'AES-GCM', iv: b64d(iv)}, SK.key, b64d(ct)));
+  if (z === '1') bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+  return JSON.parse(tdx.decode(bytes));
+}
+const lsGet = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+const lsPut = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const bundle = name => LIB[name] ? {name, lib: LIB[name], edits: lsGet('fx-edits:' + name), soic: lsGet('fx-soic:' + name), px: lsGet('fx-px:' + name)} : {name, deleted: true};
+function markDirty(name, when) {
+  if (syncApplying || !name) return;
+  SYU[name] = when || Date.now(); syncSave();
+  if (!SY) return;
+  syncDirty.add(name); clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 1500);
+}
+async function api(path, opt) {
+  const r = await fetch(syncURL().replace(/\/+$/, '') + path, Object.assign({headers: {'Content-Type': 'application/json'}}, opt));
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'HTTP ' + r.status);
+  return r.json();
+}
+function syncStatus(st, err = '') { syncState = {st, at: st === 'ok' ? Date.now() : syncState.at, err}; renderSyncBtn(); if (!$('#sync-dlg').hidden) renderSyncDlg(); }
+async function syncPush() {
+  if (!SY || !SK || !syncDirty.size) return;
+  const names = [...syncDirty]; syncDirty.clear(); syncStatus('busy');
+  try {
+    for (const n of names) await api(`/v1/${SK.id}/${await itemKey(n)}`, {method: 'PUT', body: JSON.stringify({u: SYU[n] || Date.now(), data: await seal(bundle(n))})});
+    syncStatus('ok');
+  } catch (e) { names.forEach(n => syncDirty.add(n)); syncStatus('err', e.message); clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 30000); }
+}
+async function syncPull(full) {
+  if (!SY || !SK || syncBusy) return; syncBusy = true; syncStatus('busy');
+  const remote = {}, changed = new Set();
+  try {
+    const r = await api(`/v1/${SK.id}?since=${full ? 0 : SY.s || 0}`);
+    for (const it of r.items) {
+      let b; try { b = await unseal(it.data); } catch (e) { continue; }
+      remote[b.name] = it.u;
+      if (it.u > (SYU[b.name] || 0)) {
+        syncApplying = true;
+        if (b.deleted) { delete LIB[b.name]; ['fx-edits:', 'fx-soic:', 'fx-px:'].forEach(p => lsPut(p + b.name, null)); }
+        else { LIB[b.name] = b.lib; lsPut('fx-edits:' + b.name, b.edits); lsPut('fx-soic:' + b.name, b.soic); lsPut('fx-px:' + b.name, b.px); }
+        syncApplying = false; SYU[b.name] = it.u; changed.add(b.name);
+      }
+      SY.s = Math.max(SY.s || 0, it.s);
+    }
+    if (changed.size) libStore();
+    syncSave();
+    if (full) Object.keys(LIB).concat(Object.keys(SYU)).forEach(n => { if (!(n in remote) ? (LIB[n] && SYU[n]) : (SYU[n] || 0) > remote[n]) syncDirty.add(n); });
+    if (changed.size) syncRefreshUI(changed);
+    syncStatus('ok');
+    if (syncDirty.size) { clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 300); }
+  } catch (e) { syncStatus('err', e.message); }
+  finally { syncApplying = false; syncBusy = false; }
+}
+function syncRefreshUI(changed) {
+  const cur = M && M.name;
+  syncApplying = true;
+  try {
+    if (cur && changed.has(cur)) {
+      if (LIB[cur]) { orig = null; M.name = '__sync__'; load(LIB[cur].rows, LIB[cur].file || cur, '', {mod: LIB[cur].mod, up: LIB[cur].up}); }
+      else { const nx = libKeys()[0]; if (nx) { M.name = '__sync__'; openLib(nx); } }
+    } else { renderLib(); renderView(); }
+  } finally { syncApplying = false; }
+  toast(`Synced ${changed.size} compan${changed.size === 1 ? 'y' : 'ies'} from your other device`);
+}
+async function syncLink(code, url) {
+  code = normCode(code);
+  if (code.length < 16) { toast('That sync code looks too short'); return false; }
+  if (url) { try { localStorage.setItem('fx-sync-url', url); } catch (e) {} }
+  if (!syncURL()) { toast('Add the sync server URL first'); return false; }
+  SY = {code, url: syncURL(), s: 0}; SK = await syncKeys(code); syncSave();
+  await syncPull(true);
+  return syncState.st !== 'err';
+}
+function syncUnlink() { SY = null; SK = null; syncDirty.clear(); clearTimeout(syncTimer); syncSave(); syncStatus('off'); }
+const ago = t => { if (!t) return ''; const s = Math.round((Date.now() - t) / 1000); return s < 10 ? 'just now' : s < 60 ? s + ' s ago' : s < 3600 ? Math.round(s / 60) + ' min ago' : Math.round(s / 3600) + ' h ago'; };
+function renderSyncBtn() {
+  const b = $('#sync-btn'); if (!b) return;
+  const t = !SY ? 'Sync: off' : syncState.st === 'busy' ? 'Syncing…' : syncState.st === 'err' ? 'Sync error' : 'Synced ' + ago(syncState.at);
+  b.innerHTML = `<i class="sdot ${!SY ? '' : syncState.st}"></i>${t}`;
+}
+function syncQR(text) { try { const q = qrcode(0, 'M'); q.addData(text); q.make(); return q.createSvgTag({cellSize: 5, margin: 3, scalable: true}); } catch (e) { return ''; } }
+function renderSyncDlg(pending) {
+  const url = syncURL(), esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  let h = '';
+  if (pending) {
+    h = `<p>Link this device to sync code <b>${fmtCode(pending.code)}</b>? Companies on both devices will be merged; where the same company was changed on both, the most recent change wins.</p>
+      <div class="dlg-a"><button class="btn pri" id="sy-yes">Link this device</button><button id="sy-no">Cancel</button></div>`;
+  } else if (!url) {
+    h = `<p>Sync needs a small server to hold your encrypted data. Deploy the <b>sync-worker</b> folder from the GitHub repo to Cloudflare, then paste its URL here.</p>
+      <label class="fl2">Sync server URL<input id="sy-url" placeholder="https://plumb-sync.you.workers.dev" inputmode="url"></label>
+      <div class="dlg-a"><button class="btn pri" id="sy-saveurl">Save</button></div>`;
+  } else if (!SY) {
+    h = `<p>Sync keeps your saved companies, SOIC answers, edits and price history the same on every device. Everything is encrypted on this device before it leaves; the sync code is the key, so keep it private.</p>
+      <div class="dlg-a"><button class="btn pri" id="sy-new">Create a sync code</button></div>
+      <p class="or">Already set up on another device?</p>
+      <div class="dlg-row"><input id="sy-code" placeholder="PLUMB-XXXX-XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false"><button class="btn" id="sy-link">Link</button></div>
+      <p class="note">Server: ${esc(url)} <button class="lnk" id="sy-chg">change</button></p>`;
+  } else {
+    const link = location.origin + location.pathname + '#sync-' + SY.code + '@' + encodeURIComponent(url);
+    h = `<div class="sy-grid"><div class="qr">${syncQR(link)}</div><div>
+        <p style="margin-top:0">Scan this with your phone’s camera to link it, or enter the code in Plumb on the other device.</p>
+        <div class="code">${fmtCode(SY.code)}</div>
+        <div class="dlg-a"><button class="sm" id="sy-copy">Copy code</button><button class="sm" id="sy-copyl">Copy link</button></div>
+        <p class="note">${syncState.st === 'err' ? `<span class="down">Last sync failed: ${esc(syncState.err)}</span>` : syncState.at ? 'Last synced ' + ago(syncState.at) : ''} · ${Object.keys(LIB).length} companies on this device</p>
+      </div></div>
+      <div class="dlg-a"><button class="btn pri" id="sy-now">Sync now</button><button id="sy-off">Unlink this device</button></div>
+      <p class="note">Anyone with this code or QR can read and change your synced data. Unlinking stops syncing here and keeps the data already on this device.</p>`;
+  }
+  $('#sync-body').innerHTML = h;
+}
+function openSync(pending) { $('#sync-dlg').hidden = false; renderSyncDlg(pending); setTimeout(() => ($('#sync-body button.pri') || $('#sync-x')).focus(), 30); closeDrawer(); }
+function closeSync() { $('#sync-dlg').hidden = true; $('#sync-btn').focus(); }
+let SY_PENDING = null;
+$('#sync-dlg').addEventListener('click', async e => {
+  if (e.target.id === 'sync-dlg' || e.target.closest('#sync-x')) { SY_PENDING = null; closeSync(); return; }
+  const id = (e.target.closest('button') || {}).id;
+  if (id === 'sy-saveurl') { const u = $('#sy-url').value.trim(); if (!/^https:\/\//.test(u)) { toast('Enter the https:// URL of your sync server'); return; } try { localStorage.setItem('fx-sync-url', u); } catch (er) {} renderSyncDlg(); }
+  if (id === 'sy-chg') { try { localStorage.removeItem('fx-sync-url'); } catch (er) {} renderSyncDlg(); }
+  if (id === 'sy-new') { if (await syncLink(newCode())) { toast('Sync is on. Scan the QR on your other device'); renderSyncDlg(); } }
+  if (id === 'sy-link') { if (await syncLink($('#sy-code').value)) { toast('This device is now synced'); renderSyncDlg(); } }
+  if (id === 'sy-yes' && SY_PENDING) { const p = SY_PENDING; SY_PENDING = null; if (await syncLink(p.code, p.url)) { toast('This device is now synced'); renderSyncDlg(); } }
+  if (id === 'sy-no') { SY_PENDING = null; closeSync(); }
+  if (id === 'sy-now') { await syncPull(); await syncPush(); }
+  if (id === 'sy-off') { syncUnlink(); renderSyncDlg(); toast('Sync turned off on this device'); }
+  if (id === 'sy-copy' || id === 'sy-copyl') { const t = id === 'sy-copy' ? fmtCode(SY.code) : location.origin + location.pathname + '#sync-' + SY.code + '@' + encodeURIComponent(syncURL()); try { await navigator.clipboard.writeText(t); toast('Copied'); } catch (er) { toast('Copying is blocked here'); } }
+});
+addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#sync-dlg').hidden) closeSync(); });
+function syncInit() {
+  if (!SYNC_ON) { $('#sync-btn').hidden = true; return; }
+  $('#sync-btn').addEventListener('click', () => openSync());
+  const fromHash = () => { const m = location.hash.match(/^#sync-([0-9A-Za-z]+)(?:@(.+))?$/); if (!m) return;
+    SY_PENDING = {code: normCode(m[1]), url: m[2] ? decodeURIComponent(m[2]) : ''}; history.replaceState(null, '', location.pathname + location.search);
+    if (SY && SY.code === SY_PENDING.code) { SY_PENDING = null; toast('This device is already synced with that code'); return; }
+    openSync(SY_PENDING); };
+  fromHash(); addEventListener('hashchange', fromHash);
+  renderSyncBtn();
+  if (SY) (async () => { SK = await syncKeys(SY.code); await syncPull(); })();
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncPull(); else syncPush(); });
+  setInterval(() => { if (document.visibilityState === 'visible') syncPull(); renderSyncBtn(); }, 60000);
+}
+
 // ---- Theme ----
 let THEME = 'auto'; try { THEME = localStorage.getItem('fx-theme') || 'auto'; } catch (e) {}
 function applyTheme() {
@@ -1403,9 +1600,12 @@ function exportBook() {
 try {
   let last = null; try { last = localStorage.getItem('fx-last'); } catch (e) {}
   if (last && LIB[last]) load(LIB[last].rows, LIB[last].file || last, '', {mod: LIB[last].mod, up: LIB[last].up || LIB[last].ts});
-  else load(SAMPLE, 'Cenlub Industries', '', {mod: Date.parse('2026-11-15T02:45:14Z')});
+  else load(SAMPLE, 'Cenlub Industries', '', {mod: Date.parse('2026-11-15T02:45:14Z'), sample: true});
 }
 catch (e) { $('#title').textContent = 'Upload a screener.in Excel export to begin'; console.error(e); }
+// give companies saved before sync existed a timestamp so they merge correctly
+Object.keys(LIB).forEach(n => { if (!SYU[n]) SYU[n] = LIB[n].seen || LIB[n].ts || 1; }); syncSave();
+syncInit();
 }
 </script>
 </body>

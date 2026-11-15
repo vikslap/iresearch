@@ -1,0 +1,12 @@
+name = "plumb-sync"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+# Optional: lock the API to your site, e.g. "https://vikslap.github.io"
+# [vars]
+# ALLOWED_ORIGIN = "https://vikslap.github.io"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "plumb-sync"
+database_id = "PASTE_DATABASE_ID_HERE"

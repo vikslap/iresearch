@@ -15,9 +15,10 @@ Live: https://vikslap.github.io/iresearch/
 - **Compare** – rank up to 6 saved companies side by side.
 - **Edit data** – change any number; everything recalculates. Download the edited workbook.
 - Every chart can be copied as an image or as Excel-ready data.
+- **Sync across devices** – link devices with a QR code or sync code; everything is end-to-end encrypted in the browser before it is uploaded (see `sync-worker/`).
 - Light / dark / system theme.
 
-Everything runs in the browser. Uploaded files, edits, answers and prices are stored only in your browser's local storage – nothing is sent to a server.
+Everything runs in the browser. Uploaded files, edits, answers and prices are stored in your browser's local storage. If you turn on sync, they are encrypted with a key derived from your sync code before being sent to your own sync server, which cannot read them.
 
 ## Run locally
 
