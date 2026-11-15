@@ -560,7 +560,7 @@ function chartTitle(id) { const box = charts[id].canvas.closest('.res, .card'); 
 function chartPNG(id) {
   const ch = charts[id], src = ch.canvas, r = src.width / src.clientWidth || 1, pad = 20 * r, head = 54 * r, foot = 26 * r, {t, s} = chartTitle(id);
   const cv = document.createElement('canvas'); cv.width = src.width + pad * 2; cv.height = src.height + head + foot + pad;
-  const x = cv.getContext('2d');
+  const x = cv.getContext('2d', {alpha: false});
   x.fillStyle = css('--card'); x.fillRect(0, 0, cv.width, cv.height);
   x.fillStyle = css('--ink'); x.font = `700 ${16 * r}px Inter, system-ui, sans-serif`; x.fillText(t, pad, pad + 16 * r);
   x.fillStyle = css('--muted'); x.font = `500 ${12 * r}px Inter, system-ui, sans-serif`; x.fillText([title(), s].filter(Boolean).join(' · '), pad, pad + 36 * r);
@@ -579,8 +579,14 @@ document.addEventListener('click', async e => {
   const id = b.dataset.chart, {t} = chartTitle(id), fname = `${title()} - ${t}`.replace(/[^\w ,.-]+/g, '').trim() + '.png';
   if (b.dataset.act === 'data') { try { await navigator.clipboard.writeText(chartTSV(id)); toast('Data copied. Paste into Excel or Sheets'); } catch (err) { toast('Copying is blocked in this view'); } return; }
   if (b.dataset.act === 'copy') {
-    try { await navigator.clipboard.write([new ClipboardItem({'image/png': chartPNG(id)})]); toast('Chart copied. Paste it anywhere'); return; }
-    catch (err) { if (!DL) { toast('Copying images is blocked in this view'); return; } toast('Copying images is blocked here, so downloading instead'); }
+    // Windows can drop the pixels of a clipboard PNG; also offer the image as HTML, which Word, Docs, Gmail and Substack paste reliably
+    const png = chartPNG(id), alt = t.replace(/"/g, '&quot;');
+    const html = png.then(b => new Promise(res => { const r = new FileReader(); r.onload = () => res(new Blob([`<img src="${r.result}" alt="${alt}">`], {type: 'text/html'})); r.readAsDataURL(b); }));
+    try { await navigator.clipboard.write([new ClipboardItem({'image/png': png, 'text/html': html})]); toast('Chart copied. If it pastes blank, use the download button next to it', 4500); return; }
+    catch (err) {
+      try { await navigator.clipboard.write([new ClipboardItem({'image/png': chartPNG(id)})]); toast('Chart copied. If it pastes blank, use the download button next to it', 4500); return; }
+      catch (err2) { if (!DL) { toast('Copying images is blocked in this view'); return; } toast('Copying images is blocked here, so downloading instead'); }
+    }
   }
   if (!DL) { toast('Downloads aren’t available in this view'); return; }
   try { await DL.save({filename: fname, data: await chartPNG(id)}); } catch (err) { if (err && err.code !== 'declined') toast('Could not save the image'); }
