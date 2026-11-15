@@ -243,6 +243,7 @@ section{animation:fade .25s ease}
   <div class="sfoot">
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
+    <p class="tiny" id="build">Version: 15 Nov 2026, 21:44 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -579,6 +580,9 @@ function chartPNG(id) {
   catch (e) { cv.remove(); return Promise.reject(e); }
   // paint the background under everything, then encode
   const x = cv.getContext('2d'); x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'destination-over'; x.fillStyle = bg; x.fillRect(0, 0, cv.width, cv.height); x.restore();
+  // privacy protections (Brave Shields, Firefox resistFingerprinting, canvas-blocker extensions) return blank pixels; detect that
+  let blocked = false; try { const d = x.getImageData(2, 2, 1, 1).data; blocked = d[3] === 0; } catch (e) { blocked = true; }
+  if (blocked) { tmp.destroy(); cv.remove(); return Promise.reject(Object.assign(new Error('canvas-blocked'), {blocked: true})); }
   return new Promise((res, rej) => cv.toBlob(b => { tmp.destroy(); cv.remove(); b ? res(b) : rej(new Error('empty image')); }, 'image/png'));
 }
 function chartTSV(id) {
@@ -591,6 +595,8 @@ document.addEventListener('click', async e => {
   const b = e.target.closest('.tools button'); if (!b || !charts[b.dataset.chart]) return;
   const id = b.dataset.chart, {t} = chartTitle(id), fname = `${title()} - ${t}`.replace(/[^\w ,.-]+/g, '').trim() + '.png';
   if (b.dataset.act === 'data') { try { await navigator.clipboard.writeText(chartTSV(id)); toast('Data copied. Paste into Excel or Sheets'); } catch (err) { toast('Copying is blocked in this view'); } return; }
+  const BLOCK = 'Your browser is blocking chart images on this page (privacy or fingerprinting protection, e.g. Brave Shields or a canvas-blocker extension). Allow it for this site and try again.';
+  try { await chartPNG(id); } catch (err) { if (err && err.blocked) { toast(BLOCK, 9000); return; } }
   if (b.dataset.act === 'copy') {
     // Windows can drop the pixels of a clipboard PNG; also offer the image as HTML, which Word, Docs, Gmail and Substack paste reliably
     const png = chartPNG(id), alt = t.replace(/"/g, '&quot;');
