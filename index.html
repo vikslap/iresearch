@@ -169,7 +169,6 @@ td svg{display:block}
 .cmp td.best{color:var(--pos);font-weight:700;background:color-mix(in srgb,var(--pos) 9%,transparent)}
 .sbarc{display:flex;align-items:center;gap:8px;justify-content:flex-end}.sbarc .trk{width:70px}
 .empty{text-align:center;padding:40px 20px}.empty p{color:var(--muted);max-width:52ch;margin:8px auto 18px}
-@media(max-width:900px){.lib{width:100%;flex-direction:row;overflow-x:auto;gap:6px;scrollbar-width:none}.libh{display:none}.li{width:auto;flex:none;border-color:var(--line)}.li .x{display:none}}
 #drop{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(4px);display:none;place-items:center;font-size:20px;font-weight:700;z-index:9;border:3px dashed var(--c1);border-radius:16px;margin:10px}
 #drop.on{display:grid}
 #toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,8px);background:var(--tip);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:10;box-shadow:0 8px 24px rgb(0 0 0/.18)}
@@ -178,12 +177,23 @@ section{animation:fade .25s ease}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){section{animation:none}#toast{transition:none}}
 @media(max-width:1100px){.sc-top{grid-template-columns:1fr}.q{grid-template-columns:minmax(0,1fr) 48px}.q .opts{grid-column:1;grid-row:2}.q .qp{grid-row:1/3;grid-column:2}}
+/* top bar + slide-in drawer on small screens */
+.topbar,#scrim,.xbtn{display:none}
 @media(max-width:900px){.app{grid-template-columns:1fr}
- aside{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px 16px;gap:10px}
- .brand{display:none}.co{flex:1 1 200px;padding:8px 10px}.up-btn{flex:none}
- nav{flex-direction:row;overflow-x:auto;width:100%;gap:4px;scrollbar-width:none}nav a{white-space:nowrap;padding:8px 12px;flex:none;min-height:40px}nav a svg{display:none}
- .sfoot{flex-direction:row;flex-wrap:wrap;margin:0;width:100%}.sfoot .tiny{display:none}.sfoot:not(:has(button:not([hidden]))){display:none}
+ .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:15;background:color-mix(in srgb,var(--side) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 12px;min-height:58px}
+ .topbar .menu{width:44px;min-height:44px;padding:0;box-shadow:none;flex:none}
+ .tb-t{flex:1;line-height:1.25;overflow:hidden}.tb-t b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tb-t span{font-size:12px;color:var(--muted)}
+ .topbar .av{width:34px;height:34px;font-size:12px;border-radius:9px}
+ aside{position:fixed;inset:0 auto 0 0;width:min(300px,86vw);height:100dvh;z-index:30;transform:translateX(-105%);transition:transform .25s ease;box-shadow:0 0 40px rgb(0 0 0/.25);border-right:1px solid var(--line)}
+ body.drawer aside{transform:none}
+ #scrim{display:block;position:fixed;inset:0;background:rgb(0 0 0/.45);z-index:25;opacity:0;pointer-events:none;transition:opacity .25s}
+ body.drawer #scrim{opacity:1;pointer-events:auto}
+ body.drawer{overflow:hidden}
+ .xbtn{display:inline-flex;margin-left:auto;width:40px;min-height:40px;padding:0;box-shadow:none;border-color:transparent;background:none}
+ .brand{display:flex}
+ .li .x{opacity:1}
  .dcf{grid-template-columns:1fr}.fig{height:240px}.fig.big{height:270px}th:first-child,td:first-child{min-width:130px}}
+@media(max-width:900px) and (prefers-reduced-motion:reduce){aside,#scrim{transition:none}}
 @media(max-width:1000px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.kpi{padding:12px}.kpi>b{font-size:22px}.kf svg{width:64px}.kf{flex-direction:column;align-items:flex-start}.gcard{flex-direction:column;align-items:flex-start}.pill{width:100%;justify-content:space-between}.fields{grid-template-columns:1fr}}
 </style>
@@ -191,9 +201,15 @@ section{animation:fade .25s ease}
 <body>
 <div id="drop">Drop to load: screener.in Excel or NSE price CSV</div>
 <div id="toast" role="status"></div>
+<header class="topbar">
+  <button class="menu" id="menu" aria-label="Open menu" aria-expanded="false" aria-controls="side"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <div class="tb-t"><b id="tb-name">—</b><span id="tb-view">Overview</span></div>
+  <div class="av" id="tb-av">—</div>
+</header>
+<div id="scrim"></div>
 <div class="app">
-<aside>
-  <div class="brand"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Fundamentals</div>
+<aside id="side">
+  <div class="brand"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Fundamentals<button class="xbtn" id="xbtn" aria-label="Close menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="co"><div class="av" id="av">—</div><div><b id="cname">Loading…</b><span id="src">Sample data</span></div></div>
   <div class="lib"><p class="libh">Saved companies <span id="libn"></span></p><div id="lib" class="lib"></div></div>
   <label class="btn pri up-btn" for="file"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M4 15v5h16v-5"/></svg>Upload Excel<input type="file" id="file" accept=".xlsx,.xls,.xlsm"></label>
@@ -665,7 +681,7 @@ function renderView() {
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview';
   VIEWS.forEach(x => { $('#' + x).hidden = x !== v; });
   document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + v));
-  $('#crumb').textContent = VNAME[v]; $('#kpis').hidden = v !== 'overview';
+  $('#crumb').textContent = VNAME[v]; $('#tb-view').textContent = VNAME[v]; $('#tb-name').textContent = title(); $('#tb-av').textContent = $('#av').textContent; $('#tb-av').style.background = $('#av').style.background || ''; closeDrawer(); $('#kpis').hidden = v !== 'overview';
   if (lastView !== v && lastView !== null) scrollTo(0, 0); lastView = v;
   ({overview: renderOverview, quarterly: renderQuarterly, ratios: renderRatios, valuation: renderValuation, score: renderScore, compare: renderCompare, data: renderData})[v]();
 }
@@ -1064,6 +1080,17 @@ $('#cmp-body').addEventListener('click', e => {
   const b = e.target.closest('[data-cmp]'); if (b) { const k = b.dataset.cmp; if (CMP.has(k)) { if (CMP.size > 1) CMP.delete(k); } else if (CMP.size < 6) CMP.add(k); else toast('Compare up to 6 companies at a time'); renderCompare(); return; }
   const h = e.target.closest('[data-sort]'); if (h) { const k = h.dataset.sort; CSORT = CSORT.k === k ? {k, d: -CSORT.d} : {k, d: ['pe', 'pb', 'ev', 'de'].includes(k) ? 1 : -1}; renderCompare(); }
 });
+
+// ---- Mobile drawer ----
+function openDrawer() { document.body.classList.add('drawer'); $('#menu').setAttribute('aria-expanded', 'true'); setTimeout(() => { const a = document.querySelector('nav a.on') || document.querySelector('nav a'); a && a.focus({preventScroll: true}); }, 260); }
+function closeDrawer() { if (!document.body.classList.contains('drawer')) return; document.body.classList.remove('drawer'); $('#menu').setAttribute('aria-expanded', 'false'); }
+$('#menu').addEventListener('click', openDrawer);
+$('#xbtn').addEventListener('click', () => { closeDrawer(); $('#menu').focus(); });
+$('#scrim').addEventListener('click', closeDrawer);
+addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+$('#nav').addEventListener('click', e => { if (e.target.closest('a')) closeDrawer(); });
+$('#lib').addEventListener('click', e => { if (e.target.closest('[data-lib]') && !e.target.closest('[data-rm]')) closeDrawer(); });
+$('#file').addEventListener('change', closeDrawer);
 
 // ---- Theme ----
 let THEME = 'auto'; try { THEME = localStorage.getItem('fx-theme') || 'auto'; } catch (e) {}
