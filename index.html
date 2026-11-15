@@ -269,7 +269,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 15 Nov 2026, 21:56 IST</p>
+    <p class="tiny" id="build">Version: 15 Nov 2026, 22:12 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -1386,7 +1386,7 @@ $('#file').addEventListener('change', closeDrawer);
 
 
 // ---- Sync across devices (end-to-end encrypted, paired with a code / QR) ----
-const SYNC_DEFAULT_URL = '';   // set to the deployed sync-worker URL, e.g. https://plumb-sync.<you>.workers.dev
+const SYNC_DEFAULT_URL = 'https://plumb-sync.souveek-bots.workers.dev';   // set to the deployed sync-worker URL, e.g. https://plumb-sync.<you>.workers.dev
 const SYNC_ON = !window.claude;   // the Claude preview can't reach other servers
 const ALPH = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 const te = new TextEncoder(), tdx = new TextDecoder();
