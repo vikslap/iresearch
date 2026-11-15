@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Plumb · stock research</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2563eb">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Plumb">
 <meta name="description" content="Plumb: get to the bottom of any stock. Fundamentals, quality checks, valuation and SOIC scoring from screener.in exports.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%228%22%20fill%3D%22%232563eb%22/%3E%3Cpath%20d%3D%22M16%204v7%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222.2%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M16%2011l6%208-6%209-6-9z%22%20fill%3D%22%23fff%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -236,6 +242,16 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .cotab tr.cur td{background:var(--tint)}
 .lnk2{border:0;box-shadow:none;background:none;padding:0;min-height:0;font-weight:600;color:var(--ink);text-align:left}.lnk2:hover{color:var(--c1);text-decoration:underline}
 .secin{font:13px Inter,sans-serif;width:120px;padding:5px 8px;border:1px solid transparent;border-radius:7px;background:none;color:var(--ink)}.secin:hover,.secin:focus{border-color:var(--line);background:var(--bg)}
+.sens-wrap table{font-size:13px}.sens-wrap th,.sens-wrap td{text-align:center;padding:8px 6px;min-width:64px}
+.sens-wrap th:first-child,.sens-wrap td:first-child{min-width:74px;text-align:left}
+.sens-wrap td.me{outline:2px solid var(--ink);outline-offset:-2px;font-weight:700}
+.rv{display:flex;flex-direction:column;gap:6px;margin:6px 0 10px}.rv label{font-size:13px;color:var(--muted)}.rv label b{color:var(--ink);font-size:15px}
+.rv input[type=range]{width:100%;accent-color:var(--c1);min-height:32px}
+.rv-out{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:8px}.rv-out div{background:var(--soft);border-radius:10px;padding:8px 10px}
+.rv-out span{display:block;font-size:12px;color:var(--muted)}.rv-out b{font-size:18px;font-weight:700;white-space:nowrap}
+.cpick button small{font-size:11px;color:var(--muted);font-weight:600;margin-left:2px}
+.sx-stand{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:0 0 4px;font-size:14px}
+.sxt td{transition:background .2s}
 #drop{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(4px);display:none;place-items:center;font-size:20px;font-weight:700;z-index:9;border:3px dashed var(--c1);border-radius:16px;margin:10px}
 #drop.on{display:grid}
 #toast{position:fixed;bottom:20px;left:50%;max-width:min(560px,92vw);text-align:center;transform:translate(-50%,8px);background:var(--tip);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:10;box-shadow:0 8px 24px rgb(0 0 0/.18)}
@@ -299,13 +315,15 @@ section{animation:fade .25s ease}
     <a href="#score"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>SOIC score</a>
     <a href="#compare"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 20V10M12 20V4M18 20v-7"/></svg>Compare</a>
     <a href="#companies"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>Companies</a>
+    <a href="#sectors"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Sectors</a>
     <a href="#data"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg>Edit data</a>
   </nav>
   <div class="sfoot">
+    <button id="inst-btn" class="syncb" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3"/></svg>Install app</button>
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 15 Nov 2026, 22:34 IST</p>
+    <p class="tiny" id="build">Version: 15 Nov 2026, 23:01 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -406,6 +424,16 @@ section{animation:fade .25s ease}
         <p class="note" id="d-note"></p>
       </div>
     </div>
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><div class="ch"><h3>Sensitivity: value per share</h3><span>discount rate × growth, years 1–5</span></div>
+        <div class="scroll sens-wrap"><table id="sens"></table></div>
+        <p class="note">Teal cells are above today’s price, orange below; the darker, the bigger the gap. The outlined cell matches your inputs; years 6–10 growth stays at your input throughout.</p></div>
+      <div class="card"><div class="ch"><h3>Reverse DCF: what is priced in?</h3><span>same growth for all 10 years</span></div>
+        <div class="rv"><label for="rv-g">Growth a year <b id="rv-gv">10%</b></label><input type="range" id="rv-g" min="-10" max="40" step="0.5" value="10"></div>
+        <div class="rv-out"><div><span>Implied value</span><b id="rv-val">—</b></div><div><span>Priced in today</span><b id="rv-imp">—</b></div><div><span>Actual, 5 years</span><b id="rv-act">—</b></div></div>
+        <div class="fig" style="height:220px"><canvas id="ch-rv"></canvas></div>
+        <p class="note" id="rv-note"></p></div>
+    </div>
   </section>
 
   <section id="score" hidden>
@@ -438,6 +466,11 @@ section{animation:fade .25s ease}
     <datalist id="co-secs"></datalist>
     <div class="scroll cmp cotab"><table id="co-tab"></table></div>
     <p class="note">☆ pins a company to the sidebar. Type a sector (for example “Hospitals”) to group and filter. Pins and sectors sync across your devices. Press Ctrl + K anywhere to jump to a company.</p>
+  </section>
+
+  <section id="sectors" hidden>
+    <div class="cpick" id="sx-pick" role="group" aria-label="Sector"></div>
+    <div id="sx-body"></div>
   </section>
 
   <section id="data" hidden>
@@ -665,6 +698,7 @@ function chartPNG(id) {
 }
 function chartTSV(id) {
   const ch = charts[id], f = ch._fmt, labels = ch.data.labels, ds = ch.data.datasets;
+  if (ch.config.type === 'scatter') return ['Company\tROCE %\tP/E', ...ds.map(d => `${d.label}\t${d.data[0].x.toFixed(2)}\t${d.data[0].y.toFixed(2)}`)].join('\n');
   const val = v => v == null || !isFinite(v) ? '' : f === 'pct' ? (v * 100).toFixed(2) + '%' : f === 'days' ? Math.round(v) : (+v).toFixed(2);
   return [['', ...ds.map(d => d.label)].join('\t'), ...labels.map((l, i) => [l, ...ds.map(d => val(d.data[i]))].join('\t'))].join('\n');
 }
@@ -783,6 +817,7 @@ function renderValuation() {
     const set = (id, v) => $(id).value = v;
     set('#d-g1', g1); set('#d-g2', Math.max(4, Math.round(g1 / 2))); set('#d-tg', 4); set('#d-r', 12);
     set('#d-nd', (C.DEBT[L] - C.CASH[L] - C.INV[L]).toFixed(2)); set('#d-sh', (C.SH[L] || 0).toFixed(4)); set('#d-px', C.now.price);
+    $('#rv-g').value = g1;
     setDMode(DMODE, avg > 0 ? '' : 'Started on net profit because free cash flow averaged negative over the last 3 years. ');
     dcfInit = true;
   }
@@ -802,7 +837,35 @@ function runDCF() {
   $('#d-note').textContent = `Equity value ₹${inr(o.eq)} Cr (PV of 10 years of ${DMODE === 'fcf' ? 'FCF' : 'profit'} ₹${inr(o.pv)} Cr + terminal ₹${inr(o.tv)} Cr − net debt). ` + (imp != null && imp > -0.49 && imp < 0.99 ? `The current price implies about ${(imp * 100).toFixed(1)}% ${DMODE === 'fcf' ? 'FCF' : 'profit'} growth a year for 10 years. ` : '') + ($('#d-note').dataset.base || '');
   const Y = Array.from({length: 10}, (_, i) => 'Y' + (i + 1));
   draw('ch-dcf', base('bar', Y, [bar(DMODE === 'fcf' ? 'Projected FCF' : 'Projected net profit', o.fl, css('--c7'))], 'cr'));
+  DCFX = {value, sh, px, imp, tg, r, g1, g2, F, nd};
+  renderSens(); renderRev();
 }
+let DCFX = null;
+function renderSens() {
+  const X = DCFX; if (!X) return;
+  const rs = [-2, -1, 0, 1, 2].map(d => +(X.r * 100 + d).toFixed(1)).filter(v => v > X.tg * 100 + .1), gs = [-4, -2, 0, 2, 4].map(d => +(X.g1 * 100 + d).toFixed(1));
+  const cell = (rr, gg) => { let f = X.F, pv = 0; const R = rr / 100; for (let y = 1; y <= 10; y++) { f *= 1 + (y <= 5 ? gg / 100 : X.g2); pv += f / Math.pow(1 + R, y); } return (pv + f * (1 + X.tg) / (R - X.tg) / Math.pow(1 + R, 10) - X.nd) / X.sh; };
+  const mix = d => { if (d == null || !isFinite(d)) return ''; const a = Math.min(1, Math.abs(d) / .6), c = d >= 0 ? '--c3' : '--c2'; return `background:color-mix(in srgb,var(${c}) ${Math.round(8 + a * 52)}%,transparent)`; };
+  $('#sens').innerHTML = `<thead><tr><th>Discount ↓ / growth →</th>${gs.map(g => `<th>${g}%</th>`).join('')}</tr></thead><tbody>` +
+    rs.map(rr => `<tr><td><b>${rr}%</b></td>${gs.map(gg => { const v = cell(rr, gg), d = div(v - X.px, X.px), me = Math.abs(rr - X.r * 100) < .05 && Math.abs(gg - X.g1 * 100) < .05;
+      return `<td class="${me ? 'me' : ''}" style="${mix(d)}" title="${d == null ? '' : (d >= 0 ? '+' : '') + pct(d) + ' vs price'}">${isFinite(v) ? (v < 0 ? '−' : '') + '₹' + inr(Math.abs(v), 0) : '—'}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
+}
+function renderRev() {
+  const X = DCFX; if (!X) return;
+  const g = parseFloat($('#rv-g').value), at = gg => X.value(gg / 100, gg / 100).eq / X.sh;
+  $('#rv-gv').textContent = g + '%';
+  const v = at(g); $('#rv-val').textContent = isFinite(v) ? (v < 0 ? '−₹' : '₹') + inr(Math.abs(v), 0) : '—';
+  $('#rv-imp').textContent = X.imp != null && X.imp > -.49 && X.imp < .99 ? pct(X.imp) : '—';
+  const L = C.n - 1, act = DMODE === 'fcf' ? C.cagr(C.CFO, Math.min(5, L)) : C.cagr(C.PAT, Math.min(5, L));
+  $('#rv-act').textContent = pct(act);
+  const G = []; for (let x = -10; x <= 40; x += 2.5) G.push(x);
+  const curve = line('Value per share', G.map(at), css('--c1')); curve.pointRadius = G.map(x => Math.abs(x - g) < 1.25 ? 6 : 0); curve.pointHoverRadius = 5;
+  const pxl = Object.assign(line('Current price', G.map(() => X.px), css('--c2'), [6, 4]), {fill: false, pointRadius: 0});
+  const cfg = base('line', G.map(x => x + '%'), [curve, pxl], 'cr');
+  draw('ch-rv', cfg);
+  $('#rv-note').textContent = `Uses your DCF inputs (base ${DMODE === 'fcf' ? 'free cash flow' : 'net profit'}, ${(X.r * 100).toFixed(1)}% discount, ${(X.tg * 100).toFixed(1)}% terminal). Where the blue curve crosses the orange line is the growth today’s price assumes` + (X.imp != null && act != null ? `: ${pct(X.imp)} a year, against ${pct(act)} actually delivered over 5 years by ${DMODE === 'fcf' ? 'operating cash flow' : 'profit'}.` : '.');
+}
+$('#rv-g').addEventListener('input', renderRev);
 
 let EDITS = {};
 const ekey = () => 'fx-edits:' + M.name;
@@ -838,8 +901,8 @@ function load(rows, name, srcText, meta = {}) {
   recompute();
 }
 
-const VIEWS = ['overview', 'quarterly', 'ratios', 'quality', 'valuation', 'score', 'compare', 'companies', 'data'];
-const VNAME = {overview: 'Overview', quarterly: 'Quarterly results', ratios: 'Ratio analysis', quality: 'Quality and returns', valuation: 'Valuation', score: 'SOIC score', compare: 'Compare companies', companies: 'Saved companies', data: 'Edit data'};
+const VIEWS = ['overview', 'quarterly', 'ratios', 'quality', 'valuation', 'score', 'compare', 'companies', 'sectors', 'data'];
+const VNAME = {overview: 'Overview', quarterly: 'Quarterly results', ratios: 'Ratio analysis', quality: 'Quality and returns', valuation: 'Valuation', score: 'SOIC score', compare: 'Compare companies', companies: 'Saved companies', sectors: 'Sector view', data: 'Edit data'};
 let lastView = null;
 function renderView() {
   if (!M) return;
@@ -848,7 +911,7 @@ function renderView() {
   document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + v));
   $('#crumb').textContent = VNAME[v]; $('#tb-view').textContent = VNAME[v]; $('#tb-name').textContent = title(); $('#tb-av').textContent = $('#av').textContent; $('#tb-av').style.background = $('#av').style.background || ''; closeDrawer(); $('#kpis').hidden = v !== 'overview';
   if (lastView !== v && lastView !== null) scrollTo(0, 0); lastView = v;
-  ({overview: renderOverview, quarterly: renderQuarterly, ratios: renderRatios, quality: renderQuality, valuation: renderValuation, score: renderScore, compare: renderCompare, companies: renderCompanies, data: renderData})[v]();
+  ({overview: renderOverview, quarterly: renderQuarterly, ratios: renderRatios, quality: renderQuality, valuation: renderValuation, score: renderScore, compare: renderCompare, companies: renderCompanies, sectors: renderSectors, data: renderData})[v]();
 }
 
 async function sheetRows(f) {
@@ -1716,6 +1779,78 @@ $('#co-rm').addEventListener('click', () => {
 });
 
 $('#sw-open').addEventListener('click', openSw);
+
+// ---- Sectors: medians, rank heatmap and quality vs price ----
+const SXM = [['soic', 'SOIC', 1, 'n'], ['roce', 'ROCE', 1, 'pct'], ['roe', 'ROE', 1, 'pct'], ['opm', 'Operating margin', 1, 'pct'], ['sg', 'Sales CAGR 5y', 1, 'pct'], ['pg', 'Profit CAGR 5y', 1, 'pct'],
+  ['ce', 'CFO / EBITDA 3y', 1, 'pct'], ['de', 'Debt / equity', -1, 'x'], ['pe', 'P/E', -1, 'x'], ['ev', 'EV / EBITDA', -1, 'x']];
+let SXS = null, SXSORT = {k: 'soic', d: -1};
+function sxMetrics(k) {
+  const s = snapC(k); if (!s) return null; const C2 = s.C, L = C2.n - 1, R = n => C2.R.find(r => r.k === n).v[L], sum = (a, n) => a.slice(-n).reduce((x, y) => x + (y || 0), 0);
+  return {k, name: s.name, soic: s.S.total, roce: R('ROCE'), roe: R('ROE'), opm: R('Operating margin (EBITDA)'), sg: C2.cagr(C2.S, Math.min(5, L)), pg: C2.cagr(C2.PAT, Math.min(5, L)),
+    ce: div(sum(C2.CFO, 3), sum(C2.EBITDA, 3)), de: R('Debt / equity'), pe: C2.now.pe > 0 ? C2.now.pe : null, ev: C2.now.evE > 0 ? C2.now.evE : null};
+}
+const sxFmt = (v, f) => f === 'n' ? (v == null ? '—' : v) : fmt(v, f);
+function renderSectors() {
+  Object.keys(charts).forEach(k => { if (k === 'ch-sx') { charts[k].destroy(); delete charts[k]; } });
+  const ks = libKeys(), bySec = {};
+  ks.forEach(k => { const s = LIB[k].sector; if (s) (bySec[s] = bySec[s] || []).push(k); });
+  const secs = Object.keys(bySec).sort((a, b) => bySec[b].length - bySec[a].length || a.localeCompare(b));
+  if (!SXS || (SXS !== '__all' && !bySec[SXS])) SXS = (LIB[M.name] && LIB[M.name].sector && bySec[LIB[M.name].sector]) ? LIB[M.name].sector : secs.find(s => bySec[s].length > 1) || (ks.length > 1 ? '__all' : null);
+  $('#sx-pick').innerHTML = secs.map(s => `<button data-sx="${escA(s)}" aria-pressed="${s === SXS}">${escA(s)} <small>${bySec[s].length}</small></button>`).join('') + (ks.length > 1 ? `<button data-sx="__all" aria-pressed="${SXS === '__all'}">All saved <small>${ks.length}</small></button>` : '');
+  if (!SXS) { $('#sx-body').innerHTML = `<div class="card empty"><h3>Tag a few companies with a sector</h3><p>Open the Companies page and type a sector, such as “Hospitals”, next to each company. With two or more in a sector, this page ranks them against each other.</p><a class="btn pri" href="#companies">Go to Companies</a></div>`; return; }
+  const members = (SXS === '__all' ? ks : bySec[SXS]).map(sxMetrics).filter(Boolean), n = members.length, label = SXS === '__all' ? 'all saved companies' : SXS;
+  // percentile rank within the group: 1 = best, 0 = worst
+  const rank = {}; SXM.forEach(([k, , dir]) => { const vals = members.map(m => m[k]).filter(v => v != null && isFinite(v));
+    members.forEach(m => { const v = m[k]; if (v == null || !isFinite(v) || vals.length < 2) return; const worse = vals.filter(x => dir > 0 ? x < v : x > v).length, ties = vals.filter(x => x === v).length - 1;
+      (rank[m.k] = rank[m.k] || {})[k] = (worse + ties / 2) / (vals.length - 1); }); });
+  const med = {}; SXM.forEach(([k]) => med[k] = median(members.map(m => m[k])));
+  const tile = ([k, l, , f]) => `<div class="kpi"><div class="kh"><span>${l}</span></div><b>${sxFmt(f === 'n' && med[k] != null ? Math.round(med[k]) : med[k], f)}</b><div class="kf"><span>median of ${n}</span></div></div>`;
+  const heat = r => { if (r == null) return ''; const t = r - .5, c = t >= 0 ? '--c3' : '--c2'; return `background:color-mix(in srgb,var(${c}) ${Math.round(Math.abs(t) * 2 * 55)}%,transparent)`; };
+  const rows = members.slice().sort((a, b) => ((a[SXSORT.k] ?? -Infinity * SXSORT.d) - (b[SXSORT.k] ?? -Infinity * SXSORT.d)) * SXSORT.d || a.name.localeCompare(b.name));
+  const ordinal = i => ['top', 'second', 'third'][i] || `${i + 1}th`;
+  // where the open company stands
+  let stand = '';
+  const me = members.find(m => m.k === M.name);
+  if (me && rank[me.k]) {
+    const good = SXM.filter(([k]) => rank[me.k][k] >= .75).map(x => x[1]), bad = SXM.filter(([k]) => rank[me.k][k] != null && rank[me.k][k] <= .25).map(x => x[1]);
+    stand = `<p class="sx-stand"><b>${me.name}</b> in ${escA(label)}: ` + (good.length ? `ranks near the top for <b>${good.join(', ')}</b>` : 'is not in the top quarter on any measure') + (bad.length ? `; near the bottom for <b>${bad.join(', ')}</b>` : '') + '.' + (bad.some(b => b === 'P/E' || b === 'EV / EBITDA') ? ' A low rank on P/E or EV/EBITDA means it is among the more expensive.' : '') + '</p>';
+  }
+  $('#sx-body').innerHTML = `${stand}<h2>${escA(SXS === '__all' ? 'All saved companies' : SXS)}: medians</h2><div class="qt">${SXM.map(tile).join('')}</div>
+    <h2>Ranked within ${escA(label)}</h2>
+    <div class="scroll cmp sxt"><table><thead><tr><th>Company</th>${SXM.map(([k, l]) => `<th data-sxs="${k}" class="${SXSORT.k === k ? 'sorted' : ''}">${l}${SXSORT.k === k ? (SXSORT.d > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>${rows.map(m => `<tr class="${m.k === M.name ? 'cur' : ''}"><td><span class="who"><i style="background:var(${colOf(m.k)})"></i><button class="lnk2" data-open="${escA(m.k)}">${m.name}</button></span></td>${SXM.map(([k, , , f]) => { const r = rank[m.k]?.[k]; return `<td style="${heat(r)}" title="${r == null ? '' : 'Better than ' + Math.round(r * 100) + '% of the group'}">${sxFmt(m[k], f)}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>
+    <p class="note">Each cell is coloured by rank within the group: teal is better, orange is worse, uncoloured is middle of the pack. For P/E, EV/EBITDA and debt to equity, lower counts as better. Hover a cell to see its percentile.</p>
+    <div class="card" style="margin-top:16px"><div class="ch"><h3>Quality vs price</h3><span>ROCE against P/E; bottom-right is cheap and high-return</span></div><div class="fig big"><canvas id="ch-sx"></canvas></div></div>`;
+  const pts = members.filter(m => m.roce != null && m.pe != null);
+  const cfg = {_fmt: 'x', _bg: css('--card'), _ink: css('--ink'), _mut: css('--muted'), type: 'scatter', data: {labels: [], datasets: pts.map(m => ({label: m.name, data: [{x: m.roce * 100, y: m.pe}], backgroundColor: css(colOf(m.k)), borderColor: css('--card'), borderWidth: 2, pointRadius: m.k === M.name ? 10 : 7, pointHoverRadius: 11}))},
+    options: {responsive: true, maintainAspectRatio: false, animation: ANIM,
+      plugins: {legend: {position: 'top', align: 'end', labels: {color: css('--ink'), usePointStyle: true, pointStyle: 'circle', boxWidth: 7, boxHeight: 7, padding: 12, font: {family: FONT, size: 12}}},
+        tooltip: {backgroundColor: css('--tip'), padding: 10, cornerRadius: 8, callbacks: {label: c => ` ${c.dataset.label}: ROCE ${c.parsed.x.toFixed(1)}%, P/E ${c.parsed.y.toFixed(1)}×`}}},
+      scales: {x: {title: {display: true, text: 'ROCE, %', color: css('--muted'), font: {family: FONT, size: 12}}, grid: {color: css('--line')}, border: {display: false, dash: [4, 4]}, ticks: {color: css('--muted'), font: {family: FONT, size: 11}, callback: v => v + '%'}},
+        y: {title: {display: true, text: 'P/E (TTM)', color: css('--muted'), font: {family: FONT, size: 12}}, grid: {color: css('--line')}, border: {display: false, dash: [4, 4]}, ticks: {color: css('--muted'), font: {family: FONT, size: 11}, callback: v => v + '×'}}}}};
+  draw('ch-sx', cfg);
+}
+$('#sx-pick').addEventListener('click', e => { const b = e.target.closest('[data-sx]'); if (!b) return; SXS = b.dataset.sx; renderSectors(); });
+$('#sx-body').addEventListener('click', e => {
+  const h = e.target.closest('[data-sxs]'); if (h) { const k = h.dataset.sxs; SXSORT = SXSORT.k === k ? {k, d: -SXSORT.d} : {k, d: ['pe', 'ev', 'de'].includes(k) ? 1 : -1}; renderSectors(); return; }
+  const o = e.target.closest('[data-open]'); if (o) { openLib(o.dataset.open); location.hash = 'overview'; }
+});
+
+// ---- Install as an app (PWA) ----
+(() => {
+  const web = (location.protocol === 'https:' || location.hostname === 'localhost') && !window.claude, standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (!web || !('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (standalone) return;
+  let deferred = null; const btn = $('#inst-btn');
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; btn.hidden = false; });
+  addEventListener('appinstalled', () => { btn.hidden = true; toast('Plumb is installed. Open it from your home screen or app list'); });
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (ios) btn.hidden = false;
+  btn.addEventListener('click', async () => {
+    if (deferred) { deferred.prompt(); const r = await deferred.userChoice.catch(() => null); deferred = null; if (r && r.outcome === 'accepted') btn.hidden = true; return; }
+    if (ios) toast('In Safari, tap Share, then “Add to Home Screen”', 7000);
+  });
+})();
 // ---- Theme ----
 let THEME = 'auto'; try { THEME = localStorage.getItem('fx-theme') || 'auto'; } catch (e) {}
 function applyTheme() {
