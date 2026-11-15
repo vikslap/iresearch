@@ -536,7 +536,7 @@ function kpis() {
 function base(type, labels, ds, yfmt, extra = {}) {
   const ink = css('--muted'), grid = css('--line');
   if (type === 'line') ds.forEach((d, i) => { if (i === 0 && d.fill === undefined) { const col = d.borderColor; d.fill = 'origin'; d.backgroundColor = ctx => { const a = ctx.chart.chartArea; if (!a) return 'transparent'; const g = ctx.chart.ctx.createLinearGradient(0, a.top, 0, a.bottom); g.addColorStop(0, rgba(col, .22)); g.addColorStop(1, rgba(col, 0)); return g; }; } });
-  return {_fmt: yfmt, type, data: {labels, datasets: ds}, options: Object.assign({responsive: true, maintainAspectRatio: false, animation: ANIM, interaction: {mode: 'index', intersect: false}, layout: {padding: {top: 2}},
+  return {_fmt: yfmt, _bg: css('--card'), _ink: css('--ink'), _mut: css('--muted'), type, data: {labels, datasets: ds}, options: Object.assign({responsive: true, maintainAspectRatio: false, animation: ANIM, interaction: {mode: 'index', intersect: false}, layout: {padding: {top: 2}},
     plugins: {legend: {display: ds.length > 1, position: 'top', align: 'end', labels: {color: css('--ink'), usePointStyle: true, pointStyle: 'circle', boxWidth: 7, boxHeight: 7, padding: 14, font: {family: FONT, size: 12, weight: '500'}}},
       tooltip: {backgroundColor: css('--tip'), titleColor: '#fff', bodyColor: '#e2e8f0', padding: 10, cornerRadius: 8, boxPadding: 4, usePointStyle: true, titleFont: {family: FONT, weight: '600'}, bodyFont: {family: FONT},
         callbacks: {label: c => ` ${c.dataset.label}: ${fmt(c.parsed.y, yfmt)}`}}},
@@ -551,22 +551,35 @@ const ICON = {copy: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"
   png: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>'};
 function draw(id, cfg) {
   if (charts[id]) charts[id].destroy(); const el = document.getElementById(id); if (!el) return;
-  charts[id] = new Chart(el, cfg); charts[id]._fmt = cfg._fmt;
+  charts[id] = new Chart(el, cfg); charts[id]._fmt = cfg._fmt; charts[id]._cfg = cfg;
   const box = el.closest('.res, .card'), head = box && box.querySelector('.ch');
   if (head && !head.querySelector('.tools')) head.insertAdjacentHTML('beforeend', `<div class="tools"><button data-act="copy" data-chart="${id}" title="Copy chart as image" aria-label="Copy chart as image">${ICON.copy}</button><button data-act="data" data-chart="${id}" title="Copy data for Excel" aria-label="Copy data for Excel">${ICON.data}</button><button data-act="png" data-chart="${id}" title="Download PNG" aria-label="Download PNG">${ICON.png}</button></div>`);
   else if (head) head.querySelectorAll('.tools button').forEach(b => b.dataset.chart = id);
 }
 function chartTitle(id) { const box = charts[id].canvas.closest('.res, .card'); return {t: box?.querySelector('.ch h3')?.textContent || 'Chart', s: box?.querySelector('.ch>span')?.textContent || ''}; }
+// Export images are rendered by a fresh, off-screen copy of the chart on a software (CPU) canvas.
+// Reading pixels back from the on-screen, GPU-backed canvas returns an empty image on some Windows setups.
 function chartPNG(id) {
-  const ch = charts[id], src = ch.canvas, r = src.width / src.clientWidth || 1, pad = 20 * r, head = 54 * r, foot = 26 * r, {t, s} = chartTitle(id);
-  const cv = document.createElement('canvas'); cv.width = src.width + pad * 2; cv.height = src.height + head + foot + pad;
-  const x = cv.getContext('2d', {alpha: false});
-  x.fillStyle = css('--card'); x.fillRect(0, 0, cv.width, cv.height);
-  x.fillStyle = css('--ink'); x.font = `700 ${16 * r}px Inter, system-ui, sans-serif`; x.fillText(t, pad, pad + 16 * r);
-  x.fillStyle = css('--muted'); x.font = `500 ${12 * r}px Inter, system-ui, sans-serif`; x.fillText([title(), s].filter(Boolean).join(' · '), pad, pad + 36 * r);
-  x.drawImage(src, pad, head + pad * .4);
-  x.font = `400 ${11 * r}px Inter, system-ui, sans-serif`; x.fillText('Source: screener.in data', pad, cv.height - pad * .6);
-  return new Promise(res => cv.toBlob(res, 'image/png'));
+  const ch = charts[id], cfg = ch._cfg, {t, s} = chartTitle(id), DPR = 2;
+  const W = Math.max(480, Math.round(ch.width)), H = Math.max(260, Math.round(ch.height)), TOP = 62, BOT = 34, SIDE = 20;
+  const cv = document.createElement('canvas'); cv.width = W + SIDE * 2; cv.height = H + TOP + BOT;
+  cv.style.cssText = 'position:fixed;left:-99999px;top:0;width:' + cv.width + 'px;height:' + cv.height + 'px';
+  cv.getContext('2d', {willReadFrequently: true});  // forces a software canvas; Chart.js reuses this context
+  document.body.appendChild(cv);
+  const bg = cfg._bg || css('--card'), ink = cfg._ink || css('--ink'), mut = cfg._mut || css('--muted'), sub = [title(), s].filter(Boolean).join(' · ');
+  const decor = {id: 'exportDecor',
+    beforeDraw(c) { const x = c.ctx; x.save(); x.globalCompositeOperation = 'destination-over'; x.fillStyle = bg; x.fillRect(0, 0, c.width, c.height); x.restore(); },
+    afterDraw(c) { const x = c.ctx; x.save(); x.textBaseline = 'alphabetic';
+      x.fillStyle = ink; x.font = '700 16px Inter, system-ui, sans-serif'; x.fillText(t, SIDE, 28);
+      x.fillStyle = mut; x.font = '500 12px Inter, system-ui, sans-serif'; x.fillText(sub, SIDE, 48);
+      x.font = '400 11px Inter, system-ui, sans-serif'; x.fillText('Source: screener.in data', SIDE, c.height - 12); x.restore(); }};
+  const opts = Object.assign({}, cfg.options, {responsive: false, maintainAspectRatio: false, animation: false, devicePixelRatio: DPR, layout: {padding: {top: TOP, bottom: BOT, left: SIDE, right: SIDE}}});
+  let tmp;
+  try { tmp = new Chart(cv, {type: cfg.type, data: {labels: cfg.data.labels.slice(), datasets: cfg.data.datasets.map(d => Object.assign({}, d, {data: d.data.slice()}))}, options: opts, plugins: [decor]}); }
+  catch (e) { cv.remove(); return Promise.reject(e); }
+  // paint the background under everything, then encode
+  const x = cv.getContext('2d'); x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'destination-over'; x.fillStyle = bg; x.fillRect(0, 0, cv.width, cv.height); x.restore();
+  return new Promise((res, rej) => cv.toBlob(b => { tmp.destroy(); cv.remove(); b ? res(b) : rej(new Error('empty image')); }, 'image/png'));
 }
 function chartTSV(id) {
   const ch = charts[id], f = ch._fmt, labels = ch.data.labels, ds = ch.data.datasets;
@@ -589,7 +602,7 @@ document.addEventListener('click', async e => {
     }
   }
   if (!DL) { toast('Downloads aren’t available in this view'); return; }
-  try { await DL.save({filename: fname, data: await chartPNG(id)}); } catch (err) { if (err && err.code !== 'declined') toast('Could not save the image'); }
+  try { await DL.save({filename: fname, data: await (await chartPNG(id)).arrayBuffer()}); } catch (err) { if (err && err.code !== 'declined') toast('Could not save the image'); }
 });
 
 function renderOverview() {
