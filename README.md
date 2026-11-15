@@ -1,11 +1,16 @@
-# Stock Fundamentals Dashboard
+# Plumb
 
-A single-page dashboard for Indian stocks built on [screener.in](https://www.screener.in) Excel exports.
+**Get to the bottom of any stock.**
+
+Plumb is a single-page research tool for Indian stocks built on [screener.in](https://www.screener.in) Excel exports.
+
+Live: https://vikslap.github.io/iresearch/
 
 ## What it does
 
 - **Upload** any screener.in "Export to Excel" file (it reads the *Data Sheet* tab).
-- **Overview, Quarterly, Ratios, Valuation** – 10-year financials, ~35 ratios in collapsible groups, P/E / EV-EBITDA / P/B history and a DCF with reverse-DCF.
+- **Overview, Quarterly, Ratios, Valuation** – 10-year financials, ~35 ratios in collapsible groups, P/E bands, an expected-return calculator and a DCF (free cash flow or net profit) with reverse-DCF.
+- **Quality** – automatic red-flag checks, ROE drivers, incremental ROCE, self-funded growth and ten-year sources and uses of cash.
 - **SOIC score** – the 30-question SOIC ranking sheet (out of 310). Fundamentals answer themselves from the data; technicals answer themselves from a price CSV (NSE, BSE, Investing.com, TradingView, AmiBroker or Yahoo).
 - **Compare** – rank up to 6 saved companies side by side.
 - **Edit data** – change any number; everything recalculates. Download the edited workbook.

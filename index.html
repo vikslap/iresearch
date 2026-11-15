@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Stock Fundamentals Dashboard</title>
+<title>Plumb · stock research</title>
+<meta name="description" content="Plumb: get to the bottom of any stock. Fundamentals, quality checks, valuation and SOIC scoring from screener.in exports.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%228%22%20fill%3D%22%232563eb%22/%3E%3Cpath%20d%3D%22M16%204v7%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222.2%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M16%2011l6%208-6%209-6-9z%22%20fill%3D%22%23fff%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
@@ -186,6 +188,8 @@ td svg{display:block}
 .seg{grid-column:1/-1;display:flex;background:var(--soft);border-radius:10px;padding:4px;gap:4px}
 .seg button{flex:1;min-height:38px;border:0;box-shadow:none;background:none;color:var(--muted);border-radius:8px;font-weight:600}
 .seg button[aria-pressed=true]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.brand .logo{flex:none;border-radius:9px;box-shadow:0 2px 8px color-mix(in srgb,var(--c1) 35%,transparent)}
+.wm{display:flex;flex-direction:column;line-height:1.1;min-width:0}.wm b{font-size:19px;font-weight:800;letter-spacing:-.03em}.wm small{font-size:11px;color:var(--muted);font-weight:500;margin-top:2px;white-space:nowrap}
 #drop{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(4px);display:none;place-items:center;font-size:20px;font-weight:700;z-index:9;border:3px dashed var(--c1);border-radius:16px;margin:10px}
 #drop.on{display:grid}
 #toast{position:fixed;bottom:20px;left:50%;max-width:min(560px,92vw);text-align:center;transform:translate(-50%,8px);background:var(--tip);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:10;box-shadow:0 8px 24px rgb(0 0 0/.18)}
@@ -220,13 +224,14 @@ section{animation:fade .25s ease}
 <div id="toast" role="status"></div>
 <header class="topbar">
   <button class="menu" id="menu" aria-label="Open menu" aria-expanded="false" aria-controls="side"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <svg width="26" height="26" viewBox="0 0 32 32" aria-label="Plumb" style="flex:none;border-radius:7px"><rect width="32" height="32" rx="9" fill="url(#lg)"/><path d="M16 4.5v6.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M16 11l6 8-6 9-6-9z" fill="#fff"/></svg>
   <div class="tb-t"><b id="tb-name">—</b><span id="tb-view">Overview</span></div>
   <div class="av" id="tb-av">—</div>
 </header>
 <div id="scrim"></div>
 <div class="app">
 <aside id="side">
-  <div class="brand"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Fundamentals<button class="xbtn" id="xbtn" aria-label="Close menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="brand"><svg class="logo" width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--c1)"/><stop offset="1" stop-color="var(--c4)"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="url(#lg)"/><path d="M16 4.5v6.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M16 11l6 8-6 9-6-9z" fill="#fff"/></svg><span class="wm"><b>Plumb</b><small>Get to the bottom of any stock</small></span><button class="xbtn" id="xbtn" aria-label="Close menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="co"><div class="av" id="av">—</div><div><b id="cname">Loading…</b><span id="src">Sample data</span></div></div>
   <div class="lib"><p class="libh">Saved companies <span id="libn"></span></p><div id="lib" class="lib"></div></div>
   <label class="btn pri up-btn" for="file"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M4 15v5h16v-5"/></svg>Upload Excel<input type="file" id="file" accept=".xlsx,.xls,.xlsm" multiple></label>
@@ -243,7 +248,7 @@ section{animation:fade .25s ease}
   <div class="sfoot">
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 15 Nov 2026, 21:44 IST</p>
+    <p class="tiny" id="build">Version: 15 Nov 2026, 21:47 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -503,7 +508,7 @@ function headline() {
   $('#title').textContent = h;
   $('#cname').textContent = nm; $('#cname2').textContent = nm;
   $('#av').textContent = nm.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-  document.title = nm + ' · Fundamentals';
+  document.title = nm + ' · Plumb';
 }
 function sparkArea(v, col = 'var(--c1)', W = 92, H = 32) {
   const p = v.map((x, i) => [i, x]).filter(d => d[1] != null && isFinite(d[1]));
@@ -573,7 +578,7 @@ function chartPNG(id) {
     afterDraw(c) { const x = c.ctx; x.save(); x.textBaseline = 'alphabetic';
       x.fillStyle = ink; x.font = '700 16px Inter, system-ui, sans-serif'; x.fillText(t, SIDE, 28);
       x.fillStyle = mut; x.font = '500 12px Inter, system-ui, sans-serif'; x.fillText(sub, SIDE, 48);
-      x.font = '400 11px Inter, system-ui, sans-serif'; x.fillText('Source: screener.in data', SIDE, c.height - 12); x.restore(); }};
+      x.font = '400 11px Inter, system-ui, sans-serif'; x.fillText('Source: screener.in data · Made with Plumb', SIDE, c.height - 12); x.restore(); }};
   const opts = Object.assign({}, cfg.options, {responsive: false, maintainAspectRatio: false, animation: false, devicePixelRatio: DPR, layout: {padding: {top: TOP, bottom: BOT, left: SIDE, right: SIDE}}});
   let tmp;
   try { tmp = new Chart(cv, {type: cfg.type, data: {labels: cfg.data.labels.slice(), datasets: cfg.data.datasets.map(d => Object.assign({}, d, {data: d.data.slice()}))}, options: opts, plugins: [decor]}); }
