@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stock Fundamentals Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+/* VOICE: a calm, modern analytics product: quiet surfaces, crisp numbers, nothing decorative.
+   IDEA: an equity research terminal: sidebar of views, figure cards with trend lines, one big chart per question.
+   PICTURE: KPI cards with sparklines over a wide sales-and-profit chart; on the score view, a ring gauge.
+   COLOUR and TYPE: cool grey ground, white cards, blue for revenue, orange for profit, teal third; Inter throughout, tabular figures.
+   LAYOUT: fixed sidebar + fluid main up to 1360px; cards in auto-fit grids; sidebar folds into a top bar under 900px. */
+:root{color-scheme:light dark;
+--bg:light-dark(#f3f5f8,#0b0f17);--card:light-dark(#ffffff,#121826);--side:light-dark(#ffffff,#0f1420);--ink:light-dark(#0f172a,#e6e9ef);
+--muted:light-dark(#64748b,#8b97ab);--line:light-dark(#e6e9ef,#222b3b);--soft:light-dark(#f1f4f9,#182033);
+--c1:light-dark(#2563eb,#5b8cff);--c2:light-dark(#ea580c,#d4702a);--c3:light-dark(#0d9488,#159e8f);--c4:light-dark(#7c3aed,#8a6cf0);--c5:light-dark(#db2777,#e0569a);--c6:light-dark(#b45309,#c08a1e);--c7:light-dark(#15803d,#3fa65c);
+--pos:light-dark(#15803d,#4ade80);--neg:light-dark(#dc2626,#f87171);--tip:light-dark(#0f172a,#263044);
+--edit:light-dark(#fff7d6,#3a3214);--tint:light-dark(#eef3ff,#1a2544);--shadow:light-dark(0 1px 2px rgb(15 23 42/.05),0 1px 2px rgb(0 0 0/.3))}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+:root[data-mode=light],:root[data-mode=light] body{color-scheme:light!important}:root[data-mode=dark],:root[data-mode=dark] body{color-scheme:dark!important}
+:root[data-mode]{background:var(--bg)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif;font-variant-numeric:tabular-nums;overflow-x:clip;-webkit-font-smoothing:antialiased}
+.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
+aside{background:var(--side);border-right:1px solid var(--line);padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:18px;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;padding:0 8px}
+.brand svg{color:var(--c1)}
+.co{display:flex;gap:10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
+.av{width:38px;height:38px;border-radius:10px;background:var(--c1);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px;flex:none}
+.co b{display:block;font-size:14px;line-height:1.3}.co span{font-size:12px;color:var(--muted);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+nav{display:flex;flex-direction:column;gap:2px}
+nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:var(--muted);text-decoration:none;font-weight:500;font-size:14px;min-height:42px}
+nav a:hover{background:var(--soft);color:var(--ink)}
+nav a.on{background:var(--tint);color:var(--c1);font-weight:600}
+.sfoot{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+.tiny{font-size:12px;color:var(--muted);margin:4px 4px 0}
+.btn,button{font:600 14px Inter,sans-serif;min-height:42px;padding:0 14px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;box-shadow:var(--shadow)}
+.btn:hover,button:hover{border-color:color-mix(in srgb,var(--c1) 40%,var(--line))}
+.btn.pri{background:var(--c1);border-color:var(--c1);color:#fff}
+.btn.sm,button.sm{min-height:36px;font-size:13px;padding:0 12px}
+button[hidden],[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--c1);outline-offset:2px}
+.btn:focus-within{outline:2px solid var(--c1);outline-offset:2px}
+#file,#pxfile{position:absolute;opacity:0;width:1px;height:1px}
+main{padding:26px clamp(16px,3vw,36px) 48px;max-width:1400px;width:100%}
+.hdr{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:14px 24px;margin-bottom:20px}
+.crumb{font-size:13px;color:var(--muted);margin:0 0 4px;font-weight:500}
+h1{font-size:clamp(24px,3vw,32px);line-height:1.15;margin:0;font-weight:800;letter-spacing:-.02em}
+.insight{margin:6px 0 0;color:var(--muted);font-size:15px;max-width:70ch}
+.pill{display:flex;gap:18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 16px;box-shadow:var(--shadow)}
+.pill b{font-size:22px;font-weight:700;display:block;line-height:1.2}.pill span{font-size:12px;color:var(--muted)}
+.pill .sep{width:1px;align-self:stretch;background:var(--line)}
+.dl{font-size:12px;font-weight:600;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.dl.up{color:var(--pos);background:color-mix(in srgb,var(--pos) 12%,transparent)}.dl.down{color:var(--neg);background:color-mix(in srgb,var(--neg) 12%,transparent)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px;color:inherit;text-decoration:none}
+.kh{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:500}
+.kpi>b{font-size:26px;font-weight:700;letter-spacing:-.01em;line-height:1.15;white-space:nowrap}
+.kpi>b small{font-size:14px;color:var(--muted);font-weight:500}
+.kf{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;font-size:12px;color:var(--muted)}
+.kf svg{flex:none;overflow:visible}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
+.card.wide{grid-column:1/-1}
+.ch{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px}
+h3{font-size:15px;font-weight:600;margin:0}
+.ch span{font-size:12px;color:var(--muted)}
+h2{font-size:18px;font-weight:700;margin:28px 0 12px;letter-spacing:-.01em}
+.fig{position:relative;height:270px}.fig.big{height:330px}
+.note{font-size:13px;color:var(--muted);margin:8px 0 0}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:var(--shadow)}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:13.5px}
+th,td{padding:9px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+tbody tr:last-child td{border-bottom:0}
+thead th{font-weight:600;color:var(--muted);font-size:12px;background:var(--soft);position:sticky;top:0}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--card);z-index:1;min-width:180px;white-space:normal}
+thead th:first-child{background:var(--soft);z-index:2}
+tr.grp td{font-weight:700;font-size:12px;color:var(--c1);background:var(--soft);padding-top:10px}
+tr.r{cursor:pointer}tr.r:hover td,tr.r.sel td{background:var(--tint)}
+td.neg{color:var(--neg)}
+td svg{display:block}
+.dt input{font:inherit;font-size:13.5px;width:88px;text-align:right;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink)}
+.dt input:hover{border-color:var(--muted)}
+.dt input.ed{background:var(--edit);border-color:var(--c2)}
+.dt td:nth-child(2):last-child input{width:150px}
+.warn{color:var(--neg);font-size:13px;margin:8px 0;font-weight:500}
+.dcf{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:28px;align-items:start}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fields label{font-size:12px;color:var(--muted);font-weight:500;display:flex;flex-direction:column;gap:5px}
+.fields input{font:15px Inter,sans-serif;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);min-height:42px}
+.big{font-size:clamp(34px,4.5vw,46px);font-weight:800;line-height:1.05;letter-spacing:-.02em}
+.big small{font-size:.42em;color:var(--muted);font-weight:600}
+.up{color:var(--pos)}.down{color:var(--neg)}
+.res{background:var(--soft);border-radius:12px;padding:16px}
+/* score */
+.sc-top{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:16px}
+.gcard{display:flex;gap:20px;align-items:center}
+.gcard p{margin:4px 0 12px;color:var(--muted);font-size:13px}
+.secs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));gap:12px}
+.sec{display:flex;flex-direction:column;gap:8px;padding:14px}
+.sec b{font-size:22px;font-weight:700}.sec b small{font-size:13px;color:var(--muted);font-weight:500}
+.sec .nm{font-size:13px;color:var(--muted);font-weight:500}
+.trk{height:6px;background:var(--soft);border-radius:6px;overflow:hidden}.trk i{display:block;height:100%;background:var(--c1);border-radius:6px}
+.sec small.a{font-size:12px;color:var(--muted)}
+.sgrp{margin-top:16px;padding:0;overflow:hidden}
+.sgrp .gh{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--soft)}
+.sgrp .gh b{font-size:14px}
+.q{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) 52px;gap:18px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}
+.q:last-child{border-bottom:0}
+.q p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{min-height:34px;font-size:13px;font-weight:500;padding:5px 10px;border-radius:8px;box-shadow:none;text-align:left;background:var(--bg);gap:6px}
+.opt em{font-style:normal;font-size:11px;font-weight:700;color:var(--muted)}
+.opt em.pos{color:var(--pos)}.opt em.neg{color:var(--neg)}
+.opt i{font-style:normal;font-size:10px;font-weight:600;color:var(--c1);background:var(--tint);border-radius:4px;padding:0 4px}
+.opt.on{background:var(--tint);border-color:var(--c1);color:var(--ink);box-shadow:inset 0 0 0 1px var(--c1)}
+.qp{text-align:right;font-size:17px;font-weight:700}
+.tag{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:6px;font-size:12px;color:var(--muted);background:var(--soft);padding:3px 8px;border-radius:6px}
+.tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--c3)}
+.lnk{min-height:0;padding:0 2px;border:0;box-shadow:none;background:none;text-decoration:underline;font-size:12px;color:var(--c1)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.chips span{background:var(--soft);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--muted)}
+.chips b{color:var(--ink);margin-left:4px;white-space:nowrap}
+.pxhead{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between;align-items:flex-start}.pxhead>div:first-child{flex:1 1 380px}
+.tools{display:flex;gap:4px;margin-left:auto}
+.tools button{min-height:32px;width:32px;padding:0;border-radius:8px;box-shadow:none;color:var(--muted);background:transparent;border-color:transparent}
+.tools button:hover{background:var(--soft);color:var(--ink);border-color:var(--line)}
+.tools [data-act=png]{display:none}body.has-dl .tools [data-act=png]{display:inline-flex}
+.ch{align-items:center}.ch h3{flex:none}.ch>span{margin-left:auto}.ch>span+.tools{margin-left:4px}
+.rbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.rbar p{margin:0;color:var(--muted);font-size:13px}
+.rg{padding:0;margin-bottom:12px;overflow:hidden}
+.rg summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 18px;min-height:56px}
+.rg summary::-webkit-details-marker{display:none}
+.rg summary:hover{background:var(--soft)}
+.rg .dot{width:12px;height:12px;border-radius:4px;flex:none}
+.rg summary b{font-size:15px}.rg .cnt{font-size:12px;color:var(--muted)}
+.rg .peek{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto;justify-content:flex-end}
+.rg .peek span{font-size:12px;background:var(--soft);border-radius:6px;padding:3px 8px;color:var(--muted);white-space:nowrap}.rg .peek b{font-size:12px;color:var(--ink);margin-left:4px}
+.rg .chev{transition:transform .2s;color:var(--muted);flex:none}.rg[open] .chev{transform:rotate(180deg)}
+.rbody{padding:4px 18px 18px;border-top:1px solid var(--line)}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px;margin:14px 0}
+.mini{padding:14px;box-shadow:none;background:var(--bg)}.mini .fig{height:170px}.mini h3{font-size:13.5px}
+.mini .ch>span{font-size:14px;font-weight:700;color:var(--ink)}
+@media(max-width:700px){.rg .peek{display:none}}
+.lib{display:flex;flex-direction:column;gap:2px}
+.libh{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);font-weight:600;margin:0 4px 4px}
+.li{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:9px;cursor:pointer;border:1px solid transparent;background:none;box-shadow:none;min-height:44px;width:100%;justify-content:flex-start;font-weight:500;text-align:left}
+.li:hover{background:var(--soft);border-color:transparent}.li.on{background:var(--soft);border-color:var(--line)}
+.li .av{width:28px;height:28px;border-radius:8px;font-size:11px}
+.li .nm{flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .sc{font-size:11px;font-weight:700;color:var(--muted);background:var(--bg);border-radius:6px;padding:2px 6px}
+.li .x{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;color:var(--muted);opacity:0}
+.li:hover .x,.li:focus-within .x{opacity:1}.li .x:hover{background:var(--line);color:var(--ink)}
+.hr{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}
+.theme{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px;gap:2px;box-shadow:var(--shadow);align-self:center}
+.theme button{min-height:36px;width:40px;padding:0;border:0;box-shadow:none;background:none;color:var(--muted);border-radius:8px}
+.theme button.on{background:var(--tint);color:var(--c1)}
+.cpick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.cpick button{min-height:38px;font-weight:500;gap:8px;border-radius:999px;padding:0 14px}
+.cpick button i{width:10px;height:10px;border-radius:50%}
+.cpick button[aria-pressed=false]{opacity:.55;box-shadow:none;background:transparent}
+.cmp th{cursor:pointer;user-select:none}.cmp th.sorted{color:var(--ink)}
+.cmp td .who{display:flex;align-items:center;gap:8px;font-weight:600}.cmp td .who i{width:10px;height:10px;border-radius:50%;flex:none}
+.cmp td.best{color:var(--pos);font-weight:700;background:color-mix(in srgb,var(--pos) 9%,transparent)}
+.sbarc{display:flex;align-items:center;gap:8px;justify-content:flex-end}.sbarc .trk{width:70px}
+.empty{text-align:center;padding:40px 20px}.empty p{color:var(--muted);max-width:52ch;margin:8px auto 18px}
+@media(max-width:900px){.lib{width:100%;flex-direction:row;overflow-x:auto;gap:6px;scrollbar-width:none}.libh{display:none}.li{width:auto;flex:none;border-color:var(--line)}.li .x{display:none}}
+#drop{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(4px);display:none;place-items:center;font-size:20px;font-weight:700;z-index:9;border:3px dashed var(--c1);border-radius:16px;margin:10px}
+#drop.on{display:grid}
+#toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,8px);background:var(--tip);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:10;box-shadow:0 8px 24px rgb(0 0 0/.18)}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+section{animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){section{animation:none}#toast{transition:none}}
+@media(max-width:1100px){.sc-top{grid-template-columns:1fr}.q{grid-template-columns:minmax(0,1fr) 48px}.q .opts{grid-column:1;grid-row:2}.q .qp{grid-row:1/3;grid-column:2}}
+@media(max-width:900px){.app{grid-template-columns:1fr}
+ aside{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px 16px;gap:10px}
+ .brand{display:none}.co{flex:1 1 200px;padding:8px 10px}.up-btn{flex:none}
+ nav{flex-direction:row;overflow-x:auto;width:100%;gap:4px;scrollbar-width:none}nav a{white-space:nowrap;padding:8px 12px;flex:none;min-height:40px}nav a svg{display:none}
+ .sfoot{flex-direction:row;flex-wrap:wrap;margin:0;width:100%}.sfoot .tiny{display:none}.sfoot:not(:has(button:not([hidden]))){display:none}
+ .dcf{grid-template-columns:1fr}.fig{height:240px}.fig.big{height:270px}th:first-child,td:first-child{min-width:130px}}
+@media(max-width:1000px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.kpi{padding:12px}.kpi>b{font-size:22px}.kf svg{width:64px}.kf{flex-direction:column;align-items:flex-start}.gcard{flex-direction:column;align-items:flex-start}.pill{width:100%;justify-content:space-between}.fields{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="drop">Drop to load: screener.in Excel or NSE price CSV</div>
+<div id="toast" role="status"></div>
+<div class="app">
+<aside>
+  <div class="brand"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Fundamentals</div>
+  <div class="co"><div class="av" id="av">—</div><div><b id="cname">Loading…</b><span id="src">Sample data</span></div></div>
+  <div class="lib"><p class="libh">Saved companies <span id="libn"></span></p><div id="lib" class="lib"></div></div>
+  <label class="btn pri up-btn" for="file"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M4 15v5h16v-5"/></svg>Upload Excel<input type="file" id="file" accept=".xlsx,.xls,.xlsm"></label>
+  <nav id="nav">
+    <a href="#overview"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Overview</a>
+    <a href="#quarterly"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Quarterly</a>
+    <a href="#ratios"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>Ratios</a>
+    <a href="#valuation"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Valuation</a>
+    <a href="#score"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>SOIC score</a>
+    <a href="#compare"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 20V10M12 20V4M18 20v-7"/></svg>Compare</a>
+    <a href="#data"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg>Edit data</a>
+  </nav>
+  <div class="sfoot">
+    <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
+    <button id="reset" hidden>Reset edits</button>
+    <p class="tiny">Drop a screener.in export or NSE price CSV anywhere on the page.</p>
+  </div>
+</aside>
+<main>
+  <header class="hdr">
+    <div><p class="crumb" id="crumb">Overview</p><h1 id="cname2">—</h1><p class="insight" id="title"></p></div>
+    <div class="hr"><div class="pill" id="pill"></div>
+      <div class="theme" role="group" aria-label="Theme">
+        <button data-theme-set="light" title="Light" aria-label="Light theme"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+        <button data-theme-set="dark" title="Dark" aria-label="Dark theme"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>
+        <button data-theme-set="auto" title="Match system" aria-label="Match system theme"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></button>
+      </div></div>
+  </header>
+  <div class="kpis" id="kpis"></div>
+
+  <section id="overview">
+    <div class="grid">
+      <div class="card wide"><div class="ch"><h3>Sales and operating profit</h3><span>₹ Cr · EBITDA excludes other income</span></div><div class="fig big"><canvas id="ch-sales"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>Margins</h3><span>% of sales</span></div><div class="fig"><canvas id="ch-marg"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>Net profit vs operating cash flow</h3><span>₹ Cr</span></div><div class="fig"><canvas id="ch-cash"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>Return on equity and capital</h3><span>year-end</span></div><div class="fig"><canvas id="ch-ret"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>Net worth vs borrowings</h3><span>₹ Cr</span></div><div class="fig"><canvas id="ch-bs"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>Receivable and inventory days</h3><span>days</span></div><div class="fig"><canvas id="ch-days"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>Free cash flow</h3><span>₹ Cr</span></div><div class="fig"><canvas id="ch-fcf"></canvas></div><p class="note">Cash from operations minus capex (change in net block and CWIP plus depreciation).</p></div>
+    </div>
+    <h2>Compounded growth</h2>
+    <div class="scroll"><table id="growth"></table></div>
+  </section>
+
+  <section id="quarterly" hidden>
+    <div class="grid">
+      <div class="card wide"><div class="ch"><h3>Quarterly sales and net profit</h3><span>₹ Cr</span></div><div class="fig big"><canvas id="ch-q"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>Operating and net margin</h3><span>% of sales</span></div><div class="fig"><canvas id="ch-qm"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>Trailing twelve months</h3><span>₹ Cr</span></div><div class="fig"><canvas id="ch-ttm"></canvas></div></div>
+    </div>
+    <h2>Quarterly results</h2>
+    <div class="scroll"><table id="qtab"></table></div>
+  </section>
+
+  <section id="ratios" hidden>
+    <div class="rbar"><p>Open a group to see a chart for every ratio in it. Each chart can be copied as an image or as data.</p><div style="display:flex;gap:8px"><button class="sm" id="r-open">Expand all</button><button class="sm" id="r-close">Collapse all</button></div></div>
+    <div id="rgroups"></div>
+  </section>
+
+  <section id="valuation" hidden>
+    <div class="grid">
+      <div class="card"><div class="ch"><h3>Price to earnings</h3><span>year-end and now</span></div><div class="fig"><canvas id="ch-pe"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>EV / EBITDA</h3><span>year-end and now</span></div><div class="fig"><canvas id="ch-ev"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>Price to book</h3><span>year-end and now</span></div><div class="fig"><canvas id="ch-pb"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>Share price vs EPS</h3><span>indexed, first year = 100</span></div><div class="fig"><canvas id="ch-px"></canvas></div></div>
+    </div>
+    <h2>Discounted cash flow</h2>
+    <div class="card dcf">
+      <div class="fields" id="dcfin">
+        <label>Base free cash flow, ₹ Cr<input id="d-fcf" inputmode="decimal"></label>
+        <label>Growth, years 1–5 (%)<input id="d-g1" inputmode="decimal"></label>
+        <label>Growth, years 6–10 (%)<input id="d-g2" inputmode="decimal"></label>
+        <label>Terminal growth (%)<input id="d-tg" inputmode="decimal"></label>
+        <label>Discount rate (%)<input id="d-r" inputmode="decimal"></label>
+        <label>Net debt, ₹ Cr<input id="d-nd" inputmode="decimal"></label>
+        <label>Shares, Cr<input id="d-sh" inputmode="decimal"></label>
+        <label>Current price, ₹<input id="d-px" inputmode="decimal"></label>
+      </div>
+      <div class="res">
+        <p class="crumb">Intrinsic value per share</p>
+        <div class="big" id="d-val">—</div>
+        <p id="d-vs" style="margin:8px 0 14px;font-weight:600;font-size:14px"></p>
+        <div class="ch"><h3>Projected free cash flow</h3><span>₹ Cr</span></div>
+        <div class="fig" style="height:200px"><canvas id="ch-dcf"></canvas></div>
+        <p class="note" id="d-note"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="score" hidden>
+    <div class="sc-top">
+      <div class="card gcard"><div id="sc-gauge"></div><div><p class="crumb" style="margin:0">Total score</p><div class="big" id="sc-total">—</div><p id="sc-pct"></p><button id="sc-clear" class="sm">Clear my answers</button></div></div>
+      <div class="secs" id="sc-bars"></div>
+    </div>
+    <p class="note">Answers marked with a green dot come from this company’s numbers, and the technical ones from the price history you load below; click any option to change them. The rest need your own judgement. Answers are kept in this browser for each company.</p>
+    <div class="card" id="px-card" style="margin-top:16px"><div class="pxhead"><div><h3>Technicals from price history</h3><p class="note" id="px-info"></p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn" for="pxfile"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M4 15v5h16v-5"/></svg>Load NSE price CSV<input type="file" id="pxfile" accept=".csv,.txt,.xlsx,.xls" multiple></label><button id="pxclear" hidden>Remove prices</button></div></div>
+      <div id="px-body"></div></div>
+    <div id="sc-list"></div>
+  </section>
+
+  <section id="compare" hidden>
+    <div id="cmp-body"></div>
+  </section>
+
+  <section id="data" hidden>
+    <p class="note" style="margin:0 0 4px;font-size:14px">Change any number and every chart, ratio and score updates. Edited cells are highlighted and kept in this browser. “Download Excel” saves a workbook with the same Data Sheet layout, plus Ratios and SOIC score sheets, so you can upload it here again.</p>
+    <div id="dtabs"></div>
+  </section>
+</main>
+</div>
+<script>
+{
+const SAMPLE = [["COMPANY NAME","CENLUB INDUSTRIES LTD",null,null,"https://www.screener.in/excel/"],["LATEST VERSION",2.1,null,null,"PLEASE DO NOT MAKE ANY CHANGES TO THIS SHEET"],["CURRENT VERSION",2.1],[],["META"],["Number of shares",0.466270783847981],["Face Value",10],["Current Price",168.4],["Market Capitalization",78.52],[],[],[],[],[],["PROFIT & LOSS"],["Report Date","D:2017-03-31","D:2018-03-31","D:2019-03-31","D:2020-03-31","D:2021-03-31","D:2022-03-31","D:2023-03-31","D:2024-03-31","D:2025-03-31","D:2026-03-31"],["Sales",35.67,37.11,48.1,39.04,40.96,52.42,53.93,71.52,73.37,74.13],["Raw Material Cost",17.79,20.62,26.86,20.59,21.38,28.28,29.83,42.14,39.24,41.52],["Change in Inventory",-1.61,0.52,-0.45,0.27,-0.83,1.14,2.04,3,0.6,1],["Power and Fuel",0.41,0.36,0.44,0.37,0.36,0.36,0.36,0.44,0.44,0.51],["Other Mfr. Exp",1.78,1.19,1.95,2.09,1.99,2.55,2.59,3.15,4.05,5.47],["Employee Cost",6.08,7,7.95,9.04,7.34,8.8,9.65,11.46,13.14,13.11],["Selling and admin",2.25,2.1,2.01,2.66,2.12,4.24,3.89,3.98,4.54,4.39],["Other Expenses",0.75,0.63,0.47,0.63,0.52,0.55,0.83,1.15,0.93,1.42],["Other Income",0.93,1.01,1.45,2.2,1.37,1.4,1.27,1.25,2.54,2.65],["Depreciation",0.75,0.78,1.01,0.97,0.96,0.92,0.8,0.83,0.83,1.01],["Interest",1.81,1.21,1.22,1.1,1.07,0.59,0.26,0.41,0.4,0.55],["Profit before tax",3.37,4.75,7.19,4.06,5.76,8.67,9.03,12.21,12.94,9.8],["Tax",1.18,1.28,2.25,1.31,1.75,1.67,2.36,3.23,4,1.87],["Net profit",2.19,3.48,4.94,2.76,4.01,7,6.67,8.97,8.94,7.93],["Dividend Amount",null,null,1.16],[],[],[],[],[],[],[],[],["Quarters"],["Report Date","D:2024-03-31","D:2024-06-30","D:2024-09-30","D:2024-12-31","D:2025-03-31","D:2025-06-30","D:2025-09-30","D:2025-12-31","D:2026-03-31","D:2026-06-30"],["Sales",19.81,19.09,16.88,16.71,20.68,13.98,21.12,15.93,23.09,17.09],["Expenses",16.95,15.97,14.16,14.42,17.18,12.25,18.58,14.71,19.9,14.79],["Other Income",0.5,0.38,0.55,0.65,0.96,0.6,0.5,0.6,0.95,0.4],["Depreciation",0.22,0.17,0.19,0.2,0.28,0.2,0.26,0.23,0.32,0.25],["Interest",0.1,0.05,0.09,0.16,0.11,0.1,0.16,0.16,0.12,0.21],["Profit before tax",3.04,3.28,2.99,2.58,4.07,2.03,2.62,1.43,3.7,2.24],["Tax",0.92,0.83,1.08,0.65,1.44,0.51,0.66,0.36,0.34,0.56],["Net profit",2.11,2.46,1.91,1.94,2.64,1.52,1.96,1.07,3.37,1.67],["Operating Profit",2.86,3.12,2.72,2.29,3.5,1.73,2.54,1.22,3.19,2.3],[],[],[],[],["BALANCE SHEET"],["Report Date","D:2017-03-31","D:2018-03-31","D:2019-03-31","D:2020-03-31","D:2021-03-31","D:2022-03-31","D:2023-03-31","D:2024-03-31","D:2025-03-31","D:2026-03-31"],["Equity Share Capital",4.66,4.66,4.66,4.66,4.66,4.66,4.66,4.66,4.66,4.66],["Reserves",15.16,18.65,23.55,24.77,28.89,35.88,42.57,51.25,59.98,67.96],["Borrowings",16.91,10.68,10.19,12.46,8.03,6.02,4.88,4.24,4.56,11.44],["Other Liabilities",9.63,11.55,13.92,12.1,14.33,12.99,10.61,17.49,21.08,19.03],["Total",46.36,45.54,52.32,53.99,55.91,59.55,62.72,77.64,90.28,103.09],["Net Block",20.5,18.98,20.87,20.65,20.08,19.39,19.77,17.43,23.46,35.57],["Capital Work in Progress",0.27,0.32,null,null,null,null,null,null,0.02,0.43],["Investments",0.07,0.06,0.05,0.02,0.06],["Other Assets",25.52,26.18,31.4,33.32,35.77,40.16,42.95,60.21,66.8,67.09],["Total",46.36,45.54,52.32,53.99,55.91,59.55,62.72,77.64,90.28,103.09],["Receivables",10.54,10.65,12.91,12.53,17.14,16.97,12.45,9.54,16.34,18.13],["Inventory",5.19,5.19,3.62,4.84,1.61,3.31,5.58,9.16,8.85,11.25],["Cash & Bank",7.36,7.73,8.67,9.66,8.96,8.11,4.25,3.95,3.44,4.48],["No. of Equity Shares",4662899,4662899,4662899,4662899,4662899,4662899,4662899,4662899,4662899,4662899],["New Bonus Shares"],["Face value",10,10,10,10,10,10,10,10,10,10],[],[],[],[],[],[],[],["CASH FLOW:"],["Report Date","D:2017-03-31","D:2018-03-31","D:2019-03-31","D:2020-03-31","D:2021-03-31","D:2022-03-31","D:2023-03-31","D:2024-03-31","D:2025-03-31","D:2026-03-31"],["Cash from Operating Activity",3.51,6.73,7.5,0.62,5.9,2.77,6.35,14.93,4.53,-1.21],["Cash from Investing Activity",-0.33,0.72,-5.2,0.33,-1.3,-1.5,-2.61,-16.22,-5.91,-5.42],["Cash from Financing Activity",-2.57,-7.86,-2.05,-0.84,-5.03,-0.94,-1.24,-0.71,0.24,6.63],["Net Cash Flow",0.61,-0.4,0.25,0.11,-0.42,0.33,2.5,-2,-1.14],[],[],[],[],["PRICE:",58.9,47.6,63.75,24.8,56.35,106,216.45,404.25,356.2,147.25],[],["DERIVED:"],["Adjusted Equity Shares in Cr",0.41,0.47,0.47,0.47,0.47,0.47,0.47,0.47,0.47,0.47]];
+const $ = s => document.querySelector(s);
+const SECS = [['meta','META'],['pl','PROFIT & LOSS'],['q','QUARTERS'],['bs','BALANCE SHEET'],['cf','CASH FLOW'],['price','PRICE'],['der','DERIVED']];
+const SECNAME = {meta:'Meta',pl:'Profit & loss (annual)',q:'Quarterly results',bs:'Balance sheet',cf:'Cash flow',price:'Share price (year end)',der:'Derived'};
+let orig = null, aoa = null, M = null, C = null, fileName = 'company', charts = {}, selRatio = 'ROE';
+
+const toast = t => { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => e.classList.remove('on'), 2600); };
+const toDate = v => { if (v instanceof Date) return v; if (typeof v === 'string' && v.startsWith('D:')) return new Date(v.slice(2) + 'T00:00:00'); if (typeof v === 'number' && v > 20000) return new Date(Math.round((v - 25569) * 864e5)); if (typeof v === 'string') { const d = new Date(v); if (!isNaN(d)) return d; } return null; };
+const num = v => (v === null || v === undefined || v === '' || isNaN(+v)) ? 0 : +v;
+const div = (a, b) => (a == null || b == null || !b || !isFinite(a / b)) ? null : a / b;
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function parse(rows) {
+  const lab = r => rows[r] && rows[r][0] != null ? String(rows[r][0]).trim() : '';
+  const starts = [];
+  rows.forEach((_, r) => { const L = lab(r).toUpperCase().replace(/:$/, ''); SECS.forEach(([k, h]) => { if (L === h && !starts.find(s => s.k === k)) starts.push({k, r}); }); });
+  if (!starts.find(s => s.k === 'pl') || !starts.find(s => s.k === 'bs')) throw new Error('Could not find the PROFIT & LOSS and BALANCE SHEET blocks of a screener.in Data Sheet.');
+  starts.sort((a, b) => a.r - b.r);
+  const m = {name: String((rows[0] || [])[1] || 'Company').trim(), secs: {}};
+  starts.forEach((s, i) => {
+    const end = i + 1 < starts.length ? starts[i + 1].r : rows.length;
+    const sec = {dates: [], cols: [], rows: []};
+    let from = s.r + 1;
+    if (s.k === 'price') from = s.r;
+    for (let r = from; r < end; r++) {
+      const L = lab(r); if (!L) continue;
+      if (/^report date$/i.test(L)) { sec.cols = []; sec.dates = []; (rows[r] || []).forEach((v, c) => { if (c > 0) { const d = toDate(v); if (d) { sec.cols.push(c); sec.dates.push(d); } } }); continue; }
+      const cols = s.k === 'meta' ? [1] : null;
+      let key = L.toLowerCase().replace(/:$/, ''); if (sec.rows.find(x => x.key === key)) key += ' (assets)';
+      sec.rows.push({label: s.k === 'price' ? 'Price' : L.replace(/:$/, ''), key, r, cols});
+    }
+    m.secs[s.k] = sec;
+  });
+  const pl = m.secs.pl; ['bs', 'cf', 'price', 'der'].forEach(k => { const s = m.secs[k]; if (s && !s.cols.length) { s.cols = pl.cols; s.dates = pl.dates; } });
+  Object.values(m.secs).forEach(s => s.rows.forEach(x => { x.cols = x.cols || s.cols; x.vals = x.cols.map(c => { const v = (rows[x.r] || [])[c]; return v === null || v === undefined || v === '' ? null : +v; }); }));
+  return m;
+}
+const get = (sec, name) => { const s = M.secs[sec]; if (!s) return []; const x = s.rows.find(r => r.key === name.toLowerCase()) || s.rows.find(r => r.key.startsWith(name.toLowerCase())); return x ? x.vals.map(num) : s.dates.map(() => 0); };
+const meta = name => { const s = M.secs.meta; const x = s && s.rows.find(r => r.key.startsWith(name.toLowerCase())); return x && x.vals[0] != null ? +x.vals[0] : null; };
+const fy = d => d.getMonth() === 2 ? 'FY' + String(d.getFullYear()).slice(2) : MON[d.getMonth()] + ' ' + String(d.getFullYear()).slice(2);
+const ql = d => MON[d.getMonth()] + ' ' + String(d.getFullYear()).slice(2);
+
+function calc() {
+  const n = M.secs.pl.dates.length, Z = Array(n).fill(0), A = {};
+  const S = get('pl','Sales'), RM = get('pl','Raw Material Cost'), dI = get('pl','Change in Inventory'), OI = get('pl','Other Income'), D = get('pl','Depreciation'), I = get('pl','Interest'), PBT = get('pl','Profit before tax'), TX = get('pl','Tax'), PAT = get('pl','Net profit'), DIV = get('pl','Dividend Amount'), EMP = get('pl','Employee Cost');
+  const EQ = get('bs','Equity Share Capital'), RES = get('bs','Reserves'), DEBT = get('bs','Borrowings'), OL = get('bs','Other Liabilities'), NB = get('bs','Net Block'), CW = get('bs','Capital Work in Progress'), INV = get('bs','Investments'), OA = get('bs','Other Assets'), REC = get('bs','Receivables'), INY = get('bs','Inventory'), CASH = get('bs','Cash & Bank'), NSH = get('bs','No. of Equity Shares');
+  const CFO = get('cf','Cash from Operating Activity');
+  const PR = get('price','Price');
+  let SH = get('der','Adjusted Equity Shares');
+  if (!SH.some(v => v)) SH = NSH.map(v => v / 1e7);
+  const map = f => Z.map((_, i) => f(i));
+  const EBITDA = map(i => PBT[i] + I[i] + D[i] - OI[i]), EBIT = map(i => PBT[i] + I[i]), NW = map(i => EQ[i] + RES[i]);
+  const TA = map(i => NW[i] + DEBT[i] + OL[i]), WC = map(i => OA[i] - OL[i]), MAT = map(i => RM[i] - dI[i]);
+  const EPS = map(i => div(PAT[i], SH[i])), MC = map(i => PR[i] ? PR[i] * SH[i] : null), EV = map(i => MC[i] == null ? null : MC[i] + DEBT[i] - CASH[i] - INV[i]);
+  const CAPEX = map(i => i ? (NB[i] - NB[i-1]) + (CW[i] - CW[i-1]) + D[i] : null), FCF = map(i => CAPEX[i] == null ? null : CFO[i] - CAPEX[i]);
+  Object.assign(A, {n, S, PAT, PBT, EBITDA, EBIT, NW, DEBT, CASH, INV, CFO, CAPEX, FCF, EPS, MC, EV, PR, SH, WC, OI, D, I, TX, DIV});
+  const R = [];
+  const add = (g, k, f, fmt) => R.push({g, k, v: map(f), fmt});
+  add('Margins','Sales growth', i => i ? div(S[i] - S[i-1], S[i-1]) : null, 'pct');
+  add('Margins','Gross margin', i => div(S[i] - MAT[i], S[i]), 'pct');
+  add('Margins','Operating margin (EBITDA)', i => div(EBITDA[i], S[i]), 'pct');
+  add('Margins','EBIT margin', i => div(EBIT[i], S[i]), 'pct');
+  add('Margins','Net profit margin', i => div(PAT[i], S[i]), 'pct');
+  add('Margins','Employee cost / sales', i => div(EMP[i], S[i]), 'pct');
+  add('Margins','Tax rate', i => div(TX[i], PBT[i]), 'pct');
+  add('Margins','Other income / PBT', i => div(OI[i], PBT[i]), 'pct');
+  add('Returns','ROE', i => div(PAT[i], NW[i]), 'pct');
+  add('Returns','ROCE', i => div(EBIT[i], NW[i] + DEBT[i]), 'pct');
+  add('Returns','ROA', i => div(PAT[i], TA[i]), 'pct');
+  add('Returns','Asset turnover', i => div(S[i], TA[i]), 'x');
+  add('Returns','Equity multiplier (assets / equity)', i => div(TA[i], NW[i]), 'x');
+  add('Efficiency','Fixed asset turnover', i => div(S[i], NB[i]), 'x');
+  add('Efficiency','Receivable days', i => div(REC[i] * 365, S[i]), 'days');
+  add('Efficiency','Inventory days (on material cost)', i => div(INY[i] * 365, MAT[i]), 'days');
+  add('Efficiency','Working capital days', i => div(WC[i] * 365, S[i]), 'days');
+  add('Leverage','Debt / equity', i => div(DEBT[i], NW[i]), 'x');
+  add('Leverage','Interest cover (EBIT / interest)', i => div(EBIT[i], I[i]), 'x');
+  add('Leverage','Current ratio', i => div(OA[i], OL[i]), 'x');
+  add('Leverage','Quick ratio', i => div(OA[i] - INY[i], OL[i]), 'x');
+  add('Leverage','Cash / debt', i => div(CASH[i], DEBT[i]), 'x');
+  add('Cash flow','CFO / EBITDA', i => div(CFO[i], EBITDA[i]), 'pct');
+  add('Cash flow','CFO / net profit', i => div(CFO[i], PAT[i]), 'pct');
+  add('Cash flow','Capex, ₹ Cr', i => CAPEX[i], 'cr');
+  add('Cash flow','Free cash flow, ₹ Cr', i => FCF[i], 'cr');
+  add('Cash flow','Dividend payout', i => div(DIV[i], PAT[i]), 'pct');
+  add('Per share','EPS, ₹', i => EPS[i], 'cr');
+  add('Per share','Book value per share, ₹', i => div(NW[i], SH[i]), 'cr');
+  add('Valuation','P/E', i => div(MC[i], PAT[i]), 'x');
+  add('Valuation','P/B', i => div(MC[i], NW[i]), 'x');
+  add('Valuation','EV / EBITDA', i => div(EV[i], EBITDA[i]), 'x');
+  add('Valuation','Market cap / sales', i => div(MC[i], S[i]), 'x');
+  add('Valuation','Earnings yield', i => div(PAT[i], MC[i]), 'pct');
+  A.R = R;
+  // quarterly
+  const qs = M.secs.q;
+  if (qs && qs.dates.length) {
+    const g = k => get('q', k);
+    const Q = {d: qs.dates, S: g('Sales'), E: g('Expenses'), OI: g('Other Income'), D: g('Depreciation'), I: g('Interest'), PBT: g('Profit before tax'), TX: g('Tax'), PAT: g('Net profit'), OP: g('Operating Profit')};
+    if (!Q.OP.some(v => v)) Q.OP = Q.S.map((s, i) => s - Q.E[i]);
+    const ttm = a => a.map((_, i) => i >= 3 ? a[i] + a[i-1] + a[i-2] + a[i-3] : null);
+    Q.tS = ttm(Q.S); Q.tPAT = ttm(Q.PAT); Q.tOP = ttm(Q.OP);
+    A.Q = Q;
+  }
+  const L = n - 1, last = a => { const q = A.Q; return q && a ? a[a.length - 1] : null; };
+  const price = meta('Current Price') || PR[L], mcap = meta('Market Capitalization') || price * SH[L];
+  const tPAT = A.Q ? last(A.Q.tPAT) : null, tS = A.Q ? last(A.Q.tS) : null, tOP = A.Q ? last(A.Q.tOP) : null;
+  A.now = {price, mcap, ttmPAT: tPAT ?? PAT[L], ttmS: tS ?? S[L], ttmOP: tOP ?? EBITDA[L]};
+  A.now.pe = div(mcap, A.now.ttmPAT); A.now.pb = div(mcap, NW[L]);
+  A.now.ev = mcap + DEBT[L] - CASH[L] - INV[L]; A.now.evE = div(A.now.ev, A.now.ttmOP);
+  A.now.ps = div(mcap, A.now.ttmS);
+  const cagr = (a, k) => { const x = a[L - k], y = a[L]; return (k > 0 && x > 0 && y > 0) ? Math.pow(y / x, 1 / k) - 1 : null; };
+  A.cagr = cagr;
+  return A;
+}
+
+const inr = (v, d = 2) => v == null ? '—' : v.toLocaleString('en-IN', {minimumFractionDigits: Math.abs(v) >= 1000 ? 0 : d, maximumFractionDigits: Math.abs(v) >= 1000 ? 0 : d});
+const pct = v => v == null ? '—' : (v * 100).toFixed(1) + '%';
+const fmt = (v, f) => v == null ? '—' : f === 'pct' ? pct(v) : f === 'x' ? v.toFixed(2) + '×' : f === 'days' ? Math.round(v) : inr(v);
+const probe = document.createElement('i'); probe.style.display = 'none'; document.body.appendChild(probe);
+const css = k => { probe.style.color = `var(${k})`; return getComputedStyle(probe).color; };
+
+const FONT = "Inter, system-ui, sans-serif";
+const ANIM = matchMedia('(prefers-reduced-motion: reduce)').matches ? false : {duration: 450};
+const median = a => { const x = a.filter(v => v != null && isFinite(v)).sort((p, q) => p - q); return x.length ? x[Math.floor(x.length / 2)] : null; };
+const rgba = (col, a) => { const m = String(col).match(/[\d.]+/g) || [0, 0, 0]; return `rgba(${m[0]},${m[1]},${m[2]},${a})`; };
+function title() { return M.name.replace(/\b(LTD|LIMITED)\b\.?/i, '').trim().toLowerCase().replace(/\b\w/g, c => c.toUpperCase()); }
+function headline() {
+  const g5 = C.cagr(C.S, Math.min(5, C.n - 1)), roe = C.R.find(r => r.k === 'ROE').v[C.n - 1], yrs = Math.min(5, C.n - 1), nm = title();
+  let h = g5 == null ? 'Ten years of accounts' : `Sales ${g5 >= 0 ? 'grew' : 'shrank'} ${Math.abs(g5 * 100).toFixed(0)}% a year over ${yrs} years`;
+  if (roe != null) h += `; return on equity is now ${(roe * 100).toFixed(0)}%.`;
+  $('#title').textContent = h;
+  $('#cname').textContent = nm; $('#cname2').textContent = nm;
+  $('#av').textContent = nm.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  document.title = nm + ' · Fundamentals';
+}
+function sparkArea(v, col = 'var(--c1)', W = 92, H = 32) {
+  const p = v.map((x, i) => [i, x]).filter(d => d[1] != null && isFinite(d[1]));
+  if (p.length < 2) return '';
+  const xs = p.map(d => d[1]), lo = Math.min(...xs), hi = Math.max(...xs), sx = W / (v.length - 1), sy = hi === lo ? 0 : (H - 6) / (hi - lo);
+  const pt = q => [(q[0] * sx).toFixed(1), (H - 3 - (q[1] - lo) * sy).toFixed(1)];
+  const d = p.map((q, i) => (i ? 'L' : 'M') + pt(q).join(' ')).join(''), last = pt(p[p.length - 1]);
+  const area = d + `L${pt(p[p.length - 1])[0]} ${H}L${pt(p[0])[0]} ${H}Z`;
+  return `<svg width="${W}" height="${H}" aria-hidden="true"><path d="${area}" fill="${col}" fill-opacity=".12"/><path d="${d}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linejoin="round"/><circle cx="${last[0]}" cy="${last[1]}" r="2.6" fill="${col}"/></svg>`;
+}
+function ring(f, size = 44, sw = 5, col = 'var(--c1)') {
+  const r = (size - sw) / 2, c = 2 * Math.PI * r, v = Math.max(0, Math.min(1, f));
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--soft)" stroke-width="${sw}"/><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${(c * v).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 ${size / 2} ${size / 2})"/></svg>`;
+}
+const chg = (d, pp) => d == null || !isFinite(d) ? '' : `<span class="dl ${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d * 100).toFixed(1)}${pp ? ' pp' : '%'}</span>`;
+function kpis() {
+  const L = C.n - 1, N = C.now, R = k => C.R.find(r => r.k === k).v, S = soicScore(), lf = fy(M.secs.pl.dates[L]);
+  const roe = R('ROE'), roce = R('ROCE'), de = R('Debt / equity'), g5 = C.cagr(C.S, Math.min(5, L));
+  $('#pill').innerHTML = `<div><b>₹${inr(N.price)}</b><span>Share price ${chg(div(N.price - C.PR[L], C.PR[L]))}</span></div><div class="sep"></div><div><b>₹${inr(N.mcap)} Cr</b><span>Market cap</span></div>`;
+  const items = [
+    {k: 'P/E (TTM)', v: fmt(N.pe, 'x'), n: `median ${fmt(median(R('P/E')), 'x')}`, s: R('P/E').concat(N.pe), col: 'var(--c1)'},
+    {k: 'EV / EBITDA', v: fmt(N.evE, 'x'), n: `median ${fmt(median(R('EV / EBITDA')), 'x')}`, s: R('EV / EBITDA').concat(N.evE), col: 'var(--c4)'},
+    {k: 'Price / book', v: fmt(N.pb, 'x'), n: `median ${fmt(median(R('P/B')), 'x')}`, s: R('P/B').concat(N.pb), col: 'var(--c5)'},
+    {k: 'ROE', v: pct(roe[L]), d: chg(roe[L] - roe[L - 1], true), n: lf, s: roe, col: 'var(--c4)'},
+    {k: 'ROCE', v: pct(roce[L]), d: chg(roce[L] - roce[L - 1], true), n: lf, s: roce, col: 'var(--c2)'},
+    {k: 'Sales growth', v: pct(g5), n: `${Math.min(5, L)}-year CAGR`, s: C.S, col: 'var(--c3)'},
+    {k: 'Debt / equity', v: fmt(de[L], 'x'), n: `net debt ₹${inr(C.DEBT[L] - C.CASH[L] - C.INV[L])} Cr`, s: de, col: 'var(--c6)'},
+    {k: 'SOIC score', v: `${S.total}<small> / ${S.max}</small>`, n: `${S.answered} of ${S.count} answered`, ring: S.total / S.max, href: '#score'}];
+  $('#kpis').innerHTML = items.map(x => `<${x.href ? `a href="${x.href}"` : 'div'} class="kpi"><div class="kh"><span>${x.k}</span>${x.d || ''}</div><b>${x.v}</b><div class="kf"><span>${x.n}</span>${x.ring != null ? ring(x.ring) : sparkArea(x.s, x.col)}</div></${x.href ? 'a' : 'div'}>`).join('');
+}
+function base(type, labels, ds, yfmt, extra = {}) {
+  const ink = css('--muted'), grid = css('--line');
+  if (type === 'line') ds.forEach((d, i) => { if (i === 0 && d.fill === undefined) { const col = d.borderColor; d.fill = 'origin'; d.backgroundColor = ctx => { const a = ctx.chart.chartArea; if (!a) return 'transparent'; const g = ctx.chart.ctx.createLinearGradient(0, a.top, 0, a.bottom); g.addColorStop(0, rgba(col, .22)); g.addColorStop(1, rgba(col, 0)); return g; }; } });
+  return {_fmt: yfmt, type, data: {labels, datasets: ds}, options: Object.assign({responsive: true, maintainAspectRatio: false, animation: ANIM, interaction: {mode: 'index', intersect: false}, layout: {padding: {top: 2}},
+    plugins: {legend: {display: ds.length > 1, position: 'top', align: 'end', labels: {color: css('--ink'), usePointStyle: true, pointStyle: 'circle', boxWidth: 7, boxHeight: 7, padding: 14, font: {family: FONT, size: 12, weight: '500'}}},
+      tooltip: {backgroundColor: css('--tip'), titleColor: '#fff', bodyColor: '#e2e8f0', padding: 10, cornerRadius: 8, boxPadding: 4, usePointStyle: true, titleFont: {family: FONT, weight: '600'}, bodyFont: {family: FONT},
+        callbacks: {label: c => ` ${c.dataset.label}: ${fmt(c.parsed.y, yfmt)}`}}},
+    scales: {x: {grid: {display: false}, border: {display: false}, ticks: {color: ink, font: {family: FONT, size: 11}, maxRotation: 0, autoSkip: true, autoSkipPadding: 12}},
+      y: {grid: {color: grid}, border: {display: false, dash: [4, 4]}, ticks: {color: ink, font: {family: FONT, size: 11}, padding: 8, maxTicksLimit: 6, callback: v => yfmt === 'pct' ? +(v * 100).toFixed(1) + '%' : yfmt === 'x' ? +(+v).toFixed(2) + '×' : (+(+v).toFixed(2)).toLocaleString('en-IN')}}}}, extra)};
+}
+const grad = col => ctx => { const a = ctx.chart.chartArea; if (!a) return col; const g = ctx.chart.ctx.createLinearGradient(0, a.top, 0, a.bottom); g.addColorStop(0, col); g.addColorStop(1, rgba(col, .6)); return g; };
+const bar = (label, data, col) => ({label, data, backgroundColor: grad(col), hoverBackgroundColor: col, borderColor: col, borderRadius: 6, borderSkipped: 'start', maxBarThickness: 24, categoryPercentage: .7, barPercentage: .88});
+const line = (label, data, col, dash) => ({label, data, borderColor: col, backgroundColor: col, borderWidth: 2.25, pointRadius: 3, pointHoverRadius: 5, pointBackgroundColor: css('--card'), pointBorderColor: col, pointBorderWidth: 2, cubicInterpolationMode: 'monotone', spanGaps: true, borderDash: dash || []});
+const ICON = {copy: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>',
+  data: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg>',
+  png: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>'};
+function draw(id, cfg) {
+  if (charts[id]) charts[id].destroy(); const el = document.getElementById(id); if (!el) return;
+  charts[id] = new Chart(el, cfg); charts[id]._fmt = cfg._fmt;
+  const box = el.closest('.res, .card'), head = box && box.querySelector('.ch');
+  if (head && !head.querySelector('.tools')) head.insertAdjacentHTML('beforeend', `<div class="tools"><button data-act="copy" data-chart="${id}" title="Copy chart as image" aria-label="Copy chart as image">${ICON.copy}</button><button data-act="data" data-chart="${id}" title="Copy data for Excel" aria-label="Copy data for Excel">${ICON.data}</button><button data-act="png" data-chart="${id}" title="Download PNG" aria-label="Download PNG">${ICON.png}</button></div>`);
+  else if (head) head.querySelectorAll('.tools button').forEach(b => b.dataset.chart = id);
+}
+function chartTitle(id) { const box = charts[id].canvas.closest('.res, .card'); return {t: box?.querySelector('.ch h3')?.textContent || 'Chart', s: box?.querySelector('.ch>span')?.textContent || ''}; }
+function chartPNG(id) {
+  const ch = charts[id], src = ch.canvas, r = src.width / src.clientWidth || 1, pad = 20 * r, head = 54 * r, foot = 26 * r, {t, s} = chartTitle(id);
+  const cv = document.createElement('canvas'); cv.width = src.width + pad * 2; cv.height = src.height + head + foot + pad;
+  const x = cv.getContext('2d');
+  x.fillStyle = css('--card'); x.fillRect(0, 0, cv.width, cv.height);
+  x.fillStyle = css('--ink'); x.font = `700 ${16 * r}px Inter, system-ui, sans-serif`; x.fillText(t, pad, pad + 16 * r);
+  x.fillStyle = css('--muted'); x.font = `500 ${12 * r}px Inter, system-ui, sans-serif`; x.fillText([title(), s].filter(Boolean).join(' · '), pad, pad + 36 * r);
+  x.drawImage(src, pad, head + pad * .4);
+  x.font = `400 ${11 * r}px Inter, system-ui, sans-serif`; x.fillText('Source: screener.in data', pad, cv.height - pad * .6);
+  return new Promise(res => cv.toBlob(res, 'image/png'));
+}
+function chartTSV(id) {
+  const ch = charts[id], f = ch._fmt, labels = ch.data.labels, ds = ch.data.datasets;
+  const val = v => v == null || !isFinite(v) ? '' : f === 'pct' ? (v * 100).toFixed(2) + '%' : f === 'days' ? Math.round(v) : (+v).toFixed(2);
+  return [['', ...ds.map(d => d.label)].join('\t'), ...labels.map((l, i) => [l, ...ds.map(d => val(d.data[i]))].join('\t'))].join('\n');
+}
+let DL = null;
+document.addEventListener('click', async e => {
+  const b = e.target.closest('.tools button'); if (!b || !charts[b.dataset.chart]) return;
+  const id = b.dataset.chart, {t} = chartTitle(id), fname = `${title()} - ${t}`.replace(/[^\w ,.-]+/g, '').trim() + '.png';
+  if (b.dataset.act === 'data') { try { await navigator.clipboard.writeText(chartTSV(id)); toast('Data copied. Paste into Excel or Sheets'); } catch (err) { toast('Copying is blocked in this view'); } return; }
+  if (b.dataset.act === 'copy') {
+    try { await navigator.clipboard.write([new ClipboardItem({'image/png': chartPNG(id)})]); toast('Chart copied. Paste it anywhere'); return; }
+    catch (err) { if (!DL) { toast('Copying images is blocked in this view'); return; } toast('Copying images is blocked here, so downloading instead'); }
+  }
+  if (!DL) { toast('Downloads aren’t available in this view'); return; }
+  try { await DL.save({filename: fname, data: await chartPNG(id)}); } catch (err) { if (err && err.code !== 'declined') toast('Could not save the image'); }
+});
+
+function renderOverview() {
+  const Y = M.secs.pl.dates.map(fy), c1 = css('--c1'), c2 = css('--c2'), c3 = css('--c3'), c4 = css('--c4'), c5 = css('--c5'), c6 = css('--c6'), c7 = css('--c7');
+  const R = k => C.R.find(r => r.k === k).v;
+  draw('ch-sales', base('bar', Y, [bar('Sales', C.S, c1), bar('EBITDA', C.EBITDA, c2)], 'cr'));
+  draw('ch-marg', base('line', Y, [line('Operating margin', R('Operating margin (EBITDA)'), c3), line('Net margin', R('Net profit margin'), c4)], 'pct'));
+  draw('ch-cash', base('bar', Y, [bar('Net profit', C.PAT, c5), bar('Cash from operations', C.CFO, c1)], 'cr'));
+  draw('ch-ret', base('line', Y, [line('ROE', R('ROE'), c4), line('ROCE', R('ROCE'), c2)], 'pct'));
+  draw('ch-bs', base('bar', Y, [bar('Net worth', C.NW, c7), bar('Borrowings', C.DEBT, c2)], 'cr'));
+  draw('ch-days', base('line', Y, [line('Receivable days', R('Receivable days'), c1), line('Inventory days', R('Inventory days (on material cost)'), c6)], 'days'));
+  const fb = bar('Free cash flow', C.FCF, c3), neg = css('--neg'); fb.backgroundColor = ctx => ctx.raw < 0 ? neg : grad(c3)(ctx); fb.hoverBackgroundColor = ctx => ctx.raw < 0 ? neg : c3;
+  draw('ch-fcf', base('bar', Y, [fb], 'cr'));
+  const L = C.n - 1, spans = [1, 3, 5, L].filter((v, i, a) => v > 0 && v <= L && a.indexOf(v) === i);
+  const rows = [['Sales', C.S], ['EBITDA', C.EBITDA], ['Net profit', C.PAT], ['EPS', C.EPS], ['Cash from operations', C.CFO], ['Net worth', C.NW], ['Share price', C.PR]];
+  $('#growth').innerHTML = `<thead><tr><th>Measure</th>${spans.map(s => `<th>${s} yr</th>`).join('')}</tr></thead><tbody>` +
+    rows.map(([k, a]) => `<tr><td>${k}</td>${spans.map(s => { const g = C.cagr(a, s); return `<td class="${g < 0 ? 'neg' : ''}">${pct(g)}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
+}
+
+function renderQuarterly() {
+  const Q = C.Q;
+  if (!Q) { $('#qtab').innerHTML = '<tr><td>No quarterly block in this file.</td></tr>'; return; }
+  const X = Q.d.map(ql), c1 = css('--c1'), c2 = css('--c2'), c3 = css('--c3'), c4 = css('--c4'), c5 = css('--c5'), c7 = css('--c7');
+  draw('ch-q', base('bar', X, [bar('Sales', Q.S, c1), bar('Net profit', Q.PAT, c2)], 'cr'));
+  draw('ch-qm', base('line', X, [line('Operating margin', Q.S.map((s, i) => div(Q.OP[i], s)), c3), line('Net margin', Q.S.map((s, i) => div(Q.PAT[i], s)), c4)], 'pct'));
+  draw('ch-ttm', base('line', X, [line('TTM sales', Q.tS, c7), line('TTM net profit', Q.tPAT, c5)], 'cr'));
+  const yoy = a => a.map((v, i) => i >= 4 ? div(v - a[i-4], Math.abs(a[i-4])) : null);
+  const rows = [['Sales', Q.S, 'cr'], ['Expenses', Q.E, 'cr'], ['Operating profit', Q.OP, 'cr'], ['Operating margin', Q.S.map((s, i) => div(Q.OP[i], s)), 'pct'], ['Other income', Q.OI, 'cr'], ['Depreciation', Q.D, 'cr'], ['Interest', Q.I, 'cr'], ['Profit before tax', Q.PBT, 'cr'], ['Tax', Q.TX, 'cr'], ['Net profit', Q.PAT, 'cr'], ['Net margin', Q.S.map((s, i) => div(Q.PAT[i], s)), 'pct'], ['Sales growth YoY', yoy(Q.S), 'pct'], ['Net profit growth YoY', yoy(Q.PAT), 'pct'], ['TTM sales', Q.tS, 'cr'], ['TTM net profit', Q.tPAT, 'cr']];
+  $('#qtab').innerHTML = `<thead><tr><th>₹ Cr</th>${X.map(x => `<th>${x}</th>`).join('')}</tr></thead><tbody>` +
+    rows.map(([k, a, f]) => `<tr><td>${k}</td>${a.map(v => `<td class="${v < 0 ? 'neg' : ''}">${fmt(v, f)}</td>`).join('')}</tr>`).join('') + '</tbody>';
+}
+
+function spark(v) {
+  const p = v.map((x, i) => [i, x]).filter(d => d[1] != null && isFinite(d[1]));
+  if (p.length < 2) return '';
+  const W = 90, H = 24, xs = p.map(d => d[1]), lo = Math.min(...xs), hi = Math.max(...xs), sx = W / (v.length - 1), sy = hi === lo ? 0 : (H - 4) / (hi - lo);
+  const d = p.map((q, i) => (i ? 'L' : 'M') + (q[0] * sx).toFixed(1) + ' ' + (H - 2 - (q[1] - lo) * sy).toFixed(1)).join('');
+  return `<svg width="${W}" height="${H}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--c1)" stroke-width="1.8" stroke-linejoin="round"/></svg>`;
+}
+const GCOL = {Margins: '--c1', Returns: '--c4', Efficiency: '--c3', Leverage: '--c2', 'Cash flow': '--c7', 'Per share': '--c5', Valuation: '--c6'};
+const ROPEN = new Set(['Margins']);
+function drawGroup(g) {
+  const Y = M.secs.pl.dates.map(fy), col = css(GCOL[g] || '--c1');
+  C.R.forEach((r, i) => { if (r.g !== g) return; const isBar = r.fmt === 'cr' || r.fmt === 'days';
+    draw('rc-' + i, base(isBar ? 'bar' : 'line', Y, [isBar ? bar(r.k, r.v, col) : line(r.k, r.v, col)], r.fmt, {})); });
+}
+function renderRatios() {
+  Object.keys(charts).forEach(k => { if (k.startsWith('rc-')) { charts[k].destroy(); delete charts[k]; } });
+  const Y = M.secs.pl.dates.map(fy), L = C.n - 1, groups = [...new Set(C.R.map(r => r.g))];
+  const chev = '<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>';
+  $('#rgroups').innerHTML = groups.map(g => {
+    const rs = C.R.map((r, i) => Object.assign({i}, r)).filter(r => r.g === g), cv = `var(${GCOL[g] || '--c1'})`;
+    return `<details class="card rg" data-g="${g}"${ROPEN.has(g) ? ' open' : ''}><summary><span class="dot" style="background:${cv}"></span><b>${g}</b><span class="cnt">${rs.length} ratios</span>
+      <span class="peek">${rs.slice(0, 3).map(r => `<span>${r.k.replace(/ \(.*\)/, '')}<b>${fmt(r.v[L], r.fmt)}</b></span>`).join('')}</span>${chev}</summary>
+      <div class="rbody"><div class="rgrid">${rs.map(r => `<div class="card mini"><div class="ch"><h3>${r.k}</h3><span>${fmt(r.v[L], r.fmt)}</span></div><div class="fig"><canvas id="rc-${r.i}"></canvas></div></div>`).join('')}</div>
+      <div class="scroll"><table><thead><tr><th>Ratio</th>${Y.map(y => `<th>${y}</th>`).join('')}</tr></thead><tbody>${rs.map(r => `<tr><td>${r.k}</td>${r.v.map(v => `<td class="${v < 0 ? 'neg' : ''}">${fmt(v, r.fmt)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div></details>`;
+  }).join('');
+  groups.forEach(g => { if (ROPEN.has(g)) drawGroup(g); });
+}
+$('#rgroups').addEventListener('toggle', e => { const d = e.target; if (!d.dataset || !d.dataset.g) return; if (d.open) { ROPEN.add(d.dataset.g); drawGroup(d.dataset.g); } else ROPEN.delete(d.dataset.g); }, true);
+$('#r-open').addEventListener('click', () => { C.R.forEach(r => ROPEN.add(r.g)); renderRatios(); });
+$('#r-close').addEventListener('click', () => { ROPEN.clear(); renderRatios(); });
+
+let dcfInit = false;
+function renderValuation() {
+  const Y = M.secs.pl.dates.map(fy).concat('Now'), c1 = css('--c1'), c2 = css('--c2');
+  const R = k => C.R.find(r => r.k === k).v;
+  const now = (a, v) => a.concat(v);
+  draw('ch-pe', base('line', Y, [line('P/E', now(R('P/E'), C.now.pe), c1)], 'x'));
+  draw('ch-ev', base('line', Y, [line('EV / EBITDA', now(R('EV / EBITDA'), C.now.evE), css('--c4'))], 'x'));
+  draw('ch-pb', base('line', Y, [line('P/B', now(R('P/B'), C.now.pb), css('--c5'))], 'x'));
+  const i0 = C.PR.findIndex((p, i) => p > 0 && C.EPS[i] > 0);
+  const idx = a => a.map(v => i0 < 0 || v == null ? null : v / a[i0] * 100);
+  draw('ch-px', base('line', Y.slice(0, -1), [line('Share price', idx(C.PR), css('--c3')), line('EPS', idx(C.EPS), c2)], 'cr'));
+  if (!dcfInit) {
+    const L = C.n - 1, f3 = C.FCF.slice(-3).filter(v => v != null), avg = f3.reduce((a, b) => a + b, 0) / (f3.length || 1);
+    const useP = !(avg > 0), baseF = useP ? C.PAT.slice(-3).reduce((a, b) => a + b, 0) / 3 * .7 : avg;
+    const g5 = C.cagr(C.S, Math.min(5, L)); const g1 = Math.max(4, Math.min(20, Math.round((g5 ?? .1) * 100)));
+    const set = (id, v) => $(id).value = v;
+    set('#d-fcf', baseF.toFixed(2)); set('#d-g1', g1); set('#d-g2', Math.max(4, Math.round(g1 / 2))); set('#d-tg', 4); set('#d-r', 12);
+    set('#d-nd', (C.DEBT[L] - C.CASH[L] - C.INV[L]).toFixed(2)); set('#d-sh', (C.SH[L] || 0).toFixed(4)); set('#d-px', C.now.price);
+    $('#d-note').dataset.base = useP ? 'Base FCF defaults to 70% of the 3-year average net profit because recent free cash flow was negative.' : 'Base FCF defaults to the 3-year average free cash flow.';
+    dcfInit = true;
+  }
+  runDCF();
+}
+function runDCF() {
+  const v = id => parseFloat($(id).value), F = v('#d-fcf'), g1 = v('#d-g1') / 100, g2 = v('#d-g2') / 100, tg = v('#d-tg') / 100, r = v('#d-r') / 100, nd = v('#d-nd') || 0, sh = v('#d-sh'), px = v('#d-px');
+  const value = (G1, G2) => { let f = F, pv = 0; const fl = []; for (let y = 1; y <= 10; y++) { f *= 1 + (y <= 5 ? G1 : G2); fl.push(f); pv += f / Math.pow(1 + r, y); } const tv = f * (1 + tg) / (r - tg) / Math.pow(1 + r, 10); return {eq: pv + tv - nd, fl, pv, tv}; };
+  if ([F, g1, g2, tg, r, sh].some(x => isNaN(x)) || r <= tg || !sh) { $('#d-val').textContent = '—'; $('#d-vs').textContent = r <= tg ? 'Discount rate must be above terminal growth.' : 'Fill in every field.'; return; }
+  const o = value(g1, g2), ps = o.eq / sh;
+  $('#d-val').textContent = '₹' + inr(ps);
+  const up = div(ps - px, px);
+  $('#d-vs').innerHTML = up == null ? '' : `<span class="${up >= 0 ? 'up' : 'down'}">${up >= 0 ? '▲' : '▼'} ${Math.abs(up * 100).toFixed(0)}% ${up >= 0 ? 'above' : 'below'}</span> the current price of ₹${inr(px)}`;
+  // reverse DCF: uniform growth that justifies current price
+  let lo = -0.5, hi = 1, imp = null;
+  if (F > 0 && px > 0) { for (let k = 0; k < 60; k++) { const m = (lo + hi) / 2; (value(m, m).eq / sh > px) ? hi = m : lo = m; } imp = (lo + hi) / 2; }
+  $('#d-note').textContent = `Equity value ₹${inr(o.eq)} Cr (PV of 10-year FCF ₹${inr(o.pv)} Cr + terminal ₹${inr(o.tv)} Cr − net debt). ` + (imp != null && imp > -0.49 && imp < 0.99 ? `The current price implies about ${(imp * 100).toFixed(1)}% FCF growth a year for 10 years. ` : '') + ($('#d-note').dataset.base || '');
+  const Y = Array.from({length: 10}, (_, i) => 'Y' + (i + 1));
+  draw('ch-dcf', base('bar', Y, [bar('Projected FCF', o.fl, css('--c7'))], 'cr'));
+}
+
+let EDITS = {};
+const ekey = () => 'fx-edits:' + M.name;
+function loadEdits() { try { EDITS = JSON.parse(localStorage.getItem(ekey()) || '{}'); } catch (e) { EDITS = {}; } }
+function storeEdits() { try { localStorage.setItem(ekey(), JSON.stringify(EDITS)); } catch (e) {} }
+function applyEdits() { aoa = orig.map(r => r.slice()); for (const k in EDITS) { const [r, c] = k.split(',').map(Number); if (!aoa[r]) continue; while (aoa[r].length <= c) aoa[r].push(null); aoa[r][c] = EDITS[k]; } }
+
+function renderData() {
+  let h = '';
+  ['meta', 'pl', 'q', 'bs', 'cf', 'price', 'der'].forEach(k => {
+    const s = M.secs[k]; if (!s || !s.rows.length) return;
+    const heads = k === 'meta' ? ['Value'] : s.dates.map(k === 'q' ? ql : fy);
+    h += `<h2>${SECNAME[k]}</h2><div class="scroll dt"><table><thead><tr><th>${k === 'meta' ? 'Item' : '₹ Cr'}</th>${heads.map(x => `<th>${x}</th>`).join('')}</tr></thead><tbody>`;
+    s.rows.forEach(x => { h += `<tr><td>${x.label}</td>${x.cols.map((c, j) => { const v = x.vals[j], key = x.r + ',' + c; return `<td><input data-k="${key}" aria-label="${x.label} ${heads[j]}" inputmode="decimal" value="${v == null ? '' : +v}" class="${key in EDITS ? 'ed' : ''}"></td>`; }).join('')}</tr>`; });
+    h += '</tbody></table></div>';
+    if (k === 'bs') {
+      const L = get('bs','Equity Share Capital').map((v, i) => v + get('bs','Reserves')[i] + get('bs','Borrowings')[i] + get('bs','Other Liabilities')[i]);
+      const As = get('bs','Net Block').map((v, i) => v + get('bs','Capital Work in Progress')[i] + get('bs','Investments')[i] + get('bs','Other Assets')[i]);
+      const bad = L.map((v, i) => Math.abs(v - As[i]) > 0.05 ? fy(s.dates[i]) : null).filter(Boolean);
+      if (bad.length) h += `<p class="warn">Liabilities and assets don't balance in ${bad.join(', ')}. Check your edits.</p>`;
+    }
+  });
+  $('#dtabs').innerHTML = h;
+}
+
+function recompute() { M = parse(aoa); C = calc(); headline(); kpis(); renderLib(); renderView(); const n = Object.keys(EDITS).length; $('#reset').hidden = !n; $('#reset').textContent = n ? `Reset ${n} edit${n > 1 ? 's' : ''}` : 'Reset edits'; }
+function load(rows, name, srcText) {
+  orig = rows.map(r => (r || []).slice()); aoa = orig; M = parse(orig); fileName = name;
+  loadEdits(); applyEdits(); dcfInit = false; loadSoic(); loadPx();
+  $('#src').textContent = srcText;
+  libSave(); try { localStorage.setItem('fx-last', M.name); } catch (e) {}
+  recompute();
+}
+
+const VIEWS = ['overview', 'quarterly', 'ratios', 'valuation', 'score', 'compare', 'data'];
+const VNAME = {overview: 'Overview', quarterly: 'Quarterly results', ratios: 'Ratio analysis', valuation: 'Valuation', score: 'SOIC score', compare: 'Compare companies', data: 'Edit data'};
+let lastView = null;
+function renderView() {
+  if (!M) return;
+  const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview';
+  VIEWS.forEach(x => { $('#' + x).hidden = x !== v; });
+  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + v));
+  $('#crumb').textContent = VNAME[v]; $('#kpis').hidden = v !== 'overview';
+  if (lastView !== v && lastView !== null) scrollTo(0, 0); lastView = v;
+  ({overview: renderOverview, quarterly: renderQuarterly, ratios: renderRatios, valuation: renderValuation, score: renderScore, compare: renderCompare, data: renderData})[v]();
+}
+
+async function readFile(f) {
+  try {
+    const wb = XLSX.read(await f.arrayBuffer(), {cellDates: true});
+    let ws = wb.SheetNames.find(n => /^data ?sheet$/i.test(n.trim()));
+    if (!ws) ws = wb.SheetNames.find(n => { const a = wb.Sheets[n]['A1']; return a && /company name/i.test(String(a.v)); });
+    if (!ws) throw new Error('No "Data Sheet" found. Use an Export to Excel file from screener.in.');
+    const sh = wb.Sheets[ws]; const ref = XLSX.utils.decode_range(sh['!ref'] || 'A1');
+    const rows = XLSX.utils.sheet_to_json(sh, {header: 1, raw: true, defval: null, blankrows: true});
+    for (let i = 0; i < ref.s.r; i++) rows.unshift([]);
+    load(rows, f.name.replace(/\.\w+$/, ''), `Loaded ${f.name}`);
+    toast('Loaded ' + M.name);
+  } catch (e) { toast(e.message || 'Could not read that file'); console.error(e); }
+}
+
+$('#file').addEventListener('change', e => { if (e.target.files[0]) readFile(e.target.files[0]); e.target.value = ''; });
+let dragN = 0;
+addEventListener('dragenter', e => { e.preventDefault(); dragN++; $('#drop').classList.add('on'); });
+addEventListener('dragleave', () => { if (--dragN <= 0) { dragN = 0; $('#drop').classList.remove('on'); } });
+addEventListener('dragover', e => e.preventDefault());
+addEventListener('drop', e => { e.preventDefault(); dragN = 0; $('#drop').classList.remove('on'); const fs = [...e.dataTransfer.files]; if (!fs.length) return; if (fs.every(f => /\.(csv|txt)$/i.test(f.name))) loadPxFiles(fs); else readFile(fs[0]); });
+addEventListener('hashchange', renderView);
+
+$('#dtabs').addEventListener('change', e => {
+  const t = e.target; if (!t.dataset.k) return;
+  const raw = t.value.replace(/,/g, '').trim(), [r, c] = t.dataset.k.split(',').map(Number);
+  if (raw !== '' && isNaN(+raw)) { toast('Enter a number'); t.value = aoa[r][c] ?? ''; return; }
+  const v = raw === '' ? null : +raw, o = (orig[r] || [])[c];
+  const same = (o == null || o === '') ? v == null : (v != null && Math.abs(+o - v) < 1e-9);
+  if (same) delete EDITS[t.dataset.k]; else EDITS[t.dataset.k] = v;
+  storeEdits(); applyEdits();
+  const y = scrollY; recompute(); scrollTo(0, y);
+});
+$('#reset').addEventListener('click', () => { EDITS = {}; storeEdits(); applyEdits(); recompute(); toast('Edits cleared'); });
+$('#dcfin').addEventListener('input', runDCF);
+
+
+// ---- Technicals from daily price history (NSE / BSE / generic OHLCV CSV) ----
+let PX = null, TECH = null;
+const pkey = () => 'fx-px:' + M.name;
+function loadPx() { try { PX = JSON.parse(localStorage.getItem(pkey()) || 'null'); } catch (e) { PX = null; } TECH = PX ? techCalc() : null; }
+function storePx() { try { PX ? localStorage.setItem(pkey(), JSON.stringify(PX)) : localStorage.removeItem(pkey()); } catch (e) {} }
+const MONI = {jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11};
+function pdate(v) {
+  if (v instanceof Date && !isNaN(v)) return Date.UTC(v.getFullYear(), v.getMonth(), v.getDate());
+  if (typeof v === 'number') { if (v > 19000101 && v < 21001231) return Date.UTC(Math.floor(v / 1e4), Math.floor(v / 100) % 100 - 1, v % 100); if (v > 20000 && v < 80000) { const d = new Date(Math.round((v - 25569) * 864e5)); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); } return null; }
+  const s = String(v ?? '').trim().replace(/^"|"$/g, ''); let m;
+  const yy = y => (y = +y) < 100 ? 2000 + y : y;
+  if ((m = s.match(/^(\d{1,2})[-\/ ]([A-Za-z]{3,})[-\/ ,]*(\d{2,4})/))) { const mo = MONI[m[2].slice(0, 3).toLowerCase()]; return mo == null ? null : Date.UTC(yy(m[3]), mo, +m[1]); }
+  if ((m = s.match(/^([A-Za-z]{3,})[ -](\d{1,2}),?[ -](\d{4})/))) { const mo = MONI[m[1].slice(0, 3).toLowerCase()]; return mo == null ? null : Date.UTC(+m[3], mo, +m[2]); }
+  if ((m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/))) return Date.UTC(+m[1], m[2] - 1, +m[3]);
+  if ((m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})/))) return Date.UTC(yy(m[3]), m[2] - 1, +m[1]);
+  if ((m = s.match(/^(\d{4})(\d{2})(\d{2})$/))) return Date.UTC(+m[1], m[2] - 1, +m[3]);
+  return null;
+}
+const pnum = v => { if (typeof v === 'number') return v; let s = String(v ?? '').replace(/[",\s₹%]/g, ''); if (s === '' || s === '-') return null; const m = s.match(/^(-?[\d.]+)([KMBL]|CR)$/i); if (m) return +m[1] * ({k: 1e3, m: 1e6, b: 1e9, l: 1e5, cr: 1e7})[m[2].toLowerCase()]; return isNaN(+s) ? null : +s; };
+function csvRows(t) {
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < t.length; i++) {
+    const ch = t[i];
+    if (q) { if (ch === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += ch; }
+    else if (ch === '"') q = true; else if (ch === ',' || ch === ';' || ch === '\t') { row.push(f); f = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && t[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += ch;
+  }
+  if (f !== '' || row.length) { row.push(f); rows.push(row); }
+  return rows;
+}
+function pxFromRows(rows) {
+  const norm = h => String(h ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const hi = rows.findIndex(r => r && r.some(c => /date|timestamp/.test(norm(c))) && r.some(c => { const h = norm(c); return h.includes('close') || h === 'price' || h === 'last' || h === 'ltp'; }));
+  if (hi < 0) throw new Error('Could not find a Date column and a Close (or Price) column in the price file.');
+  const H = rows[hi].map(norm);
+  const pick = (exact, inc, avoid = /^$/) => { let i = -1; for (const e of exact) { i = H.indexOf(e); if (i >= 0) break; } if (i < 0 && inc) i = H.findIndex(h => h.includes(inc) && !avoid.test(h)); return i; };
+  const ci = {d: pick(['date', 'timestamp', 'tradedate'], 'date'), o: pick(['open', 'openprice'], 'open'), h: pick(['high', 'highprice'], 'high', /52/), l: pick(['low', 'lowprice'], 'low', /52/),
+    c: pick(['close', 'closeprice', 'closingprice', 'price', 'last', 'ltp'], 'close', /prev|adj/), v: pick(['volume', 'vol', 'totaltradedquantity', 'noofshares', 'tottrdqty', 'sharestraded', 'qty'], 'volume')};
+  if (ci.c < 0) ci.c = pick([], 'close', /prev/);
+  const out = {};
+  rows.slice(hi + 1).forEach(r => {
+    const d = pdate(r[ci.d]), c = pnum(r[ci.c]); if (d == null || !c) return;
+    const g = k => ci[k] >= 0 ? pnum(r[ci[k]]) : null;
+    out[d] = [d, g('o') ?? c, g('h') ?? c, g('l') ?? c, c, g('v')];
+  });
+  return out;
+}
+async function loadPxFiles(files) {
+  try {
+    const all = {};
+    if (PX) PX.forEach(r => all[r[0]] = r);
+    let added = 0;
+    for (const f of files) {
+      let rows;
+      if (/\.csv$|\.txt$/i.test(f.name)) rows = csvRows(await f.text());
+      else { const wb = XLSX.read(await f.arrayBuffer(), {cellDates: true}); rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1, raw: true, defval: null}); }
+      const got = pxFromRows(rows); added += Object.keys(got).length; Object.assign(all, got);
+    }
+    if (!added) throw new Error('No price rows found in that file.');
+    PX = Object.values(all).sort((a, b) => a[0] - b[0]);
+    storePx(); TECH = techCalc();
+    if (location.hash !== '#score') location.hash = 'score'; else renderScore();
+    kpis(); toast(`Loaded ${PX.length} price rows`);
+  } catch (e) { toast(e.message || 'Could not read the price file'); console.error(e); }
+}
+function weekly(px) {
+  const W = {d: [], o: [], h: [], l: [], c: [], v: []}; let key = null;
+  px.forEach(([d, o, h, l, c, v]) => {
+    const k = d - ((new Date(d).getUTCDay() + 6) % 7) * 864e5;
+    if (k !== key) { key = k; W.d.push(d); W.o.push(o); W.h.push(h); W.l.push(l); W.c.push(c); W.v.push(v || 0); }
+    else { const i = W.c.length - 1; W.d[i] = d; W.h[i] = Math.max(W.h[i], h); W.l[i] = Math.min(W.l[i], l); W.c[i] = c; W.v[i] += v || 0; }
+  });
+  return W;
+}
+const sma = (a, p) => a.map((_, i) => i < p - 1 ? null : a.slice(i - p + 1, i + 1).reduce((x, y) => x + y, 0) / p);
+function rma(a, p) { const out = Array(a.length).fill(null); let s = 0, n = 0, prev = null; a.forEach((v, i) => { if (v == null) return; if (prev == null) { s += v; n++; if (n === p) { prev = s / p; out[i] = prev; } } else { prev = (prev * (p - 1) + v) / p; out[i] = prev; } }); return out; }
+function rsiCalc(c, p = 14) { const g = c.map((v, i) => i ? Math.max(v - c[i - 1], 0) : null), l = c.map((v, i) => i ? Math.max(c[i - 1] - v, 0) : null); const ag = rma(g, p), al = rma(l, p); return c.map((_, i) => ag[i] == null ? null : al[i] === 0 ? 100 : 100 - 100 / (1 + ag[i] / al[i])); }
+function trCalc(W) { return W.c.map((_, i) => i ? Math.max(W.h[i] - W.l[i], Math.abs(W.h[i] - W.c[i - 1]), Math.abs(W.l[i] - W.c[i - 1])) : null); }
+function adxCalc(W, p = 14) {
+  const tr = trCalc(W), pdm = W.h.map((h, i) => { if (!i) return null; const u = h - W.h[i - 1], d = W.l[i - 1] - W.l[i]; return u > d && u > 0 ? u : 0; }), ndm = W.l.map((l, i) => { if (!i) return null; const u = W.h[i] - W.h[i - 1], d = W.l[i - 1] - l; return d > u && d > 0 ? d : 0; });
+  const atr = rma(tr, p), sp = rma(pdm, p), sn = rma(ndm, p);
+  const dx = atr.map((a, i) => { if (a == null || !a) return null; const P = 100 * sp[i] / a, N = 100 * sn[i] / a; return P + N ? 100 * Math.abs(P - N) / (P + N) : 0; });
+  return rma(dx, p);
+}
+function vstopCalc(W, len = 20, mult = 2) {
+  const atr = rma(trCalc(W), len); let up = true, mx = null, mn = null, vs = null, started = false;
+  W.c.forEach((src, i) => {
+    if (atr[i] == null) { mx = mx == null ? src : Math.max(mx, src); mn = mn == null ? src : Math.min(mn, src); return; }
+    const am = atr[i] * mult, max1 = Math.max(mx ?? src, src), min1 = Math.min(mn ?? src, src), stop = up ? max1 - am : min1 + am;
+    let v1 = !started ? stop : (up ? Math.max(vs, stop) : Math.min(vs, stop)); started = true;
+    const nu = src - v1 >= 0, ch = nu !== up; up = nu;
+    mx = ch ? src : max1; mn = ch ? src : min1; vs = ch ? (up ? mx - am : mn + am) : v1;
+  });
+  return vs == null ? null : {up, level: vs};
+}
+function techCalc() {
+  if (!PX || PX.length < 30) return null;
+  const W = weekly(PX), n = W.c.length, i = n - 1, cl = W.c[i];
+  const T = {W, n, cl, from: PX[0][0], to: PX[PX.length - 1][0], days: PX.length};
+  T.rsi = rsiCalc(W.c)[i]; T.adx = adxCalc(W)[i];
+  T.ma30 = sma(W.c, 30);
+  const slope = (ma, k) => ma[i] != null && ma[i - k] != null ? (ma[i] - ma[i - k]) / ma[i - k] : null;
+  const dir = s => s == null ? null : s > 0 ? 'rising' : 'falling';
+  const trend = (p, k, thr) => { const ma = sma(W.c, p), s = slope(ma, k); if (s == null) return null; const dr = Math.abs(s) < thr ? 'flat' : dir(s); return {v: cl > ma[i] && s >= thr ? 'Uptrend' : cl < ma[i] && s <= -thr ? 'Downtrend' : 'Sideways', why: `price ${cl > ma[i] ? 'above' : 'below'} its ${p}-week average, which is ${dr}`}; };
+  T.sec = trend(10, 4, 0.01); T.pri = trend(40, 8, 0.02);
+  const s30 = slope(T.ma30, 5);
+  if (s30 != null) {
+    const above = cl > T.ma30[i], flat = Math.abs(s30) < 0.015, prior = T.ma30[i - 26] != null ? T.ma30[i] - T.ma30[i - 26] : s30;
+    const st = !flat && s30 > 0 && above ? 2 : !flat && s30 < 0 && !above ? 4 : prior > 0 ? 3 : 1;
+    T.stage = {v: 'Stage ' + st, why: `price ${above ? 'above' : 'below'} a ${flat ? 'flat' : dir(s30)} 30-week average` + (flat || (s30 > 0) !== above ? `, after ${prior > 0 ? 'an advance' : 'a decline'}` : '')};
+  }
+  if (n >= 14 && W.v.some(v => v)) { let u = 0, d = 0; for (let k = n - 13; k < n; k++) { if (W.c[k] > W.c[k - 1]) u += W.v[k]; else if (W.c[k] < W.c[k - 1]) d += W.v[k]; } T.pvr = d ? u / d : (u ? 9 : 1); }
+  T.hi52 = Math.max(...W.h.slice(-52)); T.hiAll = Math.max(...W.h); T.years = (T.to - T.from) / (365.25 * 864e5);
+  T.res = cl >= 0.97 * T.hiAll ? {v: 'Blue sky scenario', why: `within 3% of the highest price in the ${T.years.toFixed(1)} years loaded`} :
+    (T.pri && T.pri.v === 'Downtrend' && cl < 0.6 * T.hiAll) ? {v: 'Long term Downtrend', why: `${pct(1 - cl / T.hiAll)} below its high, 40-week trend down`} :
+    cl >= 0.85 * T.hi52 ? {v: 'Close to 52 week high or retracement', why: `${pct(1 - cl / T.hi52)} below the 52-week high of ₹${inr(T.hi52)}`} :
+    {v: 'Overhead supply in last 2 years', why: `${pct(1 - cl / T.hi52)} below the 52-week high of ₹${inr(T.hi52)}`};
+  T.vs = vstopCalc(W);
+  let pk = 0; T.dd = 0; PX.forEach(r => { pk = Math.max(pk, r[4]); T.dd = Math.min(T.dd, r[4] / pk - 1); });
+  return T;
+}
+function techAuto() {
+  const T = TECH, o = {}; if (!T) return o;
+  if (T.adx != null) o.adx = {v: T.adx > 40 ? 'Above 40' : T.adx >= 20 ? '20 to 40' : '0 to 20', why: `weekly ADX(14) ${T.adx.toFixed(1)}`};
+  if (T.rsi != null) o.rsi = {v: T.rsi > 75 ? 'Above 75' : T.rsi >= 50 ? 'Between 50 to 75' : 'Below 45', why: `weekly RSI(14) ${T.rsi.toFixed(1)}` + (T.rsi >= 45 && T.rsi < 50 ? ' (the sheet has no 45–50 option; both score 0)' : '')};
+  if (T.stage) o.stage = T.stage;
+  if (T.pvr != null) o.pva = {v: T.pvr >= 1 ? 'Positive Trend' : 'Negative Trend', why: `up-week volume ${T.pvr.toFixed(2)}× down-week volume over 13 weeks`};
+  if (T.sec) o.sec_tr = T.sec; if (T.pri) o.pri_tr = T.pri;
+  o.resist = T.res;
+  if (T.vs) o.vstop = {v: T.vs.up ? 'Yes' : 'No', why: `weekly V-stop (20, 2×) is ${T.vs.up ? 'below' : 'above'} the price at ₹${inr(T.vs.level)}`};
+  return o;
+}
+const dstr = ms => { const d = new Date(ms); return d.getUTCDate() + ' ' + MON[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); };
+function renderPx() {
+  const T = TECH;
+  $('#pxclear').hidden = !PX;
+  if (!T) {
+    $('#px-info').innerHTML = PX ? `Only ${PX.length} trading days loaded; load at least a year.` : 'Load daily price history to answer the 8 technical questions. On nseindia.com, open the stock, go to <b>Historical data</b>, choose 1 year and download the CSV. For stage analysis and resistance, load 2–3 years (one file per year, select them together). BSE, TradingView, AmiBroker and Yahoo CSVs with Date, Open, High, Low, Close and Volume columns also work.';
+    $('#px-body').innerHTML = ''; return;
+  }
+  const need = T.n < 56 ? ' Load at least 2 years for stage analysis and the 40-week trend.' : '';
+  const gaps = PX.slice(1).map((r, i) => (r[0] - PX[i][0]) / 864e5).sort((a, b) => a - b), gap = gaps[Math.floor(gaps.length / 2)] || 1, kind = gap >= 25 ? 'Monthly' : gap >= 5 ? 'Weekly' : 'Daily';
+  $('#px-info').textContent = `${kind} prices ${dstr(T.from)} – ${dstr(T.to)} · ${T.days} ${kind === 'Daily' ? 'trading days' : kind === 'Weekly' ? 'weekly bars' : 'monthly bars'}${kind === 'Daily' ? ` · ${T.n} weeks` : ''}. Load another file to extend it.${need}` + (kind === 'Monthly' ? ' Monthly data is too coarse for weekly RSI, ADX and V-stop; use daily or weekly prices.' : '');
+  const chip = (k, v) => `<span>${k}<b>${v}</b></span>`;
+  $('#px-body').innerHTML = `<div class="chips">${chip('Last close', '₹' + inr(T.cl))}${chip('52-week high', '₹' + inr(T.hi52))}${T.rsi != null ? chip('Weekly RSI', T.rsi.toFixed(1)) : ''}${T.adx != null ? chip('Weekly ADX', T.adx.toFixed(1)) : ''}${T.ma30[T.n - 1] != null ? chip('30-week average', '₹' + inr(T.ma30[T.n - 1])) : ''}${T.vs ? chip('V-stop', (T.vs.up ? 'up, ₹' : 'down, ₹') + inr(T.vs.level)) : ''}</div>
+    <div class="ch"><h3>Weekly close and 30-week average</h3><span>₹</span></div><div class="fig" style="height:260px"><canvas id="ch-pxw"></canvas></div>`;
+  const X = T.W.d.map(d => { const t = new Date(d); return MON[t.getUTCMonth()] + ' ' + String(t.getUTCFullYear()).slice(2); });
+  const l1 = line('Weekly close', T.W.c, css('--c1')), l2 = line('30-week average', T.ma30, css('--c6')); l1.pointRadius = 0; l2.pointRadius = 0; l1.pointHoverRadius = 4; l2.pointHoverRadius = 4;
+  draw('ch-pxw', base('line', X, [l1, l2], 'cr', {}));
+}
+$('#pxfile').addEventListener('change', e => { if (e.target.files.length) loadPxFiles([...e.target.files]); e.target.value = ''; });
+$('#pxclear').addEventListener('click', () => { PX = null; TECH = null; storePx(); renderScore(); kpis(); toast('Price history removed'); });
+
+// ---- SOIC ranking score ----
+const SOIC = [
+ {s: 'Industry analysis', items: [
+  {id: 'ind_growth', q: 'Industry growth', h: 'Is it a growing industry or a stagnant one?', o: [['Growing Industry', 10], ['Stagnant Industry', 0], ['Cyclical in an Upturn', 5]]},
+  {id: 'compet', q: 'Competitiveness', h: 'If one company controls the industry, or the top 7 players hold less than 50% (crowded).', o: [['Monopoly', 10], ['Oligopoly', 5], ['Duopoly That Cooperate', 10], ['Duopoly That Compete', 5], ['Too Many Players with High ROCE', 5], ['Too Many Players with Low ROCE', 0]]},
+  {id: 'regul', q: 'Regulation', h: 'Is there regulatory interference by the government?', o: [['Yes', 0], ['No', 5]]},
+  {id: 'winds', q: 'Sector headwinds / tailwinds', h: 'Near-term tailwinds or headwinds?', o: [['Tailwind', 10], ['Headwind', 0]]},
+  {id: 'ind_type', q: 'Industry type', h: 'Structural or cyclical industry?', o: [['Structural (10 Years Consistency)', 10], ['Shallow Cyclical (2 to 3 Years Growth)', 5], ['Cyclical', 0]]}]},
+ {s: 'Fundamental analysis', items: [
+  {id: 'marg_hi', q: 'Margins', h: 'Are the margins much higher than normal? Due to product mix or cycle?', o: [['Yes due to Product Mix change or Operating Leverage', 10], ['Yes, these are peak margins', -5], ['No', 5]]},
+  {id: 'marg_stab', q: 'Margin stability', h: 'Are the margins stable or volatile?', o: [['Stable', 10], ['Volatile', 0]]},
+  {id: 'growth', q: 'Growth', h: 'Is the company growing faster than the industry?', o: [['Yes', 10], ['No', 0]]},
+  {id: 'btype', q: 'Business type', h: 'Is it B2C, B2B or B2G?', o: [['B2C', 10], ['B2B', 5], ['B2G', 0]]},
+  {id: 'trig', q: 'Near-term triggers', h: 'Any growth triggers in the next 4–6 quarters? (capacity, margins, cycle, new product, geography)', o: [['Yes', 10], ['No', 0]]},
+  {id: 'rev', q: 'Type of revenue', h: 'Are revenues annuity (repeat demand) or one-time?', o: [['Fully Annuity', 10], ['Higher Annuity, Lower One time', 5], ['Higher One Time, Lower Annuity', 3], ['Fully One Time', 0]]},
+  {id: 'capall', q: 'Capital allocation', h: 'How is the capital allocation? (no diworsification)', o: [['Good', 10], ['Allocated capital in Non-core Areas', 0]]},
+  {id: 'medgr', q: 'Medium-term growth', h: 'Is there room to grow for the next 3–5 years?', o: [['Yes for more than 2 years', 10], ['Yes only for next 1 to 2 years', 5], ['No', 0]]}]},
+ {s: 'Technical analysis', items: [
+  {id: 'adx', q: 'ADX', h: 'ADX 14 on weekly charts', o: [['Above 40', 20], ['20 to 40', 10], ['0 to 20', -5]]},
+  {id: 'rsi', q: 'RSI', h: 'Weekly RSI. Above 75 can lead to a near-term correction.', o: [['Between 50 to 75', 10], ['Above 75', 0], ['Below 45', 0]]},
+  {id: 'stage', q: 'Stage analysis', h: 'Stage 1 accumulation, 2 mark-up, 3 distribution, 4 mark-down', o: [['Stage 1', 0], ['Stage 2', 20], ['Stage 3', 5], ['Stage 4', -5]]},
+  {id: 'pva', q: 'Price volume action', h: 'High volume on big up days with a positive trend?', o: [['Positive Trend', 20], ['Negative Trend', -10]]},
+  {id: 'sec_tr', q: 'Secondary trend', h: 'Sideways, upward or downward?', o: [['Uptrend', 10], ['Sideways', 5], ['Downtrend', 0]]},
+  {id: 'pri_tr', q: 'Primary trend', h: 'Sideways, upward or downward?', o: [['Uptrend', 10], ['Sideways', 5], ['Downtrend', 0]]},
+  {id: 'resist', q: 'Resistance', h: 'Any zone of resistance in the recent past?', o: [['Overhead supply in last 2 years', -5], ['Close to 52 week high or retracement', 5], ['Blue sky scenario', 10], ['Long term Downtrend', -10]]},
+  {id: 'vstop', q: 'V-stop', h: 'Is V-stop positive on the weekly / monthly time frame?', o: [['Yes', 10], ['No', 0]]}]},
+ {s: 'Valuation', items: [
+  {id: 'patg', q: 'PAT growth', h: 'Is profit after tax growing more than 20% a year (and expected to keep doing so)?', o: [['More than 20%', 10], ['Between 12 to 20%', 5], ['Less than 12%', 0]]},
+  {id: 'hist', q: 'Stock history', h: 'Has the stock ever fallen 60%+ from its peak, irrespective of the market?', o: [['Yes', 0], ['No', 10]]},
+  {id: 'pe50', q: 'P/E ratio', h: 'Is the P/E above 50? (Rarely do companies above 50 P/E make money.)', o: [['Yes', 0], ['No', 5]]},
+  {id: 'peg', q: 'PEG ratio', h: 'P/E ÷ last 3 years of PAT growth', o: [['Above 2', 0], ['Between 1.5 to 2', 5], ['Less than 1.5', 10]]}]},
+ {s: 'Forensic checks', items: [
+  {id: 'cfo_eb', q: 'CFO to EBITDA', h: 'How well does EBITDA convert to operating cash flow?', o: [['Above 70%', 10], ['Between 50% to 70%', 5], ['Less than 50%', 0], ['Less than 50% and Borrowings are increasing', -5], ['Negative', -10]]},
+  {id: 'de', q: 'Debt to equity', h: 'Debt to equity ratio of the company', o: [['More than 1.2', -10], ['Between 0.7 to 1.2', 0], ['Less than 0.7', 10]]},
+  {id: 'audit', q: 'Auditor resignation', h: 'Any auditor resignation in the last 3 years?', o: [['Yes', -10], ['No', 0]]},
+  {id: 'contl', q: 'Contingent liability', h: 'Contingent liabilities as a share of net worth', o: [['More than 15%', -10], ['Less than 15%', 10]]},
+  {id: 'pledge', q: 'Pledging', h: 'Is promoter holding pledged?', o: [['Yes, More Than 10%', -10], ['Yes Upto 10%', 0], ['No', 10]]}]}
+];
+const SOIC_ITEMS = SOIC.flatMap(g => g.items.map(it => Object.assign({sec: g.s}, it)));
+const soicMax = it => Math.max(...it.o.map(x => x[1]));
+const soicPts = (it, a) => { const f = it.o.find(x => x[0] === a); return f ? f[1] : 0; };
+let SANS = {};
+const skey = () => 'fx-soic:' + M.name;
+function loadSoic() { try { SANS = JSON.parse(localStorage.getItem(skey()) || '{}'); } catch (e) { SANS = {}; } }
+function storeSoic() { try { localStorage.setItem(skey(), JSON.stringify(SANS)); } catch (e) {} }
+
+function soicAuto() {
+  const out = {}, L = C.n - 1, k3 = Math.min(3, L), R = k => C.R.find(r => r.k === k).v;
+  const pat3 = C.cagr(C.PAT, k3);
+  out.patg = pat3 == null ? {v: 'Less than 12%', why: `profit did not grow over ${k3} years`} :
+    {v: pat3 > 0.2 ? 'More than 20%' : pat3 >= 0.12 ? 'Between 12 to 20%' : 'Less than 12%', why: `${k3}-year profit CAGR ${pct(pat3)}`};
+  const pe = C.now.pe;
+  if (pe != null && pe > 0) {
+    out.pe50 = {v: pe > 50 ? 'Yes' : 'No', why: `P/E (TTM) ${pe.toFixed(1)}×`};
+    if (pat3 == null || pat3 <= 0) out.peg = {v: 'Above 2', why: `P/E ${pe.toFixed(1)}×, profit not growing`};
+    else { const peg = pe / (pat3 * 100); out.peg = {v: peg > 2 ? 'Above 2' : peg >= 1.5 ? 'Between 1.5 to 2' : 'Less than 1.5', why: `PEG ${peg.toFixed(2)} (P/E ${pe.toFixed(1)}× ÷ ${(pat3 * 100).toFixed(1)}% growth)`}; }
+  }
+  const sum = (a, n) => a.slice(-n).reduce((x, y) => x + (y || 0), 0);
+  const cfo = sum(C.CFO, 3), eb = sum(C.EBITDA, 3), ce = div(cfo, eb), debtUp = C.DEBT[L] > C.DEBT[L - k3];
+  if (ce != null) out.cfo_eb = {v: cfo < 0 ? 'Negative' : ce > 0.7 ? 'Above 70%' : ce >= 0.5 ? 'Between 50% to 70%' : debtUp ? 'Less than 50% and Borrowings are increasing' : 'Less than 50%',
+    why: `3-year CFO ÷ EBITDA ${pct(ce)}` + (ce < 0.5 ? `, borrowings ${debtUp ? 'up' : 'not up'}` : '')};
+  const de = div(C.DEBT[L], C.NW[L]);
+  if (de != null) out.de = {v: de > 1.2 ? 'More than 1.2' : de >= 0.7 ? 'Between 0.7 to 1.2' : 'Less than 0.7', why: `debt ÷ equity ${de.toFixed(2)}×`};
+  const om = R('Operating margin (EBITDA)').filter(v => v != null);
+  if (om.length >= 4) {
+    const mean = om.reduce((a, b) => a + b, 0) / om.length, sd = Math.sqrt(om.reduce((a, b) => a + (b - mean) ** 2, 0) / om.length), cv = Math.abs(sd / mean);
+    out.marg_stab = {v: cv <= 0.2 ? 'Stable' : 'Volatile', why: `operating margin ${(Math.min(...om) * 100).toFixed(0)}–${(Math.max(...om) * 100).toFixed(0)}% over ${om.length} years`};
+    const prior = om.slice(0, -1).slice().sort((a, b) => a - b), med = prior[Math.floor(prior.length / 2)], last = om[om.length - 1];
+    out.marg_hi = (last > med * 1.2 && last - med > 0.02) ? {v: 'Yes, these are peak margins', why: `latest ${pct(last)} vs usual ${pct(med)}; pick “product mix” if that explains it`} : {v: 'No', why: `latest ${pct(last)} vs usual ${pct(med)}`};
+  }
+  let peak = 0, dd = 0; C.PR.forEach(p => { if (p > 0) { peak = Math.max(peak, p); dd = Math.min(dd, p / peak - 1); } });
+  if (peak) out.hist = dd <= -0.6 ? {v: 'Yes', why: `year-end price fell ${pct(-dd)} from peak`} : {v: 'No', why: `year-end prices fell at most ${pct(-dd)}; check intra-year lows`};
+  const t = techAuto();
+  if (TECH && out.hist) { const d = TECH.dd; if (d <= -0.6) out.hist = {v: 'Yes', why: `closing prices fell ${pct(-d)} from a peak`}; else if (out.hist.v === 'No') out.hist = {v: 'No', why: `closing prices fell at most ${pct(-d)} in the history loaded; year-end prices at most ${out.hist.why.match(/[\d.]+%/)[0]}`}; }
+  delete t.hist; Object.assign(out, t);
+  return out;
+}
+function soicScore() {
+  const auto = soicAuto(), secs = SOIC.map(g => ({s: g.s, pts: 0, max: 0})); let answered = 0;
+  const rows = SOIC_ITEMS.map(it => { const a = SANS[it.id] ?? auto[it.id]?.v ?? ''; const p = soicPts(it, a); const sc = secs.find(x => x.s === it.sec); sc.pts += p; sc.max += soicMax(it); if (a) answered++; return {it, a, p, auto: auto[it.id]}; });
+  return {rows, secs, total: secs.reduce((a, b) => a + b.pts, 0), max: secs.reduce((a, b) => a + b.max, 0), answered, count: rows.length};
+}
+function renderScore() {
+  renderPx();
+  const S = soicScore(), esc = t => String(t).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  const f = S.total / S.max;
+  $('#sc-gauge').innerHTML = ring(f, 120, 12, f >= .5 ? 'var(--c3)' : f >= .3 ? 'var(--c1)' : 'var(--c2)');
+  $('#sc-total').innerHTML = `${S.total}<small> / ${S.max}</small>`;
+  $('#sc-pct').textContent = `${Math.round(f * 100)}% of the maximum · ${S.answered} of ${S.count} answered`;
+  $('#sc-bars').innerHTML = S.secs.map(x => { const rs = S.rows.filter(r => r.it.sec === x.s), an = rs.filter(r => r.a).length;
+    return `<div class="card sec"><span class="nm">${x.s}</span><b class="${x.pts < 0 ? 'down' : ''}">${x.pts}<small> / ${x.max}</small></b><div class="trk"><i style="width:${Math.max(0, x.pts) / x.max * 100}%"></i></div><small class="a">${an} of ${rs.length} answered</small></div>`; }).join('');
+  let h = '';
+  SOIC.forEach(g => {
+    const sc = S.secs.find(x => x.s === g.s);
+    h += `<div class="card sgrp"><div class="gh"><b>${g.s}</b><b class="${sc.pts < 0 ? 'down' : ''}">${sc.pts} / ${sc.max}</b></div>`;
+    S.rows.filter(r => r.it.sec === g.s).forEach(({it, a, p, auto}) => {
+      let tag = '';
+      const st = SANS[it.id];
+      if (auto && st == null) tag = `<span class="tag">From data: ${auto.why}</span>`;
+      else if (auto && st !== auto.v) tag = `<span class="tag">Data suggests “${esc(auto.v)}”: ${auto.why} <button class="lnk" data-use="${it.id}">Use it</button></span>`;
+      else if (auto) tag = `<span class="tag">Matches data: ${auto.why}</span>`;
+      h += `<div class="q"><div><b>${it.q}</b><p>${it.h}</p>${tag}</div>
+        <div class="opts" role="group" aria-label="${it.q}">${it.o.map(([o, pt]) => `<button class="opt${o === a ? ' on' : ''}" aria-pressed="${o === a}" data-id="${it.id}" data-opt="${esc(o)}">${esc(o)}<em class="${pt > 0 ? 'pos' : pt < 0 ? 'neg' : ''}">${pt > 0 ? '+' : ''}${pt}</em>${auto && auto.v === o ? '<i>data</i>' : ''}</button>`).join('')}</div>
+        <div class="qp ${p < 0 ? 'down' : p > 0 ? 'up' : ''}">${a ? (p > 0 ? '+' : '') + p : '—'}</div></div>`;
+    });
+    h += '</div>';
+  });
+  $('#sc-list').innerHTML = h;
+}
+$('#sc-list').addEventListener('click', e => {
+  const u = e.target.closest('[data-use]'); if (u) { delete SANS[u.dataset.use]; storeSoic(); renderScore(); kpis(); return; }
+  const b = e.target.closest('.opt'); if (!b) return;
+  const id = b.dataset.id, o = b.dataset.opt, auto = soicAuto()[id];
+  if (b.classList.contains('on')) { if (auto) SANS[id] = ''; else delete SANS[id]; }
+  else SANS[id] = (auto && auto.v === o) ? undefined : o;
+  if (SANS[id] === undefined) delete SANS[id];
+  storeSoic(); renderScore(); kpis(); renderLib();
+});
+$('#sc-clear').addEventListener('click', () => { SANS = {}; storeSoic(); renderScore(); kpis(); renderLib(); toast('Answers cleared'); });
+
+
+// ---- Saved companies ----
+let LIB = {};
+try { LIB = JSON.parse(localStorage.getItem('fx-lib') || '{}'); } catch (e) { LIB = {}; }
+const pad2 = n => String(n).padStart(2, '0');
+const packRows = rows => rows.map(r => (r || []).map(v => v instanceof Date ? `D:${v.getFullYear()}-${pad2(v.getMonth() + 1)}-${pad2(v.getDate())}` : v));
+function libStore() { try { localStorage.setItem('fx-lib', JSON.stringify(LIB)); return true; } catch (e) { toast('Browser storage is full; remove a saved company'); return false; } }
+function libSave() { const k = M.name, isNew = !LIB[k]; LIB[k] = {rows: packRows(orig), file: fileName, ts: LIB[k]?.ts || Date.now(), seen: Date.now()}; libStore(); if (isNew && typeof CMP !== 'undefined' && CMP.size && CMP.size < 6) CMP.add(k); }
+const libKeys = () => Object.keys(LIB).sort((a, b) => LIB[a].ts - LIB[b].ts);
+const PAL = ['--c1', '--c2', '--c3', '--c4', '--c5', '--c6', '--c7'];
+const colOf = k => PAL[Math.max(0, libKeys().indexOf(k)) % PAL.length];
+const niceName = n => String(n).replace(/\b(LTD|LIMITED)\b\.?/i, '').trim().toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+const initials = n => niceName(n).split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+function snap(k) {
+  if (k === M.name) return {k, name: title(), M, C, S: soicScore(), T: TECH};
+  const keep = {M, C, SANS, TECH, PX, EDITS, aoa, orig};
+  try {
+    orig = LIB[k].rows; M = parse(orig); loadEdits(); applyEdits(); M = parse(aoa); C = calc(); loadSoic(); loadPx();
+    return {k, name: title(), M, C, S: soicScore(), T: TECH};
+  } catch (e) { console.error(e); return null; }
+  finally { ({M, C, SANS, TECH, PX, EDITS, aoa, orig} = keep); }
+}
+function renderLib() {
+  const ks = libKeys();
+  $('#libn').textContent = ks.length ? ks.length : '';
+  $('#lib').innerHTML = ks.map(k => { const sn = snap(k); const sc = sn ? sn.S.total : '—';
+    return `<div class="li btn${k === M.name ? ' on' : ''}" role="button" tabindex="0" data-lib="${k.replace(/"/g, '&quot;')}" title="${niceName(k)}"><span class="av" style="background:var(${colOf(k)})">${initials(k)}</span><span class="nm">${niceName(k)}</span><span class="sc" title="SOIC score">${sc}</span><span class="x" data-rm="1" role="button" aria-label="Remove ${niceName(k)}" title="Remove">✕</span></div>`; }).join('');
+}
+function openLib(k) { if (!LIB[k]) return; if (k === M.name) return; load(LIB[k].rows, LIB[k].file || k, `Saved · first loaded ${new Date(LIB[k].ts).toLocaleDateString('en-IN', {day: 'numeric', month: 'short'})}`); toast('Opened ' + niceName(k)); }
+$('#lib').addEventListener('click', e => {
+  const it = e.target.closest('[data-lib]'); if (!it) return; const k = it.dataset.lib;
+  if (e.target.closest('[data-rm]')) {
+    delete LIB[k]; libStore(); try { ['fx-edits:', 'fx-soic:', 'fx-px:'].forEach(p => localStorage.removeItem(p + k)); } catch (er) {}
+    CMP.delete(k); toast('Removed ' + niceName(k));
+    if (k === M.name) { const nx = libKeys()[0]; if (nx) { M.name = '__gone__'; openLib(nx); } else load(SAMPLE, 'Cenlub Industries', 'Sample data'); } else { renderLib(); renderView(); }
+    return;
+  }
+  openLib(k);
+});
+$('#lib').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const it = e.target.closest('[data-lib]'); if (it) { e.preventDefault(); openLib(it.dataset.lib); } } });
+
+// ---- Compare ----
+const CMP = new Set(); let CSORT = {k: 'soic', d: -1};
+function renderCompare() {
+  Object.keys(charts).forEach(k => { if (k.startsWith('cc-')) { charts[k].destroy(); delete charts[k]; } });
+  const ks = libKeys();
+  if (ks.length < 2) { $('#cmp-body').innerHTML = `<div class="card empty"><h3>Add another company to compare</h3><p>Every screener.in export you upload is saved in the sidebar. Upload at least one more and it will appear here next to ${title()}, with a ranking table and side-by-side charts.</p><label class="btn pri" for="file">Upload Excel</label></div>`; return; }
+  [...CMP].forEach(k => { if (!LIB[k]) CMP.delete(k); });
+  if (!CMP.size) ks.slice(0, 6).forEach(k => CMP.add(k));
+  const sel = ks.filter(k => CMP.has(k)), S = sel.map(snap).filter(Boolean);
+  const pick = `<div class="cpick">${ks.map(k => `<button data-cmp="${k.replace(/"/g, '&quot;')}" aria-pressed="${CMP.has(k)}"><i style="background:var(${colOf(k)})"></i>${niceName(k)}</button>`).join('')}</div>`;
+  // metrics
+  const met = s => { const C2 = s.C, L = C2.n - 1, Rv = k => C2.R.find(r => r.k === k).v, sum = (a, n) => a.slice(-n).reduce((x, y) => x + (y || 0), 0);
+    return {soic: s.S.total, max: s.S.max, mcap: C2.now.mcap, pe: C2.now.pe > 0 ? C2.now.pe : null, pb: C2.now.pb, ev: C2.now.evE > 0 ? C2.now.evE : null, roe: Rv('ROE')[L], roce: Rv('ROCE')[L],
+      opm: Rv('Operating margin (EBITDA)')[L], sg: C2.cagr(C2.S, Math.min(5, L)), pg: C2.cagr(C2.PAT, Math.min(5, L)), de: Rv('Debt / equity')[L], ce: div(sum(C2.CFO, 3), sum(C2.EBITDA, 3))}; };
+  const cols = [['soic', 'SOIC score', 1], ['mcap', 'Market cap, ₹ Cr', 0], ['pe', 'P/E', -1], ['pb', 'P/B', -1], ['ev', 'EV / EBITDA', -1], ['roe', 'ROE', 1], ['roce', 'ROCE', 1], ['opm', 'Operating margin', 1], ['sg', 'Sales CAGR 5y', 1], ['pg', 'Profit CAGR 5y', 1], ['de', 'Debt / equity', -1], ['ce', 'CFO / EBITDA 3y', 1]];
+  const F = {pe: 'x', pb: 'x', ev: 'x', de: 'x', roe: 'pct', roce: 'pct', opm: 'pct', sg: 'pct', pg: 'pct', ce: 'pct'};
+  const rows = S.map(s => Object.assign({s}, met(s)));
+  rows.sort((a, b) => ((a[CSORT.k] ?? -Infinity * CSORT.d) - (b[CSORT.k] ?? -Infinity * CSORT.d)) * CSORT.d);
+  const best = {}; cols.forEach(([k, , dir]) => { if (!dir) return; const v = rows.map(r => r[k]).filter(x => x != null && isFinite(x)); if (v.length > 1) best[k] = dir > 0 ? Math.max(...v) : Math.min(...v); });
+  const cell = (r, k) => { const v = r[k]; if (k === 'soic') return `<td class="${best.soic === v ? 'best' : ''}"><div class="sbarc">${v} / ${r.max}<div class="trk"><i style="width:${Math.max(0, v) / r.max * 100}%;background:var(${colOf(r.s.k)})"></i></div></div></td>`;
+    return `<td class="${best[k] != null && v === best[k] ? 'best' : ''}">${k === 'mcap' ? inr(v) : fmt(v, F[k])}</td>`; };
+  const tbl = `<div class="scroll cmp"><table><thead><tr><th>Company</th>${cols.map(([k, l]) => `<th data-sort="${k}" class="${CSORT.k === k ? 'sorted' : ''}">${l}${CSORT.k === k ? (CSORT.d > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr><td><span class="who"><i style="background:var(${colOf(r.s.k)})"></i>${r.s.name}</span></td>${cols.map(([k]) => cell(r, k)).join('')}</tr>`).join('')}</tbody></table></div>`;
+  const ccard = (id, t, u) => `<div class="card"><div class="ch"><h3>${t}</h3><span>${u}</span></div><div class="fig"><canvas id="${id}"></canvas></div></div>`;
+  $('#cmp-body').innerHTML = pick + `<p class="note" style="margin:-4px 0 14px">Best value in each column is highlighted. Click a column heading to sort. Latest financial year unless marked.</p>` + tbl +
+    `<h2>Side by side</h2><div class="grid">${ccard('cc-soic', 'SOIC score by section', 'points')}${ccard('cc-roe', 'Return on equity', 'year-end')}${ccard('cc-opm', 'Operating margin', '% of sales')}${ccard('cc-sales', 'Sales, indexed', 'first year shown = 100')}${ccard('cc-pe', 'Price to earnings', 'year-end')}${ccard('cc-de', 'Debt / equity', 'year-end')}</div>`;
+  if (S.length < 1) return;
+  // align years
+  const lab = new Map(); S.forEach(s => s.M.secs.pl.dates.forEach(d => lab.set(fy(d), +d)));
+  const X = [...lab.entries()].sort((a, b) => a[1] - b[1]).map(e => e[0]);
+  const ser = (s, arr) => { const m = new Map(s.M.secs.pl.dates.map((d, i) => [fy(d), arr[i]])); return X.map(x => m.has(x) ? m.get(x) : null); };
+  const Rv = (s, k) => s.C.R.find(r => r.k === k).v;
+  const ln = (s, data) => Object.assign(line(s.name, data, css(colOf(s.k))), {fill: false});
+  draw('cc-roe', base('line', X, S.map(s => ln(s, ser(s, Rv(s, 'ROE')))), 'pct'));
+  draw('cc-opm', base('line', X, S.map(s => ln(s, ser(s, Rv(s, 'Operating margin (EBITDA)')))), 'pct'));
+  draw('cc-sales', base('line', X, S.map(s => { const a = ser(s, s.C.S), f0 = a.find(v => v > 0); return ln(s, a.map(v => v == null || !f0 ? null : v / f0 * 100)); }), 'cr'));
+  draw('cc-pe', base('line', X, S.map(s => ln(s, ser(s, Rv(s, 'P/E')))), 'x'));
+  draw('cc-de', base('line', X, S.map(s => ln(s, ser(s, Rv(s, 'Debt / equity')))), 'x'));
+  draw('cc-soic', base('bar', SOIC.map(g => g.s.replace(' analysis', '').replace(' checks', '')), S.map(s => bar(s.name, s.S.secs.map(x => x.pts), css(colOf(s.k)))), 'days'));
+}
+$('#cmp-body').addEventListener('click', e => {
+  const b = e.target.closest('[data-cmp]'); if (b) { const k = b.dataset.cmp; if (CMP.has(k)) { if (CMP.size > 1) CMP.delete(k); } else if (CMP.size < 6) CMP.add(k); else toast('Compare up to 6 companies at a time'); renderCompare(); return; }
+  const h = e.target.closest('[data-sort]'); if (h) { const k = h.dataset.sort; CSORT = CSORT.k === k ? {k, d: -CSORT.d} : {k, d: ['pe', 'pb', 'ev', 'de'].includes(k) ? 1 : -1}; renderCompare(); }
+});
+
+// ---- Theme ----
+let THEME = 'auto'; try { THEME = localStorage.getItem('fx-theme') || 'auto'; } catch (e) {}
+function applyTheme() {
+  const r = document.documentElement;
+  if (THEME === 'auto') r.removeAttribute('data-mode'); else r.setAttribute('data-mode', THEME);
+  document.querySelectorAll('[data-theme-set]').forEach(b => { b.classList.toggle('on', b.dataset.themeSet === THEME); b.setAttribute('aria-pressed', b.dataset.themeSet === THEME); });
+}
+document.querySelector('.theme').addEventListener('click', e => { const b = e.target.closest('[data-theme-set]'); if (!b) return; THEME = b.dataset.themeSet; try { localStorage.setItem('fx-theme', THEME); } catch (er) {} applyTheme(); renderView(); });
+applyTheme();
+
+new MutationObserver(() => renderView()).observe(document.documentElement, {attributes: true, attributeFilter: ['data-theme']});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', renderView);
+
+function exportBook() {
+  const out = aoa.map(r => (r || []).map(v => typeof v === 'string' && v.startsWith('D:') ? new Date(v.slice(2) + 'T00:00:00') : v));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(out, {cellDates: true}), 'Data Sheet');
+  const Y = M.secs.pl.dates.map(fy);
+  const ra = [['Ratio', ...Y]]; let g = '';
+  C.R.forEach(r => { if (r.g !== g) { g = r.g; ra.push([g]); } ra.push([r.k, ...r.v.map(v => v == null ? null : +v.toFixed(4))]); });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ra), 'Ratios');
+  const S = soicScore(), sa = [['Section', 'Criterion', 'Answer', 'Points', 'Max']];
+  S.rows.forEach(r => sa.push([r.it.sec, r.it.q, r.a || '(not answered)', r.p, soicMax(r.it)]));
+  sa.push([], ['Total', '', '', S.total, S.max]);
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sa), 'SOIC score');
+  return XLSX.write(wb, {type: 'array', bookType: 'xlsx'});
+}
+(async () => {
+  try {
+    // Inside Claude, files go through the downloads capability; on a normal website, a plain browser download.
+    const plain = {save: async ({filename, data}) => { const blob = data instanceof Blob ? data : new Blob([data]); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); return {status: 'saved'}; }};
+    const dl = window.claude ? await window.claude.use('downloads') : plain;
+    if (!dl) return;
+    DL = dl; document.body.classList.add('has-dl');
+    $('#save').hidden = false;
+    $('#save').addEventListener('click', async () => {
+      try { await dl.save({filename: (M.name || fileName).replace(/[^\w ]+/g, '').trim() + ' - edited.xlsx', data: new Uint8Array(exportBook())}); toast('Saved'); }
+      catch (e) { if (e && e.code !== 'declined') toast('Could not save the file here'); }
+    });
+  } catch (e) {}
+})();
+
+try {
+  let last = null; try { last = localStorage.getItem('fx-last'); } catch (e) {}
+  if (last && LIB[last]) load(LIB[last].rows, LIB[last].file || last, `Saved · first loaded ${new Date(LIB[last].ts).toLocaleDateString('en-IN', {day: 'numeric', month: 'short'})}`);
+  else load(SAMPLE, 'Cenlub Industries', 'Sample data (screener.in export)');
+}
+catch (e) { $('#title').textContent = 'Upload a screener.in Excel export to begin'; console.error(e); }
+}
+</script>
+</body>
+</html>
