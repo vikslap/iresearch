@@ -183,6 +183,9 @@ td svg{display:block}
 .er{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:28px;align-items:start}
 @media(max-width:900px){.er{grid-template-columns:1fr}.flag{grid-template-columns:1fr;gap:6px}.fl{justify-self:start}}
 .rh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:2px}.rh .crumb{margin:0}
+.seg{grid-column:1/-1;display:flex;background:var(--soft);border-radius:10px;padding:4px;gap:4px}
+.seg button{flex:1;min-height:38px;border:0;box-shadow:none;background:none;color:var(--muted);border-radius:8px;font-weight:600}
+.seg button[aria-pressed=true]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
 #drop{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(4px);display:none;place-items:center;font-size:20px;font-weight:700;z-index:9;border:3px dashed var(--c1);border-radius:16px;margin:10px}
 #drop.on{display:grid}
 #toast{position:fixed;bottom:20px;left:50%;max-width:min(560px,92vw);text-align:center;transform:translate(-50%,8px);background:var(--tip);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:10;box-shadow:0 8px 24px rgb(0 0 0/.18)}
@@ -321,7 +324,8 @@ section{animation:fade .25s ease}
     <h2>Discounted cash flow</h2>
     <div class="card dcf">
       <div class="fields" id="dcfin">
-        <label>Base free cash flow, ₹ Cr<input id="d-fcf" inputmode="decimal"></label>
+        <div class="seg" id="d-mode" role="group" aria-label="Discount"><button data-m="fcf" aria-pressed="true">Free cash flow</button><button data-m="pat" aria-pressed="false">Net profit</button></div>
+        <label><span id="d-fcf-l">Base free cash flow, ₹ Cr</span><input id="d-fcf" inputmode="decimal"></label>
         <label>Growth, years 1–5 (%)<input id="d-g1" inputmode="decimal"></label>
         <label>Growth, years 6–10 (%)<input id="d-g2" inputmode="decimal"></label>
         <label>Terminal growth (%)<input id="d-tg" inputmode="decimal"></label>
@@ -334,7 +338,7 @@ section{animation:fade .25s ease}
         <div class="rh"><p class="crumb">Intrinsic value per share</p><button class="sm" id="d-reset" title="Reset inputs to defaults"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Reset</button></div>
         <div class="big" id="d-val">—</div>
         <p id="d-vs" style="margin:8px 0 14px;font-weight:600;font-size:14px"></p>
-        <div class="ch"><h3>Projected free cash flow</h3><span>₹ Cr</span></div>
+        <div class="ch"><h3 id="d-ch-t">Projected free cash flow</h3><span>₹ Cr</span></div>
         <div class="fig" style="height:200px"><canvas id="ch-dcf"></canvas></div>
         <p class="note" id="d-note"></p>
       </div>
@@ -645,7 +649,20 @@ $('#rgroups').addEventListener('toggle', e => { const d = e.target; if (!d.datas
 $('#r-open').addEventListener('click', () => { C.R.forEach(r => ROPEN.add(r.g)); renderRatios(); });
 $('#r-close').addEventListener('click', () => { ROPEN.clear(); renderRatios(); });
 
-let dcfInit = false;
+let dcfInit = false, DMODE = 'fcf';
+function setDMode(m, why = '') {
+  DMODE = m; const L = C.n - 1;
+  document.querySelectorAll('#d-mode button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === m));
+  const f3 = C.FCF.slice(-3).filter(v => v != null), avgF = f3.reduce((a, b) => a + b, 0) / (f3.length || 1);
+  const pat = C.now.ttmPAT ?? C.PAT[L];
+  $('#d-fcf').value = (m === 'fcf' ? avgF : pat).toFixed(2);
+  $('#d-fcf-l').textContent = m === 'fcf' ? 'Base free cash flow, ₹ Cr' : 'Base net profit, ₹ Cr';
+  $('#d-ch-t').textContent = m === 'fcf' ? 'Projected free cash flow' : 'Projected net profit';
+  $('#d-note').dataset.base = why + (m === 'fcf'
+    ? `Base is the 3-year average free cash flow (₹${inr(avgF)} Cr)${avgF <= 0 ? ', which is negative, so the value will be too; try net profit' : ''}.`
+    : `Base is trailing twelve-month net profit. Discounting profit assumes it can all be paid out, so it ignores the capex and working capital needed to grow; treat it as an upper bound.`);
+}
+$('#d-mode').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b || b.dataset.m === DMODE) return; setDMode(b.dataset.m); runDCF(); });
 function renderValuation() {
   const Y = M.secs.pl.dates.map(fy).concat('Now'), c1 = css('--c1'), c2 = css('--c2');
   const R = k => C.R.find(r => r.k === k).v;
@@ -658,12 +675,12 @@ function renderValuation() {
   draw('ch-px', base('line', Y.slice(0, -1), [line('Share price', idx(C.PR), css('--c3')), line('EPS', idx(C.EPS), c2)], 'cr'));
   if (!dcfInit) {
     const L = C.n - 1, f3 = C.FCF.slice(-3).filter(v => v != null), avg = f3.reduce((a, b) => a + b, 0) / (f3.length || 1);
-    const useP = !(avg > 0), baseF = useP ? C.PAT.slice(-3).reduce((a, b) => a + b, 0) / 3 * .7 : avg;
+    DMODE = avg > 0 ? 'fcf' : 'pat';
     const g5 = C.cagr(C.S, Math.min(5, L)); const g1 = Math.max(4, Math.min(20, Math.round((g5 ?? .1) * 100)));
     const set = (id, v) => $(id).value = v;
-    set('#d-fcf', baseF.toFixed(2)); set('#d-g1', g1); set('#d-g2', Math.max(4, Math.round(g1 / 2))); set('#d-tg', 4); set('#d-r', 12);
+    set('#d-g1', g1); set('#d-g2', Math.max(4, Math.round(g1 / 2))); set('#d-tg', 4); set('#d-r', 12);
     set('#d-nd', (C.DEBT[L] - C.CASH[L] - C.INV[L]).toFixed(2)); set('#d-sh', (C.SH[L] || 0).toFixed(4)); set('#d-px', C.now.price);
-    $('#d-note').dataset.base = useP ? 'Base FCF defaults to 70% of the 3-year average net profit because recent free cash flow was negative.' : 'Base FCF defaults to the 3-year average free cash flow.';
+    setDMode(DMODE, avg > 0 ? '' : 'Started on net profit because free cash flow averaged negative over the last 3 years. ');
     dcfInit = true;
   }
   runDCF(); renderBands();
@@ -673,15 +690,15 @@ function runDCF() {
   const value = (G1, G2) => { let f = F, pv = 0; const fl = []; for (let y = 1; y <= 10; y++) { f *= 1 + (y <= 5 ? G1 : G2); fl.push(f); pv += f / Math.pow(1 + r, y); } const tv = f * (1 + tg) / (r - tg) / Math.pow(1 + r, 10); return {eq: pv + tv - nd, fl, pv, tv}; };
   if ([F, g1, g2, tg, r, sh].some(x => isNaN(x)) || r <= tg || !sh) { $('#d-val').textContent = '—'; $('#d-vs').textContent = r <= tg ? 'Discount rate must be above terminal growth.' : 'Fill in every field.'; return; }
   const o = value(g1, g2), ps = o.eq / sh;
-  $('#d-val').textContent = '₹' + inr(ps);
+  $('#d-val').textContent = (ps < 0 ? '−₹' : '₹') + inr(Math.abs(ps));
   const up = div(ps - px, px);
   $('#d-vs').innerHTML = up == null ? '' : `<span class="${up >= 0 ? 'up' : 'down'}">${up >= 0 ? '▲' : '▼'} ${Math.abs(up * 100).toFixed(0)}% ${up >= 0 ? 'above' : 'below'}</span> the current price of ₹${inr(px)}`;
   // reverse DCF: uniform growth that justifies current price
   let lo = -0.5, hi = 1, imp = null;
   if (F > 0 && px > 0) { for (let k = 0; k < 60; k++) { const m = (lo + hi) / 2; (value(m, m).eq / sh > px) ? hi = m : lo = m; } imp = (lo + hi) / 2; }
-  $('#d-note').textContent = `Equity value ₹${inr(o.eq)} Cr (PV of 10-year FCF ₹${inr(o.pv)} Cr + terminal ₹${inr(o.tv)} Cr − net debt). ` + (imp != null && imp > -0.49 && imp < 0.99 ? `The current price implies about ${(imp * 100).toFixed(1)}% FCF growth a year for 10 years. ` : '') + ($('#d-note').dataset.base || '');
+  $('#d-note').textContent = `Equity value ₹${inr(o.eq)} Cr (PV of 10 years of ${DMODE === 'fcf' ? 'FCF' : 'profit'} ₹${inr(o.pv)} Cr + terminal ₹${inr(o.tv)} Cr − net debt). ` + (imp != null && imp > -0.49 && imp < 0.99 ? `The current price implies about ${(imp * 100).toFixed(1)}% ${DMODE === 'fcf' ? 'FCF' : 'profit'} growth a year for 10 years. ` : '') + ($('#d-note').dataset.base || '');
   const Y = Array.from({length: 10}, (_, i) => 'Y' + (i + 1));
-  draw('ch-dcf', base('bar', Y, [bar('Projected FCF', o.fl, css('--c7'))], 'cr'));
+  draw('ch-dcf', base('bar', Y, [bar(DMODE === 'fcf' ? 'Projected FCF' : 'Projected net profit', o.fl, css('--c7'))], 'cr'));
 }
 
 let EDITS = {};
