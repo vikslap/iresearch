@@ -171,7 +171,7 @@ td svg{display:block}
 .empty{text-align:center;padding:40px 20px}.empty p{color:var(--muted);max-width:52ch;margin:8px auto 18px}
 #drop{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(4px);display:none;place-items:center;font-size:20px;font-weight:700;z-index:9;border:3px dashed var(--c1);border-radius:16px;margin:10px}
 #drop.on{display:grid}
-#toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,8px);background:var(--tip);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:10;box-shadow:0 8px 24px rgb(0 0 0/.18)}
+#toast{position:fixed;bottom:20px;left:50%;max-width:min(560px,92vw);text-align:center;transform:translate(-50%,8px);background:var(--tip);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:10;box-shadow:0 8px 24px rgb(0 0 0/.18)}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 section{animation:fade .25s ease}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -212,7 +212,7 @@ section{animation:fade .25s ease}
   <div class="brand"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Fundamentals<button class="xbtn" id="xbtn" aria-label="Close menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="co"><div class="av" id="av">—</div><div><b id="cname">Loading…</b><span id="src">Sample data</span></div></div>
   <div class="lib"><p class="libh">Saved companies <span id="libn"></span></p><div id="lib" class="lib"></div></div>
-  <label class="btn pri up-btn" for="file"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M4 15v5h16v-5"/></svg>Upload Excel<input type="file" id="file" accept=".xlsx,.xls,.xlsm"></label>
+  <label class="btn pri up-btn" for="file"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M4 15v5h16v-5"/></svg>Upload Excel<input type="file" id="file" accept=".xlsx,.xls,.xlsm" multiple></label>
   <nav id="nav">
     <a href="#overview"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Overview</a>
     <a href="#quarterly"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Quarterly</a>
@@ -225,7 +225,7 @@ section{animation:fade .25s ease}
   <div class="sfoot">
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny">Drop a screener.in export or NSE price CSV anywhere on the page.</p>
+    <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
 <main>
@@ -329,7 +329,7 @@ const SECS = [['meta','META'],['pl','PROFIT & LOSS'],['q','QUARTERS'],['bs','BAL
 const SECNAME = {meta:'Meta',pl:'Profit & loss (annual)',q:'Quarterly results',bs:'Balance sheet',cf:'Cash flow',price:'Share price (year end)',der:'Derived'};
 let orig = null, aoa = null, M = null, C = null, fileName = 'company', charts = {}, selRatio = 'ROE';
 
-const toast = t => { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => e.classList.remove('on'), 2600); };
+const toast = (t, ms = 2600) => { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => e.classList.remove('on'), ms); };
 const toDate = v => { if (v instanceof Date) return v; if (typeof v === 'string' && v.startsWith('D:')) return new Date(v.slice(2) + 'T00:00:00'); if (typeof v === 'number' && v > 20000) return new Date(Math.round((v - 25569) * 864e5)); if (typeof v === 'string') { const d = new Date(v); if (!isNaN(d)) return d; } return null; };
 const num = v => (v === null || v === undefined || v === '' || isNaN(+v)) ? 0 : +v;
 const div = (a, b) => (a == null || b == null || !b || !isFinite(a / b)) ? null : a / b;
@@ -686,26 +686,45 @@ function renderView() {
   ({overview: renderOverview, quarterly: renderQuarterly, ratios: renderRatios, valuation: renderValuation, score: renderScore, compare: renderCompare, data: renderData})[v]();
 }
 
-async function readFile(f) {
-  try {
-    const wb = XLSX.read(await f.arrayBuffer(), {cellDates: true});
-    let ws = wb.SheetNames.find(n => /^data ?sheet$/i.test(n.trim()));
-    if (!ws) ws = wb.SheetNames.find(n => { const a = wb.Sheets[n]['A1']; return a && /company name/i.test(String(a.v)); });
-    if (!ws) throw new Error('No "Data Sheet" found. Use an Export to Excel file from screener.in.');
-    const sh = wb.Sheets[ws]; const ref = XLSX.utils.decode_range(sh['!ref'] || 'A1');
-    const rows = XLSX.utils.sheet_to_json(sh, {header: 1, raw: true, defval: null, blankrows: true});
-    for (let i = 0; i < ref.s.r; i++) rows.unshift([]);
-    load(rows, f.name.replace(/\.\w+$/, ''), `Loaded ${f.name}`);
-    toast('Loaded ' + M.name);
-  } catch (e) { toast(e.message || 'Could not read that file'); console.error(e); }
+async function sheetRows(f) {
+  const wb = XLSX.read(await f.arrayBuffer(), {cellDates: true});
+  let ws = wb.SheetNames.find(n => /^data ?sheet$/i.test(n.trim()));
+  if (!ws) ws = wb.SheetNames.find(n => { const a = wb.Sheets[n]['A1']; return a && /company name/i.test(String(a.v)); });
+  if (!ws) throw new Error('no "Data Sheet" tab (use Export to Excel on screener.in)');
+  const sh = wb.Sheets[ws]; const ref = XLSX.utils.decode_range(sh['!ref'] || 'A1');
+  const rows = XLSX.utils.sheet_to_json(sh, {header: 1, raw: true, defval: null, blankrows: true});
+  for (let i = 0; i < ref.s.r; i++) rows.unshift([]);
+  parse(rows);  // throws if the layout is not a screener Data Sheet
+  return rows;
 }
+async function readFiles(files) {
+  files = [...files].filter(f => !/\.(csv|txt)$/i.test(f.name));
+  if (!files.length) return;
+  const ok = [], bad = [];
+  for (const f of files) {
+    try { const rows = await sheetRows(f); ok.push({rows, f}); }
+    catch (e) { bad.push(`${f.name}: ${e.message || 'could not be read'}`); console.error(e); }
+  }
+  // save every company except the last straight into the library, then open the last one
+  ok.slice(0, -1).forEach(({rows, f}) => {
+    const k = parse(rows).name, isNew = !LIB[k];
+    LIB[k] = {rows: packRows(rows), file: f.name.replace(/\.\w+$/, ''), ts: LIB[k]?.ts || Date.now(), seen: Date.now()};
+    if (isNew && CMP.size && CMP.size < 6) CMP.add(k);
+  });
+  if (ok.length > 1) libStore();
+  if (ok.length) { const {rows, f} = ok[ok.length - 1]; load(rows, f.name.replace(/\.\w+$/, ''), `Loaded ${f.name}`); }
+  const names = ok.map(o => niceName(parse(o.rows).name));
+  if (bad.length) toast((ok.length ? `Loaded ${names.join(', ')}. ` : '') + `Skipped ${bad.length}: ${bad.join('; ')}`, 7000);
+  else toast(ok.length > 1 ? `Loaded ${ok.length} companies: ${names.join(', ')}` : `Loaded ${names[0]}`, ok.length > 1 ? 5000 : 2600);
+}
+const readFile = f => readFiles([f]);
 
-$('#file').addEventListener('change', e => { if (e.target.files[0]) readFile(e.target.files[0]); e.target.value = ''; });
+$('#file').addEventListener('change', e => { if (e.target.files.length) readFiles(e.target.files); e.target.value = ''; });
 let dragN = 0;
 addEventListener('dragenter', e => { e.preventDefault(); dragN++; $('#drop').classList.add('on'); });
 addEventListener('dragleave', () => { if (--dragN <= 0) { dragN = 0; $('#drop').classList.remove('on'); } });
 addEventListener('dragover', e => e.preventDefault());
-addEventListener('drop', e => { e.preventDefault(); dragN = 0; $('#drop').classList.remove('on'); const fs = [...e.dataTransfer.files]; if (!fs.length) return; if (fs.every(f => /\.(csv|txt)$/i.test(f.name))) loadPxFiles(fs); else readFile(fs[0]); });
+addEventListener('drop', e => { e.preventDefault(); dragN = 0; $('#drop').classList.remove('on'); const fs = [...e.dataTransfer.files]; if (!fs.length) return; const px = fs.filter(f => /\.(csv|txt)$/i.test(f.name)), xl = fs.filter(f => !px.includes(f)); (async () => { if (xl.length) await readFiles(xl); if (px.length) loadPxFiles(px); })(); });
 addEventListener('hashchange', renderView);
 
 $('#dtabs').addEventListener('change', e => {
@@ -1042,7 +1061,7 @@ const CMP = new Set(); let CSORT = {k: 'soic', d: -1};
 function renderCompare() {
   Object.keys(charts).forEach(k => { if (k.startsWith('cc-')) { charts[k].destroy(); delete charts[k]; } });
   const ks = libKeys();
-  if (ks.length < 2) { $('#cmp-body').innerHTML = `<div class="card empty"><h3>Add another company to compare</h3><p>Every screener.in export you upload is saved in the sidebar. Upload at least one more and it will appear here next to ${title()}, with a ranking table and side-by-side charts.</p><label class="btn pri" for="file">Upload Excel</label></div>`; return; }
+  if (ks.length < 2) { $('#cmp-body').innerHTML = `<div class="card empty"><h3>Add another company to compare</h3><p>Every screener.in export you upload is saved in the sidebar, and you can select several files at once. Upload at least one more and it will appear here next to ${title()}, with a ranking table and side-by-side charts.</p><label class="btn pri" for="file">Upload Excel</label></div>`; return; }
   [...CMP].forEach(k => { if (!LIB[k]) CMP.delete(k); });
   if (!CMP.size) ks.slice(0, 6).forEach(k => CMP.add(k));
   const sel = ks.filter(k => CMP.has(k)), S = sel.map(snap).filter(Boolean);
