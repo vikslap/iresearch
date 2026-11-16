@@ -352,7 +352,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 16 Nov 2026, 09:28 IST</p>
+    <p class="tiny" id="build">Version: 16 Nov 2026, 09:47 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -488,7 +488,7 @@ section{animation:fade .25s ease}
         <div class="fig" style="height:220px"><canvas id="ch-rv"></canvas></div>
         <p class="note" id="rv-note"></p></div>
       <div class="card wide"><div class="ch"><h3>Expectations vs reality</h3><span id="ex-sub">growth priced in at each year-end vs growth that followed</span></div>
-        <div class="rv-out" id="ex-kpi"></div>
+        <div class="seg" id="ex-rate" role="group" aria-label="Discount rate" style="margin:0 0 10px"></div><div class="rv-out" id="ex-kpi"></div>
         <div class="fig" style="height:280px"><canvas id="ch-ex"></canvas></div>
         <p class="note" id="ex-note"></p></div>
     </div>
@@ -931,56 +931,95 @@ function renderRev() {
 }
 $('#rv-g').addEventListener('input', renderRev);
 // ---- Expectations vs reality: the reverse DCF at every past year-end, against what actually happened next ----
-function expHistory() {
+let EXR = 'mine';
+function expHistory(r) {
   const X = DCFX; if (!X) return null;
   const L = C.n - 1, Y = M.secs.pl.dates.map(fy), fcf = DMODE === 'fcf';
   const baseAt = i => { if (!fcf) return C.PAT[i]; if (i < 2) return null; const f = C.FCF.slice(i - 2, i + 1); return f.some(v => v == null) ? null : f.reduce((a, b) => a + b, 0) / 3; };
-  const implied = (F, nd, mcap) => { if (!(F > 0) || !(mcap > 0)) return null; const v = g => { let f = F, pv = 0; for (let y = 1; y <= 10; y++) { f *= 1 + (y <= 5 ? g : X.g2); pv += f / Math.pow(1 + X.r, y); } return pv + f * (1 + X.tg) / (X.r - X.tg) / Math.pow(1 + X.r, 10) - nd; };
+  const implied = (F, nd, mcap) => { if (!(F > 0) || !(mcap > 0) || r <= X.tg) return null; const v = g => { let f = F, pv = 0; for (let y = 1; y <= 10; y++) { f *= 1 + (y <= 5 ? g : X.g2); pv += f / Math.pow(1 + r, y); } return pv + f * (1 + X.tg) / (r - X.tg) / Math.pow(1 + r, 10) - nd; };
     if (v(-.5) > mcap || v(1.5) < mcap) return null; let lo = -.5, hi = 1.5; for (let k = 0; k < 60; k++) { const m = (lo + hi) / 2; v(m) > mcap ? hi = m : lo = m; } return (lo + hi) / 2; };
+  const med = a => median(a.filter(v => v != null && isFinite(v)));
   const rows = [];
   for (let i = 0; i <= L; i++) {
     const F = baseAt(i), mc = C.MC && C.MC[i] > 0 ? C.MC[i] : C.PR[i] * C.SH[i], nd = C.DEBT[i] - C.CASH[i] - C.INV[i];
+    // a depressed base year (e.g. a COVID year) makes the price look like it expects huge growth; keep it out of the band and calibration
+    const weak = F > 0 && F < .5 * med([...Array(L - i + 1).keys()].map(j => baseAt(i + j)));
     const imp = implied(F, nd, mc), n = Math.min(5, L - i), Fn = n ? baseAt(i + n) : null;
     const act = n && F > 0 && Fn > 0 ? Math.pow(Fn / F, 1 / n) - 1 : null;
     const m = Math.min(3, L - i), ret = m && C.PR[i] > 0 && C.PR[i + m] > 0 ? Math.pow(C.PR[i + m] / C.PR[i], 1 / m) - 1 : null;
-    rows.push({y: Y[i], imp, act, n, ret, m, why: !(F > 0) ? (fcf ? 'free cash flow was negative' : 'it made a loss') : imp == null ? 'price outside the model range' : ''});
+    rows.push({y: Y[i], imp, act, n, ret, m, weak, why: !(F > 0) ? (fcf ? 'free cash flow was negative' : 'it made a loss') : imp == null ? 'price outside the model range' : ''});
   }
-  // five-year growth this company has ever delivered, to test today's assumption against
-  const fiveYr = []; for (let i = 0; i + 5 <= L; i++) { const a = baseAt(i), b = baseAt(i + 5); if (a > 0 && b > 0) fiveYr.push(Math.pow(b / a, .2) - 1); }
-  return {rows, now: X.imp != null && X.imp > -.49 && X.imp < .99 ? X.imp : null, fiveYr, fcf};
+  const fiveYr = []; for (let i = 0; i + 5 <= L; i++) { const a0 = baseAt(i), b0 = baseAt(i + 5); if (a0 > 0 && b0 > 0) fiveYr.push(Math.pow(b0 / a0, .2) - 1); }
+  const now = implied(X.F, X.nd, X.px * X.sh);
+  return {rows, now: now != null && now > -.49 && now < 1.4 ? now : null, fiveYr, fcf};
+}
+// the discount rate at which past prices would have matched the growth actually delivered
+function expCalibrate() {
+  const X = DCFX; if (!X) return null;
+  const win = H => { const full = H.rows.filter(r => r.imp != null && r.act != null && !r.weak && r.n === 5); return full.length >= 2 ? full : H.rows.filter(r => r.imp != null && r.act != null && !r.weak && r.n >= 3); };
+  const gap = r => { const w = win(expHistory(r)); return w.length >= 2 ? {g: median(w.map(x => x.imp - x.act)), n: w.length, full: w.every(x => x.n === 5)} : null; };
+  let lo = X.tg + .005, hi = .25; const gl = gap(lo), gh = gap(hi); if (!gl || !gh) return null;
+  if (gl.g > 0) return {r: lo, edge: 'low', n: gl.n, full: gl.full};
+  if (gh.g < 0) return {r: hi, edge: 'high', n: gh.n, full: gh.full};
+  for (let k = 0; k < 30; k++) { const m = (lo + hi) / 2, g = gap(m); if (!g) break; g.g > 0 ? hi = m : lo = m; }
+  const r = (lo + hi) / 2, g = gap(r); return {r, n: g ? g.n : 0, full: g ? g.full : false};
 }
 function renderExp() {
-  const H = expHistory(); if (!H) return;
+  if (!DCFX) return;
+  const cal = expCalibrate(), useCal = EXR === 'cal' && cal, rate = useCal ? cal.r : DCFX.r, H = expHistory(rate);
   const rows = H.rows, lab = rows.map(r => r.y).concat('Now'), meas = H.fcf ? 'free cash flow' : 'profit';
-  const pos = css('--c3'), neg = css('--c2'), mut = css('--muted');
+  const pos = css('--c3'), neg = css('--c2'), mut = css('--muted'), c1 = css('--c1');
+  // the company's usual range of expectations (middle half of past readings, depressed base years left out)
+  const past = rows.filter(r => r.imp != null && !r.weak).map(r => r.imp).sort((a, b) => a - b);
+  const q = f => past.length ? past[Math.min(past.length - 1, Math.max(0, Math.round((past.length - 1) * f)))] : null;
+  const bandOK = past.length >= 4, p25 = bandOK ? q(.25) : null, p75 = bandOK ? q(.75) : null, pmed = past.length ? q(.5) : null;
+  const pctile = H.now != null && past.length ? past.filter(v => v < H.now).length / past.length : null;
   const act = bar('Growth that followed', rows.map(r => r.act).concat(null), pos);
-  act.backgroundColor = ctx => { const r = rows[ctx.dataIndex]; if (!r || r.act == null) return 'transparent'; const c = r.imp == null ? mut : r.act >= r.imp ? pos : neg; return r.n < 5 ? rgba(c, .22) : c; };
-  act.hoverBackgroundColor = act.backgroundColor; act.borderWidth = 1.5; act.borderColor = ctx => { const r = rows[ctx.dataIndex]; if (!r || r.act == null) return 'transparent'; return r.imp == null ? mut : r.act >= r.imp ? pos : neg; }; act.order = 1;
-  const ln = Object.assign(line('Growth priced in', rows.map(r => r.imp).concat(H.now), css('--c1')), {type: 'line', fill: false, order: 0, spanGaps: false, cubicInterpolationMode: 'default', tension: 0});
-  ln.pointRadius = lab.map((_, i) => i === lab.length - 1 ? 6 : 3);
-  const cfg = base('bar', lab, [act, ln], 'pct');
+  const colOfRow = r => r.imp == null ? mut : r.act >= r.imp ? pos : neg;
+  act.backgroundColor = ctx => { const r = rows[ctx.dataIndex]; if (!r || r.act == null) return 'transparent'; return r.n < 5 ? rgba(colOfRow(r), .22) : colOfRow(r); };
+  act.hoverBackgroundColor = act.backgroundColor; act.borderWidth = 1.5; act.borderColor = ctx => { const r = rows[ctx.dataIndex]; return !r || r.act == null ? 'transparent' : colOfRow(r); }; act.order = 2;
+  const ln = Object.assign(line('Growth priced in', rows.map(r => r.imp).concat(H.now), c1), {type: 'line', fill: false, order: 0, spanGaps: false, cubicInterpolationMode: 'default', tension: 0});
+  ln.pointRadius = lab.map((_, i) => i === lab.length - 1 ? 6 : 3); ln.pointStyle = lab.map((_, i) => rows[i] && rows[i].weak ? 'crossRot' : 'circle');
+  const ds = [act, ln];
+  if (bandOK) { const flat = v => lab.map(() => v), bc = rgba(c1, .1);
+    ds.push(Object.assign(line('Usual range (middle half)', flat(p25), rgba(c1, .35), [4, 4]), {type: 'line', fill: false, pointRadius: 0, pointHoverRadius: 0, borderWidth: 1, order: 1}),
+      Object.assign(line('_hi', flat(p75), rgba(c1, .35), [4, 4]), {type: 'line', fill: '-1', backgroundColor: bc, pointRadius: 0, pointHoverRadius: 0, borderWidth: 1, order: 1})); }
+  const cfg = base('bar', lab, ds, 'pct');
+  cfg.options.plugins.legend.labels.filter = i => !String(i.text).startsWith('_');
   const all = rows.flatMap(r => [r.imp, r.act]).concat(H.now).filter(v => v != null && isFinite(v));
   cfg.options.scales.y.min = Math.max(-.5, Math.floor(Math.min(0, ...all) * 10) / 10); cfg.options.scales.y.max = Math.min(1, Math.ceil((Math.max(.2, ...all) + .02) * 10) / 10);
+  cfg.options.plugins.tooltip.filter = i => i.datasetIndex < 2;
   cfg.options.plugins.tooltip.callbacks.label = c => { const r = rows[c.dataIndex];
-    if (c.datasetIndex === 1) return c.dataIndex === rows.length ? ` Priced in today: ${pct(H.now)}` : ` Priced in: ${r.imp == null ? 'n/m, ' + r.why : pct(r.imp)}`;
+    if (c.datasetIndex === 1) return c.dataIndex === rows.length ? ` Priced in today: ${pct(H.now)}` : ` Priced in: ${r.imp == null ? 'n/m, ' + r.why : pct(r.imp)}${r.weak ? ' (depressed base year, left out of the range)' : ''}`;
     return r && r.act != null ? ` Followed: ${pct(r.act)} a year over ${r.n} year${r.n > 1 ? 's' : ''}${r.n < 5 ? ' (so far)' : ''}${r.ret != null ? `; share price ${pct(r.ret)} a year over ${r.m}y` : ''}` : ''; };
   draw('ch-ex', cfg);
-  // summary
-  const both = rows.filter(r => r.imp != null && r.act != null), full = both.filter(r => r.n === 5), beat = both.filter(r => r.act >= r.imp), miss = both.filter(r => r.act < r.imp);
+  // headline figures
+  const both = rows.filter(r => r.imp != null && r.act != null && !r.weak), full = both.filter(r => r.n === 5), beat = both.filter(r => r.act >= r.imp), miss = both.filter(r => r.act < r.imp);
   const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null, avR = a => avg(a.map(r => r.ret).filter(v => v != null));
-  const mi = avg(both.map(r => r.imp)), ma = avg(both.map(r => r.act));
   const met = H.now != null ? H.fiveYr.filter(g => g >= H.now).length : null, best = H.fiveYr.length ? Math.max(...H.fiveYr) : null;
+  const where = pctile == null ? null : pctile <= .25 ? 'Low end of its usual range' : pctile >= .75 ? 'High end of its usual range' : 'Middle of its usual range';
   const k = (t, v, sub) => `<div><span>${t}</span><b>${v}</b>${sub ? `<small style="display:block;color:var(--muted);font-size:11px;margin-top:2px">${sub}</small>` : ''}</div>`;
-  $('#ex-kpi').innerHTML = k('Priced in today', H.now != null ? pct(H.now) : '—', 'years 1–5') + k('Years it beat expectations', both.length ? `${beat.length} of ${both.length}` : '—', full.length < both.length ? `${full.length} with a full 5 years` : '') +
-    k('Best 5-year growth delivered', best != null ? pct(best) : '—', H.fiveYr.length ? `${met} of ${H.fiveYr.length} five-year spans reached today's ${pct(H.now)}` : 'needs 6+ years') +
-    k('Share price after', beat.length && miss.length ? `${pct(avR(beat))} vs ${pct(avR(miss))}` : '—', `a year over the next 3 years, after ${beat.length} beat${beat.length > 1 ? 's' : ''} vs ${miss.length} miss${miss.length > 1 ? 'es' : ''}`);
-  $('#ex-sub').textContent = `${meas} · your DCF inputs (${(DCFX.r * 100).toFixed(1)}% discount, years 6–10 at ${(DCFX.g2 * 100).toFixed(1)}%)`;
-  const nm = rows.filter(r => r.imp == null).map(r => `${r.y} (${r.why})`);
-  $('#ex-note').textContent = (both.length ? `On average the price assumed ${pct(mi)} growth and the company delivered ${pct(ma)}: the market was ${ma >= mi + .02 ? 'too pessimistic' : ma <= mi - .02 ? 'too optimistic' : 'about right'} about this company. ` : '') +
-    (H.now != null && best != null ? (H.now > best ? `Today's price assumes more than it has ever delivered over 5 years, so it needs a better run than any in its history. ` : `Today's assumption has been reached in ${met} of ${H.fiveYr.length} past 5-year spans. `) : '') +
-    `Blue line: the growth each year-end's price implied, using today's DCF settings. Bars: the ${meas} growth that actually followed, teal where it beat the price and orange where it fell short; faded bars have fewer than 5 years of results so far. ` +
-    (nm.length ? `Not shown: ${nm.join(', ')}. ` : '') + `Year-end prices and today's discount rate are used for every year, so treat this as a guide, not a precise test.`;
+  const calTxt = cal ? (cal.edge === 'low' ? `below ${pct(cal.r)}` : cal.edge === 'high' ? `above ${pct(cal.r)}` : `≈ ${pct(cal.r)}`) : '—';
+  $('#ex-kpi').innerHTML =
+    k('Priced in today', H.now != null ? pct(H.now) : '—', `years 1–5, at a ${pct(rate)} discount rate`) +
+    k('Today vs its own history', where || '—', pctile != null ? `higher than ${Math.round(pctile * 100)}% of past readings${bandOK ? `; usual ${pct(p25)}–${pct(p75)}` : ''}` : 'needs more years with a reading') +
+    k('Market’s implied discount rate', calTxt, cal ? `the rate at which past prices matched the growth delivered (${cal.n} ${cal.full ? 'five-year' : '3–5 year'} spans)` : 'needs at least 2 spans of 3+ years') +
+    k('Years it beat expectations', both.length ? `${beat.length} of ${both.length}` : '—', full.length < both.length ? `${full.length} with a full 5 years` : '') +
+    k('Best 5-year growth delivered', best != null ? pct(best) : '—', H.fiveYr.length && H.now != null ? `${met} of ${H.fiveYr.length} five-year spans reached ${pct(H.now)}` : '') +
+    k('Share price after', beat.length && miss.length ? `${pct(avR(beat))} vs ${pct(avR(miss))}` : '—', beat.length && miss.length ? `a year over the next 3 years, after ${beat.length} beat${beat.length > 1 ? 's' : ''} vs ${miss.length} miss${miss.length > 1 ? 'es' : ''}` : '');
+  $('#ex-rate').innerHTML = `<button data-exr="mine" aria-pressed="${!useCal}">Your DCF rate (${pct(DCFX.r)})</button><button data-exr="cal" aria-pressed="${!!useCal}"${cal ? '' : ' disabled title="Needs at least 2 spans of 3+ years with readings"'}>Market's implied rate${cal ? ` (${calTxt.replace('≈ ', '')})` : ''}</button>`;
+  $('#ex-sub').textContent = `${meas} · ${pct(rate)} discount, years 6–10 at ${(DCFX.g2 * 100).toFixed(1)}%`;
+  const mi = avg(both.map(r => r.imp)), ma = avg(both.map(r => r.act)), nm = rows.filter(r => r.imp == null).map(r => `${r.y} (${r.why})`), wk = rows.filter(r => r.weak && r.imp != null).map(r => r.y);
+  $('#ex-note').textContent =
+    (cal && !useCal && cal.edge !== 'low' && Math.abs(cal.r - DCFX.r) > .01 ? `Past prices matched what this company delivered at about a ${pct(cal.r)} discount rate, ${cal.r < DCFX.r ? 'lower' : 'higher'} than your ${pct(DCFX.r)}. ${cal.r < DCFX.r ? 'At your rate every price looks like it expects too much, so judge today against the usual range rather than the absolute number, or switch to the market’s implied rate.' : 'The market has been stricter with this company than your settings.'} ` : '') +
+    (cal && cal.edge === 'low' ? `Even at a very low discount rate past prices assumed more growth than the company delivered: the market has paid up for this company throughout. ` : '') +
+    (cal && cal.r < DCFX.r - .02 ? `A rate this low rarely means investors accept a ${pct(cal.r)} return; more often the market expects growth to last well beyond the 10 years in the model. Either way, it is the yardstick the market has used for this company. ` : '') + (useCal ? `At the market's own implied rate, today's price assumes ${pct(H.now)} a year, ${pmed != null ? (H.now > pmed + .02 ? 'more than its typical ' + pct(pmed) : H.now < pmed - .02 ? 'less than its typical ' + pct(pmed) : 'close to its typical ' + pct(pmed)) : ''}. ` : '') +
+    (both.length && !useCal ? `On average the price assumed ${pct(mi)} and the company delivered ${pct(ma)}. ` : '') +
+    `Shaded band: the middle half of this company's past readings. Bars: ${meas} growth that actually followed, teal where it beat the price, orange where it fell short, outlined where fewer than 5 years have passed. ` +
+    (wk.length ? `Crossed points (${wk.join(', ')}) start from a depressed year, so they are left out of the band and the calibration. ` : '') +
+    (nm.length ? `Not shown: ${nm.join(', ')}. ` : '') + `Year-end prices and one discount rate for every year: a guide, not a precise test.`;
 }
+document.addEventListener('click', e => { const b = e.target.closest('[data-exr]'); if (!b || b.disabled) return; EXR = b.dataset.exr; renderExp(); });
 
 let EDITS = {};
 const ekey = () => 'fx-edits:' + M.name;
