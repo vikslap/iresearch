@@ -189,6 +189,7 @@ td svg{display:block}
 .flagbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 16px;margin-bottom:16px;text-decoration:none;color:inherit}
 .flagbar:hover{border-color:var(--c1)}.flagbar .go{margin-left:auto;font-size:13px;color:var(--c1);font-weight:600}
 .qv{border-left:4px solid var(--q,var(--c1))}.qv h3{margin:0 0 8px;font-size:18px;line-height:1.35}.qv ul{margin:6px 0 0;padding-left:18px;color:var(--ink);font-size:14px;line-height:1.6}.qv li{margin:2px 0}.qv .qlink{margin:12px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:14px;color:var(--ink)}.qv .qset{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)}.qv .qset input{width:64px}
+.guide{margin-top:12px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--c1) 8%,transparent);border:1px solid color-mix(in srgb,var(--c1) 25%,transparent);font-size:13px;line-height:1.55;color:var(--ink)}.guide b{color:var(--c1)}.guide ol{margin:6px 0 0;padding-left:18px}
 .qchip{font-style:normal;font-size:11px;font-weight:700;color:var(--q);background:color-mix(in srgb,var(--q) 13%,transparent);padding:2px 8px;border-radius:999px;white-space:nowrap}
 .qdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--q);margin-right:7px;vertical-align:1px}
 .qgrp h3{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px}.qgrp .kpi .kh{display:flex;justify-content:space-between;gap:6px;align-items:flex-start}.qgrp .kpi.nm>b{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}.qwhy{margin:2px 0 0;font-size:12px;line-height:1.45;color:var(--ink);opacity:.85}
@@ -352,7 +353,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 16 Nov 2026, 09:47 IST</p>
+    <p class="tiny" id="build">Version: 16 Nov 2026, 09:59 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -464,7 +465,7 @@ section{animation:fade .25s ease}
         <label>Growth, years 1–5 (%)<input id="d-g1" inputmode="decimal"></label>
         <label>Growth, years 6–10 (%)<input id="d-g2" inputmode="decimal"></label>
         <label>Terminal growth (%)<input id="d-tg" inputmode="decimal"></label>
-        <label>Discount rate (%)<input id="d-r" inputmode="decimal"></label>
+        <label title="Your own required return: what you need a year to prefer this stock over an index fund or a government bond. Use it for buy decisions.">Discount rate (%) <small style="font-weight:500;color:var(--muted)">your required return</small><input id="d-r" inputmode="decimal"></label>
         <label>Net debt, ₹ Cr<input id="d-nd" inputmode="decimal"></label>
         <label>Shares, Cr<input id="d-sh" inputmode="decimal"></label>
         <label>Current price, ₹<input id="d-px" inputmode="decimal"></label>
@@ -490,7 +491,7 @@ section{animation:fade .25s ease}
       <div class="card wide"><div class="ch"><h3>Expectations vs reality</h3><span id="ex-sub">growth priced in at each year-end vs growth that followed</span></div>
         <div class="seg" id="ex-rate" role="group" aria-label="Discount rate" style="margin:0 0 10px"></div><div class="rv-out" id="ex-kpi"></div>
         <div class="fig" style="height:280px"><canvas id="ch-ex"></canvas></div>
-        <p class="note" id="ex-note"></p></div>
+        <p class="note" id="ex-note"></p><div class="guide" id="ex-guide"></div></div>
     </div>
   </section>
 
@@ -1018,7 +1019,12 @@ function renderExp() {
     `Shaded band: the middle half of this company's past readings. Bars: ${meas} growth that actually followed, teal where it beat the price, orange where it fell short, outlined where fewer than 5 years have passed. ` +
     (wk.length ? `Crossed points (${wk.join(', ')}) start from a depressed year, so they are left out of the band and the calibration. ` : '') +
     (nm.length ? `Not shown: ${nm.join(', ')}. ` : '') + `Year-end prices and one discount rate for every year: a guide, not a precise test.`;
+  $('#ex-guide').innerHTML = exGuide();
 }
+function exGuide() { const r = DCFX ? pct(DCFX.r) : 'your'; return `<b>In practice, for a DIY investor</b><ol>
+  <li>Keep the DCF at <b>your own required return</b> (${r} now) for buy decisions: the yearly return that makes a stock worth owning over an index fund or a government bond.</li>
+  <li>Use the <b>market's implied rate</b> only to read what the price assumes, and how today compares with the company's own past.</li>
+  <li>Then decide one thing: <b>do I believe it will beat what's priced in by enough to earn my ${r}?</b> If not, pass or wait for a lower price.</li></ol>`; }
 document.addEventListener('click', e => { const b = e.target.closest('[data-exr]'); if (!b || b.disabled) return; EXR = b.dataset.exr; renderExp(); });
 
 let EDITS = {};

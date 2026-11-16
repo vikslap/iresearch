@@ -1,7 +1,7 @@
 // Plumb service worker: makes the app installable and usable offline.
 // The page itself is fetched network-first, so updates arrive as soon as you're online;
 // libraries and icons are served from cache. Sync requests are never touched.
-const CACHE = 'plumb-202611160947';
+const CACHE = 'plumb-202611160959';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js',
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
