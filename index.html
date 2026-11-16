@@ -352,7 +352,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 16 Nov 2026, 08:52 IST</p>
+    <p class="tiny" id="build">Version: 16 Nov 2026, 09:25 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -487,6 +487,10 @@ section{animation:fade .25s ease}
         <div class="rv-out"><div><span>Implied value</span><b id="rv-val">—</b></div><div><span>Priced in, years 1–5</span><b id="rv-imp">—</b></div><div><span>Actual, 5 years</span><b id="rv-act">—</b></div></div>
         <div class="fig" style="height:220px"><canvas id="ch-rv"></canvas></div>
         <p class="note" id="rv-note"></p></div>
+      <div class="card wide"><div class="ch"><h3>Expectations vs reality</h3><span id="ex-sub">growth priced in at each year-end vs growth that followed</span></div>
+        <div class="rv-out" id="ex-kpi"></div>
+        <div class="fig" style="height:280px"><canvas id="ch-ex"></canvas></div>
+        <p class="note" id="ex-note"></p></div>
     </div>
   </section>
 
@@ -895,7 +899,7 @@ function runDCF() {
   const Y = Array.from({length: 10}, (_, i) => 'Y' + (i + 1));
   draw('ch-dcf', base('bar', Y, [bar(DMODE === 'fcf' ? 'Projected FCF' : 'Projected net profit', o.fl, css('--c7'))], 'cr'));
   DCFX = {value, sh, px, imp, tg, r, g1, g2, F, nd};
-  renderSens(); renderRev();
+  renderSens(); renderRev(); renderExp();
 }
 let DCFX = null;
 function renderSens() {
@@ -926,6 +930,57 @@ function renderRev() {
   $('#rv-note').textContent = `Uses your DCF inputs (base ${DMODE === 'fcf' ? 'free cash flow' : 'net profit'}, ${(X.r * 100).toFixed(1)}% discount, ${(X.tg * 100).toFixed(1)}% terminal). Years 6–10 grow at ${(X.g2 * 100).toFixed(1)}%, as in your DCF, so the marked point matches the DCF value when the slider equals your years 1–5 input. Where the blue curve crosses the orange line is the years 1–5 growth today’s price assumes` + (X.imp != null && act != null ? `: ${pct(X.imp)} a year, against ${pct(act)} actually delivered over 5 years by ${DMODE === 'fcf' ? 'operating cash flow' : 'profit'}.` : '.');
 }
 $('#rv-g').addEventListener('input', renderRev);
+// ---- Expectations vs reality: the reverse DCF at every past year-end, against what actually happened next ----
+function expHistory() {
+  const X = DCFX; if (!X) return null;
+  const L = C.n - 1, Y = M.secs.pl.dates.map(fy), fcf = DMODE === 'fcf';
+  const baseAt = i => { if (!fcf) return C.PAT[i]; if (i < 2) return null; const f = C.FCF.slice(i - 2, i + 1); return f.some(v => v == null) ? null : f.reduce((a, b) => a + b, 0) / 3; };
+  const implied = (F, nd, mcap) => { if (!(F > 0) || !(mcap > 0)) return null; const v = g => { let f = F, pv = 0; for (let y = 1; y <= 10; y++) { f *= 1 + (y <= 5 ? g : X.g2); pv += f / Math.pow(1 + X.r, y); } return pv + f * (1 + X.tg) / (X.r - X.tg) / Math.pow(1 + X.r, 10) - nd; };
+    if (v(-.5) > mcap || v(1.5) < mcap) return null; let lo = -.5, hi = 1.5; for (let k = 0; k < 60; k++) { const m = (lo + hi) / 2; v(m) > mcap ? hi = m : lo = m; } return (lo + hi) / 2; };
+  const rows = [];
+  for (let i = 0; i <= L; i++) {
+    const F = baseAt(i), mc = C.MC && C.MC[i] > 0 ? C.MC[i] : C.PR[i] * C.SH[i], nd = C.DEBT[i] - C.CASH[i] - C.INV[i];
+    const imp = implied(F, nd, mc), n = Math.min(5, L - i), Fn = n ? baseAt(i + n) : null;
+    const act = n && F > 0 && Fn > 0 ? Math.pow(Fn / F, 1 / n) - 1 : null;
+    const m = Math.min(3, L - i), ret = m && C.PR[i] > 0 && C.PR[i + m] > 0 ? Math.pow(C.PR[i + m] / C.PR[i], 1 / m) - 1 : null;
+    rows.push({y: Y[i], imp, act, n, ret, m, why: !(F > 0) ? (fcf ? 'free cash flow was negative' : 'it made a loss') : imp == null ? 'price outside the model range' : ''});
+  }
+  // five-year growth this company has ever delivered, to test today's assumption against
+  const fiveYr = []; for (let i = 0; i + 5 <= L; i++) { const a = baseAt(i), b = baseAt(i + 5); if (a > 0 && b > 0) fiveYr.push(Math.pow(b / a, .2) - 1); }
+  return {rows, now: X.imp != null && X.imp > -.49 && X.imp < .99 ? X.imp : null, fiveYr, fcf};
+}
+function renderExp() {
+  const H = expHistory(); if (!H) return;
+  const rows = H.rows, lab = rows.map(r => r.y).concat('Now'), meas = H.fcf ? 'free cash flow' : 'profit';
+  const pos = css('--c3'), neg = css('--c2'), mut = css('--muted');
+  const act = bar('Growth that followed', rows.map(r => r.act).concat(null), pos);
+  act.backgroundColor = ctx => { const r = rows[ctx.dataIndex]; if (!r || r.act == null) return 'transparent'; const c = r.imp == null ? mut : r.act >= r.imp ? pos : neg; return r.n < 5 ? rgba(c, .4) : c; };
+  act.hoverBackgroundColor = act.backgroundColor; act.borderColor = 'transparent'; act.order = 1;
+  const ln = Object.assign(line('Growth priced in', rows.map(r => r.imp).concat(H.now), css('--c1')), {type: 'line', fill: false, order: 0, spanGaps: false, cubicInterpolationMode: 'default', tension: 0});
+  ln.pointRadius = lab.map((_, i) => i === lab.length - 1 ? 6 : 3);
+  const cfg = base('bar', lab, [act, ln], 'pct');
+  const all = rows.flatMap(r => [r.imp, r.act]).concat(H.now).filter(v => v != null && isFinite(v));
+  cfg.options.scales.y.min = Math.max(-.5, Math.floor(Math.min(0, ...all) * 10) / 10); cfg.options.scales.y.max = Math.min(1, Math.ceil((Math.max(.2, ...all) + .02) * 10) / 10);
+  cfg.options.plugins.tooltip.callbacks.label = c => { const r = rows[c.dataIndex];
+    if (c.datasetIndex === 1) return c.dataIndex === rows.length ? ` Priced in today: ${pct(H.now)}` : ` Priced in: ${r.imp == null ? 'n/m, ' + r.why : pct(r.imp)}`;
+    return r && r.act != null ? ` Followed: ${pct(r.act)} a year over ${r.n} year${r.n > 1 ? 's' : ''}${r.n < 5 ? ' (so far)' : ''}${r.ret != null ? `; share price ${pct(r.ret)} a year over ${r.m}y` : ''}` : ''; };
+  draw('ch-ex', cfg);
+  // summary
+  const both = rows.filter(r => r.imp != null && r.act != null), full = both.filter(r => r.n === 5), beat = both.filter(r => r.act >= r.imp), miss = both.filter(r => r.act < r.imp);
+  const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null, avR = a => avg(a.map(r => r.ret).filter(v => v != null));
+  const mi = avg(both.map(r => r.imp)), ma = avg(both.map(r => r.act));
+  const met = H.now != null ? H.fiveYr.filter(g => g >= H.now).length : null, best = H.fiveYr.length ? Math.max(...H.fiveYr) : null;
+  const k = (t, v, sub) => `<div><span>${t}</span><b>${v}</b>${sub ? `<small style="display:block;color:var(--muted);font-size:11px;margin-top:2px">${sub}</small>` : ''}</div>`;
+  $('#ex-kpi').innerHTML = k('Priced in today', H.now != null ? pct(H.now) : '—', 'years 1–5') + k('Years it beat expectations', both.length ? `${beat.length} of ${both.length}` : '—', full.length < both.length ? `${full.length} with a full 5 years` : '') +
+    k('Best 5-year growth delivered', best != null ? pct(best) : '—', H.fiveYr.length ? `${met} of ${H.fiveYr.length} five-year spans reached today's ${pct(H.now)}` : 'needs 6+ years') +
+    k('Share price after', beat.length && miss.length ? `${pct(avR(beat))} vs ${pct(avR(miss))}` : '—', `a year over the next 3 years, after ${beat.length} beat${beat.length > 1 ? 's' : ''} vs ${miss.length} miss${miss.length > 1 ? 'es' : ''}`);
+  $('#ex-sub').textContent = `${title()} · ${meas} · your DCF inputs (${(DCFX.r * 100).toFixed(1)}% discount, years 6–10 at ${(DCFX.g2 * 100).toFixed(1)}%)`;
+  const nm = rows.filter(r => r.imp == null).map(r => `${r.y} (${r.why})`);
+  $('#ex-note').textContent = (both.length ? `On average the price assumed ${pct(mi)} growth and the company delivered ${pct(ma)}: the market was ${ma >= mi + .02 ? 'too pessimistic' : ma <= mi - .02 ? 'too optimistic' : 'about right'} about this company. ` : '') +
+    (H.now != null && best != null ? (H.now > best ? `Today's price assumes more than it has ever delivered over 5 years, so it needs a better run than any in its history. ` : `Today's assumption has been reached in ${met} of ${H.fiveYr.length} past 5-year spans. `) : '') +
+    `Blue line: the growth each year-end's price implied, using today's DCF settings. Bars: the ${meas} growth that actually followed, teal where it beat the price and orange where it fell short; faded bars have fewer than 5 years of results so far. ` +
+    (nm.length ? `Not shown: ${nm.join(', ')}. ` : '') + `Year-end prices and today's discount rate are used for every year, so treat this as a guide, not a precise test.`;
+}
 
 let EDITS = {};
 const ekey = () => 'fx-edits:' + M.name;
