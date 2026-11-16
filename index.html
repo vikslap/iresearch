@@ -352,7 +352,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 16 Nov 2026, 09:25 IST</p>
+    <p class="tiny" id="build">Version: 16 Nov 2026, 09:28 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -954,8 +954,8 @@ function renderExp() {
   const rows = H.rows, lab = rows.map(r => r.y).concat('Now'), meas = H.fcf ? 'free cash flow' : 'profit';
   const pos = css('--c3'), neg = css('--c2'), mut = css('--muted');
   const act = bar('Growth that followed', rows.map(r => r.act).concat(null), pos);
-  act.backgroundColor = ctx => { const r = rows[ctx.dataIndex]; if (!r || r.act == null) return 'transparent'; const c = r.imp == null ? mut : r.act >= r.imp ? pos : neg; return r.n < 5 ? rgba(c, .4) : c; };
-  act.hoverBackgroundColor = act.backgroundColor; act.borderColor = 'transparent'; act.order = 1;
+  act.backgroundColor = ctx => { const r = rows[ctx.dataIndex]; if (!r || r.act == null) return 'transparent'; const c = r.imp == null ? mut : r.act >= r.imp ? pos : neg; return r.n < 5 ? rgba(c, .22) : c; };
+  act.hoverBackgroundColor = act.backgroundColor; act.borderWidth = 1.5; act.borderColor = ctx => { const r = rows[ctx.dataIndex]; if (!r || r.act == null) return 'transparent'; return r.imp == null ? mut : r.act >= r.imp ? pos : neg; }; act.order = 1;
   const ln = Object.assign(line('Growth priced in', rows.map(r => r.imp).concat(H.now), css('--c1')), {type: 'line', fill: false, order: 0, spanGaps: false, cubicInterpolationMode: 'default', tension: 0});
   ln.pointRadius = lab.map((_, i) => i === lab.length - 1 ? 6 : 3);
   const cfg = base('bar', lab, [act, ln], 'pct');
@@ -974,7 +974,7 @@ function renderExp() {
   $('#ex-kpi').innerHTML = k('Priced in today', H.now != null ? pct(H.now) : '—', 'years 1–5') + k('Years it beat expectations', both.length ? `${beat.length} of ${both.length}` : '—', full.length < both.length ? `${full.length} with a full 5 years` : '') +
     k('Best 5-year growth delivered', best != null ? pct(best) : '—', H.fiveYr.length ? `${met} of ${H.fiveYr.length} five-year spans reached today's ${pct(H.now)}` : 'needs 6+ years') +
     k('Share price after', beat.length && miss.length ? `${pct(avR(beat))} vs ${pct(avR(miss))}` : '—', `a year over the next 3 years, after ${beat.length} beat${beat.length > 1 ? 's' : ''} vs ${miss.length} miss${miss.length > 1 ? 'es' : ''}`);
-  $('#ex-sub').textContent = `${title()} · ${meas} · your DCF inputs (${(DCFX.r * 100).toFixed(1)}% discount, years 6–10 at ${(DCFX.g2 * 100).toFixed(1)}%)`;
+  $('#ex-sub').textContent = `${meas} · your DCF inputs (${(DCFX.r * 100).toFixed(1)}% discount, years 6–10 at ${(DCFX.g2 * 100).toFixed(1)}%)`;
   const nm = rows.filter(r => r.imp == null).map(r => `${r.y} (${r.why})`);
   $('#ex-note').textContent = (both.length ? `On average the price assumed ${pct(mi)} growth and the company delivered ${pct(ma)}: the market was ${ma >= mi + .02 ? 'too pessimistic' : ma <= mi - .02 ? 'too optimistic' : 'about right'} about this company. ` : '') +
     (H.now != null && best != null ? (H.now > best ? `Today's price assumes more than it has ever delivered over 5 years, so it needs a better run than any in its history. ` : `Today's assumption has been reached in ${met} of ${H.fiveYr.length} past 5-year spans. `) : '') +
