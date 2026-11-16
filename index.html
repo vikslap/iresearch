@@ -252,6 +252,17 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .cpick button small{font-size:11px;color:var(--muted);font-weight:600;margin-left:2px}
 .sx-stand{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:0 0 4px;font-size:14px}
 .sxt td{transition:background .2s}
+.scn-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:20px;align-items:stretch;margin-bottom:12px}
+.scn-c{grid-template-columns:repeat(3,minmax(0,1fr))}
+.scn-tw table{font-size:13.5px}.scn-tw th,.scn-tw td{text-align:right;min-width:150px}.scn-tw th:first-child,.scn-tw td:first-child{min-width:230px;text-align:left}
+.scn-tw input{font:14px Inter,sans-serif;width:120px;text-align:right;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink)}
+.scn-tw input::placeholder{color:var(--muted);font-size:12px}
+.scn-tw tr.em td{background:var(--tint);font-size:15px}
+.scn-tw tr.grp td{position:static;text-align:left}
+.scn-tw small{color:var(--muted);font-size:12px}
+.scn-h{display:inline-flex;align-items:center;gap:6px;color:var(--ink);font-size:13px}.scn-h i{width:10px;height:10px;border-radius:3px}
+@media(max-width:900px){.scn-top{grid-template-columns:1fr}.scn-c{grid-template-columns:1fr 1fr 1fr}}
+@media(max-width:520px){.scn-c{grid-template-columns:1fr}}
 #drop{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(4px);display:none;place-items:center;font-size:20px;font-weight:700;z-index:9;border:3px dashed var(--c1);border-radius:16px;margin:10px}
 #drop.on{display:grid}
 #toast{position:fixed;bottom:20px;left:50%;max-width:min(560px,92vw);text-align:center;transform:translate(-50%,8px);background:var(--tip);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:10;box-shadow:0 8px 24px rgb(0 0 0/.18)}
@@ -323,7 +334,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 15 Nov 2026, 23:01 IST</p>
+    <p class="tiny" id="build">Version: 16 Nov 2026, 06:14 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -386,6 +397,26 @@ section{animation:fade .25s ease}
       <div class="card"><div class="ch"><h3>EV / EBITDA</h3><span>year-end and now</span></div><div class="fig"><canvas id="ch-ev"></canvas></div></div>
       <div class="card"><div class="ch"><h3>Price to book</h3><span>year-end and now</span></div><div class="fig"><canvas id="ch-pb"></canvas></div></div>
       <div class="card"><div class="ch"><h3>Share price vs EPS</h3><span>indexed, first year = 100</span></div><div class="fig"><canvas id="ch-px"></canvas></div></div>
+    </div>
+    <h2>Scenario valuation</h2>
+    <div class="card">
+      <div class="ch"><h3>Projected EPS × justified P/E</h3><button class="sm" id="scn-reset" style="margin-left:auto"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Reset</button></div>
+      <div class="scn-top">
+        <div class="fields scn-c" id="scn-common">
+          <label>Horizon, years<input data-c="n" inputmode="decimal"></label>
+          <label>Required return (%)<input data-c="r" inputmode="decimal"></label>
+          <label>Starting EPS, ₹ (TTM)<input data-c="eps" inputmode="decimal"></label>
+        </div>
+        <div class="res"><p class="crumb" style="margin:0">Probability-weighted value today</p><div class="big" id="scn-val">—</div><p id="scn-sub" style="margin:8px 0 0;font-size:14px"></p></div>
+      </div>
+      <div id="scn-warn"></div>
+      <div class="scroll scn-tw"><table id="scn-t"></table></div>
+      <p class="note" id="scn-ctx"></p>
+      <p class="note">Justified P/E = payout × (1 + long-run growth) ÷ (required return − long-run growth), with payout = 1 − long-run growth ÷ ROE: what a business growing at that rate and earning that ROE is worth per rupee of earnings. Value today = target price in year N plus dividends, discounted at the required return.</p>
+    </div>
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><div class="ch"><h3>Projected EPS by scenario</h3><span>₹ per share</span></div><div class="fig"><canvas id="ch-scn-eps"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>Value today by scenario</h3><span>₹ per share, dashed line = current price</span></div><div class="fig"><canvas id="ch-scn"></canvas></div></div>
     </div>
     <h2>P/E bands</h2>
     <div class="card"><div class="ch"><h3>Share price against earnings × historical P/E</h3><span>₹ per share</span></div><div class="fig big"><canvas id="ch-band"></canvas></div>
@@ -821,7 +852,7 @@ function renderValuation() {
     setDMode(DMODE, avg > 0 ? '' : 'Started on net profit because free cash flow averaged negative over the last 3 years. ');
     dcfInit = true;
   }
-  runDCF(); renderBands();
+  runDCF(); renderBands(); renderScn();
 }
 function runDCF() {
   const v = id => parseFloat($(id).value), F = v('#d-fcf'), g1 = v('#d-g1') / 100, g2 = v('#d-g2') / 100, tg = v('#d-tg') / 100, r = v('#d-r') / 100, nd = v('#d-nd') || 0, sh = v('#d-sh'), px = v('#d-px');
@@ -895,7 +926,7 @@ function recompute() { M = parse(aoa); C = calc(); headline(); renderAsOf(); kpi
 function load(rows, name, srcText, meta = {}) {
   orig = rows.map(r => (r || []).slice()); aoa = orig; M = parse(orig); fileName = name;
   CUR = {mod: meta.mod ?? LIB[M.name]?.mod ?? null, up: meta.up ?? LIB[M.name]?.up ?? null, sample: !!meta.sample};
-  loadEdits(); applyEdits(); dcfInit = false; erInit = false; loadSoic(); loadPx();
+  loadEdits(); applyEdits(); dcfInit = false; erInit = false; SC = null; loadSoic(); loadPx();
   $('#src').textContent = srcText;
   libSave(); try { localStorage.setItem('fx-last', M.name); } catch (e) {}
   recompute();
@@ -1364,6 +1395,91 @@ function renderQuality() {
   $('#q-cash-note').textContent = `Operations generated ₹${inr(CS.cfo)} Cr. As a share of that: ${use.join(', ')}. Teal bars are sources of cash, orange bars are uses.`;
 }
 
+
+// ---- Scenario valuation: projected EPS x justified P/E, three cases ----
+const SCN = [['bear', 'Pessimistic', '--c2'], ['base', 'Base case', '--c1'], ['bull', 'Optimistic', '--c3']];
+let SC = null;
+const scKey = () => 'fx-scn:' + M.name;
+function scDefaults() {
+  const L = C.n - 1, eps = div(C.now.ttmPAT, C.SH[L]), g5 = C.cagr(C.PAT, Math.min(5, L));
+  const gb = Math.max(0, Math.min(25, Math.round((g5 ?? .1) * 100)));
+  const roes = C.R.find(r => r.k === 'ROE').v.slice(-3).filter(v => v != null && isFinite(v)), roeB = Math.max(8, Math.round((roes.length ? roes.reduce((a, b) => a + b, 0) / roes.length : .15) * 100));
+  return {n: 3, r: 12, eps: eps != null ? +eps.toFixed(2) : '', s: {
+    bear: {p: 25, g: Math.round(gb * .5), lg: 4, roe: Math.round(roeB * .8), pe: ''},
+    base: {p: 50, g: gb, lg: 6, roe: roeB, pe: ''},
+    bull: {p: 25, g: Math.min(40, Math.max(8, Math.round(gb * 1.5))), lg: 8, roe: Math.round(roeB * 1.2), pe: ''}}};
+}
+function scLoad() { if (SC && SC._k === M.name) return; let s = null; try { s = JSON.parse(localStorage.getItem(scKey()) || 'null'); } catch (e) {} SC = s || scDefaults(); SC._k = M.name; }
+function scStore() { try { const {_k, ...rest} = SC; localStorage.setItem(scKey(), JSON.stringify(rest)); } catch (e) {} markDirty(M.name); }
+function scCalc() {
+  const L = C.n - 1, n = +SC.n, r = +SC.r / 100, eps0 = +SC.eps, px = C.now.price, pay0 = Math.min(1, Math.max(0, div(C.DIV[L] || 0, C.PAT[L]) ?? 0));
+  const pe = C.R.find(x => x.k === 'P/E').v;
+  const hist = {lo: qtl(pe, .25), med: qtl(pe, .5), hi: qtl(pe, .75)};
+  const out = {};
+  SCN.forEach(([k]) => {
+    const s = SC.s[k], g = +s.g / 100, lg = +s.lg / 100, roe = +s.roe / 100;
+    const payout = roe > 0 ? Math.min(1, Math.max(0, 1 - lg / roe)) : null;
+    const jpe = payout != null && r > lg && payout > 0 ? payout * (1 + lg) / (r - lg) : null;
+    const man = parseFloat(s.pe), xpe = man > 0 ? man : jpe;
+    const path = [eps0]; for (let t = 1; t <= n; t++) path.push(eps0 * Math.pow(1 + g, t));
+    const epsN = path[n], tgt = xpe != null ? epsN * xpe : null;
+    let divs = 0, divPV = 0; for (let t = 1; t <= n; t++) { const d = path[t] * pay0; divs += d; divPV += d / Math.pow(1 + r, t); }
+    const pv = tgt != null ? tgt / Math.pow(1 + r, n) + divPV : null;
+    const cagr = tgt != null && px > 0 && tgt + divs > 0 ? Math.pow((tgt + divs) / px, 1 / n) - 1 : null;
+    out[k] = {g, lg, roe, payout, jpe, xpe, manual: man > 0, path, epsN, tgt, divs, pv, up: div(pv - px, px), cagr, p: Math.max(0, +s.p || 0)};
+  });
+  const ps = SCN.reduce((a, [k]) => a + out[k].p, 0), ok = SCN.every(([k]) => out[k].pv != null);
+  const wv = ps > 0 && ok ? SCN.reduce((a, [k]) => a + out[k].p * out[k].pv, 0) / ps : null;
+  const wc = ps > 0 && SCN.every(([k]) => out[k].cagr != null) ? SCN.reduce((a, [k]) => a + out[k].p * out[k].cagr, 0) / ps : null;
+  return {out, ps, wv, wc, px, n, r, eps0, pay0, hist, valid: n > 0 && eps0 > 0 && r > 0};
+}
+function renderScn() {
+  scLoad();
+  const X = scCalc(), o = X.out, esc = v => v == null ? '' : String(v).replace(/"/g, '&quot;');
+  const inp = (k, f, step) => `<input data-s="${k}" data-f="${f}" inputmode="decimal" value="${esc(SC.s[k][f])}"${f === 'pe' && o[k].jpe != null ? ` placeholder="${o[k].jpe.toFixed(1)} (justified)"` : f === 'pe' ? ' placeholder="enter"' : ''} aria-label="${f}">`;
+  const row = (lab, fn, cls = '') => `<tr class="${cls}"><td>${lab}</td>${SCN.map(([k]) => `<td>${fn(k)}</td>`).join('')}</tr>`;
+  const money = v => v == null || !isFinite(v) ? '—' : (v < 0 ? '−₹' : '₹') + inr(Math.abs(v));
+  const head = `<thead><tr><th></th>${SCN.map(([k, l, c]) => `<th><span class="scn-h"><i style="background:var(${c})"></i>${l}</span></th>`).join('')}</tr></thead>`;
+  $('#scn-t').innerHTML = head + '<tbody>' +
+    `<tr class="grp"><td colspan="4">Your assumptions</td></tr>` +
+    row('Probability, %', k => inp(k, 'p')) +
+    row(`EPS growth a year, next ${X.n} years (%)`, k => inp(k, 'g')) +
+    row('Long-run growth after that (%)', k => inp(k, 'lg')) +
+    row('Sustainable ROE (%)', k => inp(k, 'roe')) +
+    row('Exit P/E (blank = justified)', k => inp(k, 'pe')) +
+    `<tr class="grp"><td colspan="4">Result</td></tr>` +
+    row('Payout implied (1 − growth ÷ ROE)', k => pct(o[k].payout)) +
+    row('Justified P/E', k => o[k].jpe == null ? '<span class="down">not meaningful</span>' : fmt(o[k].jpe, 'x')) +
+    row(`EPS in year ${X.n}`, k => money(o[k].epsN)) +
+    row(`Target price in year ${X.n}`, k => money(o[k].tgt) + (o[k].xpe != null ? `<small> at ${o[k].xpe.toFixed(1)}×${o[k].manual ? ' (yours)' : ''}</small>` : '')) +
+    row('Value today', k => `<b>${money(o[k].pv)}</b>`, 'em') +
+    row('vs current price', k => o[k].up == null ? '—' : `<span class="${o[k].up >= 0 ? 'up' : 'down'}">${o[k].up >= 0 ? '+' : ''}${pct(o[k].up)}</span>`) +
+    row('Return a year if it plays out', k => pct(o[k].cagr)) + '</tbody>';
+  $('#scn-common').querySelectorAll('input').forEach(i => { const f = i.dataset.c; if (document.activeElement !== i) i.value = SC[f]; });
+  const warn = [];
+  if (!X.valid) warn.push('Needs a positive EPS, horizon and required return.');
+  if (Math.abs(X.ps - 100) > .5) warn.push(`Probabilities add up to ${Math.round(X.ps)}%, so they are scaled to 100% for the weighted value.`);
+  SCN.forEach(([k, l]) => { if (o[k].jpe == null && !o[k].manual) warn.push(`${l}: long-run growth must be below both the required return and ROE for a justified P/E; enter an exit P/E instead.`); });
+  $('#scn-warn').innerHTML = warn.map(w => `<p class="warn">${w}</p>`).join('');
+  $('#scn-val').textContent = X.wv == null ? '—' : money(X.wv);
+  const up = div(X.wv - X.px, X.px);
+  let where = '';
+  if (X.wv != null) { const v = SCN.map(([k]) => o[k].pv); where = X.px < v[0] ? 'below even your pessimistic case' : X.px < v[1] ? 'between your pessimistic and base cases' : X.px < v[2] ? 'between your base and optimistic cases' : 'above even your optimistic case'; }
+  $('#scn-sub').innerHTML = X.wv == null ? '' : `<span class="${up >= 0 ? 'up' : 'down'}">${up >= 0 ? '▲' : '▼'} ${Math.abs(up * 100).toFixed(0)}% ${up >= 0 ? 'above' : 'below'}</span> the current price of ₹${inr(X.px)}. Today’s price sits ${where}.` + (X.wc != null ? ` Probability-weighted return ≈ <b>${pct(X.wc)}</b> a year over ${X.n} years.` : '');
+  $('#scn-ctx').textContent = `For context: TTM EPS ₹${inr(X.eps0)}; this company’s own year-end P/E has ranged ${X.hist.lo == null ? '—' : X.hist.lo.toFixed(1) + '×'} (25th percentile) to ${X.hist.hi == null ? '—' : X.hist.hi.toFixed(1) + '×'} (75th), median ${X.hist.med == null ? '—' : X.hist.med.toFixed(1) + '×'}; current ${fmt(C.now.pe, 'x')}. Dividends during the ${X.n} years use today’s payout (${pct(X.pay0)}) and are included in value and return.`;
+  // charts
+  const labs = ['Today', ...Array.from({length: X.n}, (_, i) => 'Year ' + (i + 1))];
+  draw('ch-scn-eps', base('line', labs, SCN.map(([k, l, c]) => Object.assign(line(l, o[k].path, css(c), k === 'base' ? [] : [6, 4]), {fill: false})), 'cr'));
+  const vals = [...SCN.map(([k]) => o[k].pv), X.wv], cols = [...SCN.map(([, , c]) => css(c)), css('--c4')];
+  const vb = bar('Value today', vals, cols[0]); vb.backgroundColor = ctx => grad(cols[ctx.dataIndex] || cols[0])(ctx); vb.hoverBackgroundColor = cols;
+  const pl = Object.assign(line('Current price', vals.map(() => X.px), css('--ink'), [6, 4]), {type: 'line', fill: false, pointRadius: 0, order: 0}); vb.order = 1;
+  const scfg = base('bar', ['Pessimistic', 'Base case', 'Optimistic', 'Weighted'], [vb, pl], 'cr'); scfg.options.plugins.legend.display = false;
+  draw('ch-scn', scfg);
+}
+$('#scn-t').addEventListener('input', e => { const t = e.target; if (!t.dataset.s) return; SC.s[t.dataset.s][t.dataset.f] = t.value.trim(); scStore(); clearTimeout(renderScn.h); renderScn.h = setTimeout(() => { const a = document.activeElement, s = a && a.dataset.s, f = a && a.dataset.f, pos = a && a.selectionStart; renderScn(); if (s) { const n = $(`#scn-t [data-s="${s}"][data-f="${f}"]`); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (er) {} } } }, 250); });
+$('#scn-common').addEventListener('input', e => { const t = e.target; if (!t.dataset.c) return; SC[t.dataset.c] = t.value.trim(); scStore(); renderScn(); });
+$('#scn-reset').addEventListener('click', () => { SC = scDefaults(); SC._k = M.name; scStore(); renderScn(); toast('Scenarios reset to defaults'); });
+
 // ---- Valuation: P/E bands and expected return ----
 const qtl = (a, p) => { const x = a.filter(v => v != null && isFinite(v) && v > 0).sort((m, n) => m - n); if (!x.length) return null; const i = (x.length - 1) * p, lo = Math.floor(i); return x[lo] + (x[Math.min(lo + 1, x.length - 1)] - x[lo]) * (i - lo); };
 let erInit = false;
@@ -1529,7 +1645,7 @@ async function unseal(s) {
 }
 const lsGet = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
 const lsPut = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const bundle = name => LIB[name] ? {name, lib: LIB[name], edits: lsGet('fx-edits:' + name), soic: lsGet('fx-soic:' + name), px: lsGet('fx-px:' + name)} : {name, deleted: true};
+const bundle = name => LIB[name] ? {name, lib: LIB[name], edits: lsGet('fx-edits:' + name), soic: lsGet('fx-soic:' + name), px: lsGet('fx-px:' + name), scn: lsGet('fx-scn:' + name)} : {name, deleted: true};
 function markDirty(name, when) {
   if (syncApplying || !name) return;
   SYU[name] = when || Date.now(); syncSave();
@@ -1560,8 +1676,8 @@ async function syncPull(full) {
       remote[b.name] = it.u;
       if (it.u > (SYU[b.name] || 0)) {
         syncApplying = true;
-        if (b.deleted) { delete LIB[b.name]; ['fx-edits:', 'fx-soic:', 'fx-px:'].forEach(p => lsPut(p + b.name, null)); }
-        else { LIB[b.name] = b.lib; lsPut('fx-edits:' + b.name, b.edits); lsPut('fx-soic:' + b.name, b.soic); lsPut('fx-px:' + b.name, b.px); }
+        if (b.deleted) { delete LIB[b.name]; ['fx-edits:', 'fx-soic:', 'fx-px:', 'fx-scn:'].forEach(p => lsPut(p + b.name, null)); }
+        else { LIB[b.name] = b.lib; lsPut('fx-edits:' + b.name, b.edits); lsPut('fx-soic:' + b.name, b.soic); lsPut('fx-px:' + b.name, b.px); if ('scn' in b) lsPut('fx-scn:' + b.name, b.scn); }
         syncApplying = false; SYU[b.name] = it.u; changed.add(b.name);
       }
       SY.s = Math.max(SY.s || 0, it.s);
@@ -1674,7 +1790,7 @@ function snapC(k) {   // cached snapshot for companies other than the open one
 }
 function libRemove(k) {
   delete LIB[k]; libStore(); SNAPC.delete(k);
-  try { ['fx-edits:', 'fx-soic:', 'fx-px:'].forEach(p => localStorage.removeItem(p + k)); } catch (er) {}
+  try { ['fx-edits:', 'fx-soic:', 'fx-px:', 'fx-scn:'].forEach(p => localStorage.removeItem(p + k)); } catch (er) {}
   markDirty(k); CMP.delete(k);
   if (k === M.name) { const nx = libKeys()[0]; if (nx) { M.name = '__gone__'; openLib(nx); } else load(SAMPLE, 'Cenlub Industries', '', {mod: Date.parse('2026-11-15T02:45:14Z'), sample: true}); }
 }
