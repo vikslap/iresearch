@@ -188,6 +188,15 @@ td svg{display:block}
 .passed summary{cursor:pointer;padding:12px 0;font-size:13px;font-weight:600;color:var(--muted);border-top:1px solid var(--line);min-height:44px}
 .flagbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 16px;margin-bottom:16px;text-decoration:none;color:inherit}
 .flagbar:hover{border-color:var(--c1)}.flagbar .go{margin-left:auto;font-size:13px;color:var(--c1);font-weight:600}
+.qv{border-left:4px solid var(--q,var(--c1))}.qv h3{margin:0 0 8px;font-size:18px;line-height:1.35}.qv ul{margin:6px 0 0;padding-left:18px;color:var(--ink);font-size:14px;line-height:1.6}.qv li{margin:2px 0}.qv .qlink{margin:12px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:14px;color:var(--ink)}.qv .qset{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)}.qv .qset input{width:64px}
+.qchip{font-style:normal;font-size:11px;font-weight:700;color:var(--q);background:color-mix(in srgb,var(--q) 13%,transparent);padding:2px 8px;border-radius:999px;white-space:nowrap}
+.qdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--q);margin-right:7px;vertical-align:1px}
+.qgrp h3{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px}.qgrp .kpi .kh{display:flex;justify-content:space-between;gap:6px;align-items:flex-start}.qgrp .kpi.nm>b{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}.qwhy{margin:2px 0 0;font-size:12px;line-height:1.45;color:var(--ink);opacity:.85}
+.qdet{margin-top:8px}.qdet summary{cursor:pointer;font-size:13px;color:var(--c1);font-weight:600}
+.qp{display:grid;grid-template-columns:170px minmax(120px,1fr) 64px 130px;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line);font-size:13px}.qp:first-child{border-top:0}.qp-l{color:var(--ink);font-weight:600}.qp-v{font-weight:700;text-align:right}.qp-r{color:var(--muted);font-size:12px}
+.qp-t{position:relative;height:18px;border-radius:9px;background:var(--soft)}.qp-d{position:absolute;top:5px;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:color-mix(in srgb,var(--muted) 55%,transparent)}.qp-d.me{top:2px;width:14px;height:14px;margin-left:-7px;border:2px solid var(--card);box-shadow:0 0 0 1px var(--ink);z-index:2}.qp-md{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink);opacity:.35}
+.qtab td{vertical-align:top}.qtab .qv-c{min-width:260px;max-width:360px;white-space:normal;text-align:left;font-size:13px}.qtab tr.me td{background:color-mix(in srgb,var(--c1) 6%,transparent)}.nm2{cursor:pointer;font-weight:600;display:inline-flex;gap:7px;align-items:center}.nm2 i{width:9px;height:9px;border-radius:50%;flex:none}.qtab th{text-align:left}.qtab td{text-align:left}.nm2:hover{color:var(--c1)}
+@media(max-width:700px){.qp{grid-template-columns:1fr 64px;row-gap:4px}.qp-t{grid-column:1/-1;grid-row:2}.qp-r{grid-column:1/-1}}
 .qt{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:12px;margin-bottom:16px}.qt .kpi>b{font-size:22px}
 .er{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:28px;align-items:start}
 @media(max-width:900px){.er{grid-template-columns:1fr}.flag{grid-template-columns:1fr;gap:6px}.fl{justify-self:start}}
@@ -343,7 +352,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 16 Nov 2026, 07:18 IST</p>
+    <p class="tiny" id="build">Version: 16 Nov 2026, 08:52 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -394,10 +403,13 @@ section{animation:fade .25s ease}
   <section id="quality" hidden>
     <div class="card" id="q-flags"></div>
     <h2>What drives returns</h2>
-    <div class="qt" id="q-tiles"></div>
+    <div class="card qv" id="q-verdict"></div>
+    <div id="q-tiles"></div>
     <div class="grid">
-      <div class="card"><div class="ch"><h3>ROE and its drivers</h3><span>indexed, first year = 100</span></div><div class="fig"><canvas id="ch-dup"></canvas></div><p class="note" id="q-dup-note"></p></div>
-      <div class="card"><div class="ch"><h3>Returns on new capital vs ROCE</h3><span>incremental ROCE over rolling 3 years</span></div><div class="fig"><canvas id="ch-inc"></canvas></div><p class="note">Incremental ROCE = change in operating profit ÷ change in capital employed (net worth + borrowings). Above ROCE means new investment earns more than the existing business.</p></div>
+      <div class="card"><div class="ch"><h3>What moved ROE</h3><span id="q-wf-sub">percentage points</span></div><div class="fig"><canvas id="ch-dup"></canvas></div><p class="note" id="q-dup-note"></p>
+        <details class="qdet" id="q-dup-det"><summary>Show the drivers year by year</summary><div class="fig"><canvas id="ch-dup2"></canvas></div><p class="note">Indexed, first year = 100. ROE = net margin × asset turnover × leverage.</p></details></div>
+      <div class="card"><div class="ch"><h3>Returns on new capital vs ROCE</h3><span>incremental ROCE over rolling 3 years</span></div><div class="fig"><canvas id="ch-inc"></canvas></div><p class="note" id="q-inc-note"></p></div>
+      <div class="card wide" id="q-peer-card"><div class="ch"><h3>Against sector peers</h3><span id="q-peer-sub"></span></div><div id="q-peer"></div></div>
       <div class="card wide"><div class="ch"><h3 id="q-cash-t">Where the cash went</h3><span>₹ Cr, cumulative</span></div><div class="fig" style="height:300px"><canvas id="ch-cash2"></canvas></div><p class="note" id="q-cash-note"></p></div>
     </div>
   </section>
@@ -742,7 +754,7 @@ function chartPNG(id) {
 function chartTSV(id) {
   const ch = charts[id], f = ch._fmt, labels = ch.data.labels, ds = ch.data.datasets;
   if (ch.config.type === 'scatter') return ['Company\tROCE %\tP/E', ...ds.map(d => `${d.label}\t${d.data[0].x.toFixed(2)}\t${d.data[0].y.toFixed(2)}`)].join('\n');
-  const val = v => v == null || !isFinite(v) ? '' : f === 'pct' ? (v * 100).toFixed(2) + '%' : f === 'days' ? Math.round(v) : (+v).toFixed(2);
+  const val = v => Array.isArray(v) ? val(v[1] - v[0]) : v == null || !isFinite(v) ? '' : f === 'pct' ? (v * 100).toFixed(2) + '%' : f === 'days' ? Math.round(v) : (+v).toFixed(2);
   return [['', ...ds.map(d => d.label)].join('\t'), ...labels.map((l, i) => [l, ...ds.map(d => val(d.data[i]))].join('\t'))].join('\n');
 }
 let DL = null;
@@ -1372,6 +1384,116 @@ function cashStory() {
   if (Math.abs(net) > .01) items.push([net > 0 ? 'Other uses (equity, acquisitions, misc.)' : 'Other sources (equity raised, misc.)', -net, 'oth']);
   return {items, cfo, from: fy(M.secs.pl.dates[1] || M.secs.pl.dates[0]), to: fy(M.secs.pl.dates[L])};
 }
+// ---- Quality read: plain-language verdicts on the return drivers (works for any company snapshot) ----
+let COC = (() => { try { const v = parseFloat(localStorage.getItem('fx-coc')); return v > 0 && v < 40 ? v / 100 : .12; } catch (e) { return .12; } })();
+const QL = {good: ['Good', '--pos'], watch: ['Watch', '--warn'], bad: ['Weak', '--neg'], info: ['Context', '--c1'], nm: ['Not meaningful', '--muted']};
+const qchip = (st, txt) => `<em class="qchip" style="--q:var(${QL[st][1]})">${txt || QL[st][0]}</em>`;
+function qualityRead(s) {
+  const C2 = s.C, D = s.D, L = C2.n - 1, Y = s.M.secs.pl.dates.map(fy), k5 = D.k5, k3 = Math.min(3, L), CE = D.CE;
+  const roceA = C2.R.find(r => r.k === 'ROCE').v, roce = roceA[L], hurdle = COC / .75;
+  const med = a => median(a.filter(v => v != null && isFinite(v)));
+  // a start year is weak when it made a loss or its operating profit was under half the typical level since
+  const weak = i => i < 0 || !(C2.EBIT[i] > 0) || !(C2.PAT[i] > 0) || C2.EBIT[i] < .5 * med(C2.EBIT.slice(i, L + 1));
+  const capOK = k => L - k >= 0 && CE[L - k] > 0 && CE[L] - CE[L - k] > .1 * CE[L - k];
+  const loss = (a, b) => { for (let i = Math.max(0, a); i <= b; i++) if (C2.PAT[i] < 0) return Y[i]; return null; };
+  const T = {}, why = {};
+  // 1. how good is the business
+  const pt = D.avgPt;
+  T.pt = pt == null ? 'nm' : pt >= COC ? 'good' : pt >= COC - .03 ? 'watch' : 'bad';
+  why.pt = pt == null ? 'Not enough years.' : `${pt >= COC ? 'Above' : 'Below'} a ${pct(COC)} cost of capital${pt >= COC ? ': each rupee invested creates value' : ': growth at these returns does not create value'}.`;
+  T.roce = roce == null ? 'nm' : roce >= hurdle ? 'good' : roce >= COC ? 'watch' : 'bad';
+  why.roce = `Pre-tax. The pre-tax hurdle is about ${pct(hurdle)} (${pct(COC)} cost of capital ÷ (1 − 25% tax)).`;
+  // trend in returns
+  const win = roceA.slice(L - k5, L + 1), peak = Math.max(...win.filter(v => v != null)), pk = L - k5 + win.indexOf(peak), r3 = roceA[L - k3];
+  const trend = roce == null ? 'nm' : (pk !== L && roce < .8 * peak) ? 'fading' : (r3 != null && r3 > 0 && roce > 1.2 * r3) ? 'improving' : 'steady';
+  T.trend = trend === 'fading' ? 'watch' : trend === 'improving' ? 'good' : trend === 'nm' ? 'nm' : 'info';
+  why.trend = trend === 'fading' ? `ROCE ${pct(roce)} now, down from a ${pct(peak)} peak in ${Y[pk]}.` : trend === 'improving' ? `ROCE up from ${pct(r3)} in ${Y[L - k3]} to ${pct(roce)}.` : `ROCE ${pct(roce)}, ${pct(r3)} three years ago.`;
+  // 2. is new money earning well
+  const incSt = (v, k) => { if (!capOK(k)) return ['nm', `Capital employed barely changed over ${k} years, so the ratio swings wildly.`];
+    if (weak(L - k)) return ['nm', `Starts from a weak year (${Y[L - k]}${loss(L - k, L - k) ? ', a loss' : ''}), which flatters it.`];
+    if (v == null) return ['nm', 'Not enough years.'];
+    return [v >= roce ? 'good' : v >= hurdle ? 'watch' : 'bad', v >= roce ? `Above today's ROCE (${pct(roce)}): new investment earns more than the existing business.` : v >= hurdle ? `Above the ${pct(hurdle)} pre-tax hurdle but below today's ROCE (${pct(roce)}): new money earns less than the old.` : `Below the ${pct(hurdle)} pre-tax hurdle: recent investment has not paid off yet.`]; };
+  [T.inc3, why.inc3] = incSt(D.inc3, k3); [T.inc5, why.inc5] = incSt(D.inc5, k5);
+  const trust = T.inc3 !== 'nm' ? 'inc3' : T.inc5 !== 'nm' ? 'inc5' : null;
+  if (trust && T.inc3 !== 'nm' && T.inc5 !== 'nm' && Math.abs(D.inc3 - D.inc5) > .05) why[trust] += ' The 3-year figure is the more current read.';
+  // 3. funding and growth
+  const dDebt = C2.DEBT[L] - C2.DEBT[L - k5], dSh = div(C2.SH[L] - C2.SH[L - k5], C2.SH[L - k5]), de = div(C2.DEBT[L], C2.NW[L]);
+  const outside = D.reinv != null && D.reinv > 1;
+  const fund = !outside ? 'self' : dDebt > 0 && dSh > .03 ? 'both' : dSh > .03 ? 'equity' : 'debt';
+  T.reinv = D.reinv == null ? 'nm' : outside ? (fund === 'debt' && de > .5) || fund !== 'debt' ? 'watch' : 'info' : D.reinv < .2 ? 'info' : 'good';
+  why.reinv = D.reinv == null ? 'Not enough years.' : outside ? `More than its after-tax profit, so the rest came from outside: borrowings ${dDebt >= 0 ? '+' : '−'}₹${inr(Math.abs(dDebt))} Cr${dSh != null ? `, share count ${dSh >= 0 ? '+' : ''}${pct(dSh)}` : ''} over ${k5} years.` : D.reinv < .2 ? 'Little is reinvested: growth has to come from pricing, spare capacity or acquisitions.' : 'Expansion funded from its own profit.';
+  const pay = (() => { const r = [...Array(k5).keys()].map(j => L - j); return Math.min(1, Math.max(0, div(r.reduce((a, i) => a + (C2.DIV[i] || 0), 0), r.reduce((a, i) => a + C2.PAT[i], 0)) ?? 0)); })();
+  const ownG = pt != null ? pt * (1 - pay) : null, incPt = trust ? D[trust] * .75 : null, ownGinc = incPt != null ? incPt * (1 - pay) : null;
+  T.self = D.selfG == null ? 'nm' : 'info';
+  why.self = D.selfG == null ? '' : outside ? `This uses outside money too. From its own profit alone (keeping ${pct(1 - pay)} of it): about ${pct(ownG)} a year.` : `About ${pct(ownG)} a year if it kept ${pct(1 - pay)} of profit and returns held.`;
+  T.sus = 'info'; why.sus = `ROE × share of profit kept (${pct(1 - pay)}). A rough ceiling for growth without new capital.`;
+  const g3 = C2.cagr(C2.EBIT, k3), baseWeak = weak(L - k5);
+  T.ebitg = D.ebitG == null ? 'nm' : baseWeak ? 'nm' : D.ebitG > 1 ? 'nm' : 'info';
+  why.ebitg = baseWeak ? `Starts from ${Y[L - k5]}${loss(L - k5, L - k5) ? ', a loss year' : ', a weak year'}: mostly recovery, not repeatable.${g3 != null && !weak(L - k3) ? ` The 3-year CAGR is ${pct(g3)}.` : ''}` : D.ebitG > 1 ? 'From a very small base.' : (D.selfG != null ? (D.ebitG > D.selfG + .05 ? 'Faster than its returns can fund: check margins, debt and dilution.' : D.ebitG < D.selfG - .05 ? 'Slower than its reinvestment should allow: new capital is not yet earning.' : 'In line with what its returns and reinvestment support.') : '');
+  // ROE bridge: how much margin, turnover and leverage each added (log split)
+  let wf = null, drv = null, levShare = null;
+  const a = D.i0, ok = i => [D.roe, D.mg, D.tu, D.lev].every(x => x[i] > 0);
+  if (a >= 0 && a < L && ok(a) && ok(L)) {
+    const lr = Math.log(D.roe[L] / D.roe[a]), dl = D.roe[L] - D.roe[a], parts = [D.mg, D.tu, D.lev].map(x => Math.log(x[L] / x[a]));
+    const c = parts.map(p => Math.abs(lr) > 1e-9 ? dl * p / lr : 0);
+    wf = {a, labels: [`ROE ${Y[a]}`, 'Net margin', 'Asset turnover', 'Leverage', `ROE ${Y[L]}`], start: D.roe[a], end: D.roe[L], c};
+    const names = ['margin', 'asset turnover', 'leverage'], big = c.map(Math.abs).indexOf(Math.max(...c.map(Math.abs)));
+    drv = names[big]; levShare = dl > 0 ? c[2] / dl : null;
+  }
+  T.drv = !drv ? 'nm' : drv === 'leverage' && wf.end > wf.start ? 'watch' : levShare != null && levShare > .35 ? 'watch' : 'info';
+  // headline
+  const A = T.pt === 'good' ? 'Earns above its cost of capital' : T.pt === 'watch' ? 'Earns about its cost of capital' : T.pt === 'bad' ? 'Earns below its cost of capital' : 'Returns unclear';
+  const B = trend === 'fading' ? 'returns are fading' : trend === 'improving' ? 'returns are improving' : trend === 'steady' ? 'returns are steady' : '';
+  const same = (T.pt === 'good') === (trend !== 'fading');
+  const Cn = trust && T[trust] === 'bad' ? "recent expansion hasn't paid off yet" : trust && T[trust] === 'good' ? 'new capital earns more than the old' : '';
+  const head = A + (B ? (same ? ' and ' : ', but ') + B : '') + (Cn ? `; ${Cn}` : '') + '.';
+  const score = ['pt', 'trend', trust].filter(Boolean).reduce((x, k) => x + (T[k] === 'good' ? 1 : T[k] === 'bad' ? -2 : T[k] === 'watch' ? -1 : 0), 0);
+  const lvl = score >= 1 ? 'good' : score <= -2 && T.pt !== 'good' ? 'bad' : 'watch';
+  // the story, in order
+  const lines = [];
+  if (pt != null) lines.push(`Post-tax ROCE averaged <b>${pct(pt)}</b> over ${k5} years, ${pt >= COC ? 'above' : 'below'} a ${pct(COC)} cost of capital. ${why.trend}`);
+  if (wf) { const ch = wf.c.map((v, i) => [['margin', 'asset turnover', 'leverage'][i], v]).filter(x => Math.abs(x[1]) > .005).map(x => `${x[0]} ${x[1] >= 0 ? '+' : '−'}${(Math.abs(x[1]) * 100).toFixed(1)} pts`);
+    lines.push(`ROE went from ${pct(wf.start)} in ${Y[a]} to ${pct(wf.end)} in ${Y[L]}${ch.length ? ` (${ch.join(', ')})` : ''}; the biggest mover was <b>${drv}</b>.` + (levShare != null && levShare > .35 ? ` About ${Math.round(levShare * 100)}% of the rise came from more leverage, which is lower-quality.` : '')); }
+  if (trust) lines.push(`Capital added over the last ${trust === 'inc3' ? k3 : k5} years earned <b>${pct(D[trust])}</b> pre-tax. ${why[trust]}`);
+  else lines.push(`Returns on new capital can't be read reliably: ${why.inc3.toLowerCase()}`);
+  if (outside) lines.push(`It reinvested ${pct(D.reinv)} of after-tax profit, so it used outside money: ${why.reinv.split(': ')[1]}`);
+  if (baseWeak && D.ebitG != null) lines.push(`Operating profit growth since ${Y[L - k5]} (${pct(D.ebitG)} a year) is mostly recovery from a weak base.${g3 != null && !weak(L - k3) ? ` Over 3 years it is ${pct(g3)}.` : ''}`);
+  // short labels for side-by-side tables
+  const short = {
+    ret: [T.pt, pt == null ? '—' : `${pct(pt)} post-tax`],
+    trend: [T.trend, trend === 'nm' ? '—' : trend[0].toUpperCase() + trend.slice(1)],
+    inc: [trust ? T[trust] : 'nm', trust ? `${pct(D[trust])} (${trust === 'inc3' ? k3 : k5}y)` : 'n/m'],
+    drv: [T.drv, drv ? drv[0].toUpperCase() + drv.slice(1) : '—'],
+    fund: [fund === 'self' ? 'good' : T.reinv, {self: 'Own profit', debt: 'Borrowing', equity: 'New shares', both: 'Debt + shares'}[fund]],
+    grow: [baseWeak ? 'nm' : 'info', D.ebitG == null ? '—' : baseWeak ? (g3 != null && !weak(L - k3) ? `${pct(g3)} (3y)` : 'low base') : pct(D.ebitG)]};
+  return {head, lvl, lines, T, why, trust, trend, wf, short, ownG, ownGinc, outside, pay, hurdle, k3, k5, Y};
+}
+// peers' figures for a strip: [label, key, fmt, direction(+1 higher better, -1 lower, 0 neutral)]
+const QPM = [['ROCE (latest)', s => s.C.R.find(r => r.k === 'ROCE').v[s.C.n - 1], 1], ['Post-tax ROCE, 5y avg', s => s.D.avgPt, 1], ['Incremental ROCE, 3y', s => { const q = qualityRead(s); return q.T.inc3 === 'nm' ? null : s.D.inc3; }, 1],
+  ['ROE (latest)', s => s.C.R.find(r => r.k === 'ROE').v[s.C.n - 1], 1], ['Operating margin', s => s.C.R.find(r => r.k === 'Operating margin (EBITDA)').v[s.C.n - 1], 1],
+  ['Reinvestment rate', s => s.D.reinv, 0], ['Sales CAGR 5y', s => s.C.cagr(s.C.S, Math.min(5, s.C.n - 1)), 1], ['CFO ÷ EBITDA, 3y', s => { const sm = (a) => a.slice(-3).reduce((x, y) => x + (y || 0), 0); return div(sm(s.C.CFO), sm(s.C.EBITDA)); }, 1]];
+function peerStrip(snaps, meK) {
+  return QPM.map(([lab, f, dir]) => {
+    const pts = snaps.map(s => { let v = null; try { v = f(s); } catch (e) {} return {k: s.k, name: niceName(s.k), v: v != null && isFinite(v) ? v : null}; }).filter(p => p.v != null);
+    const me = pts.find(p => p.k === meK); if (pts.length < 2) return '';
+    const vs = pts.map(p => p.v).sort((a, b) => a - b), lo = vs[Math.floor(vs.length * .05)], hi = vs[Math.ceil(vs.length * .95) - 1];
+    const span = hi - lo || 1, x = v => Math.max(0, Math.min(100, (v - lo) / span * 100)), md = median(vs);
+    const better = me && dir ? pts.filter(p => p.k !== meK && (dir > 0 ? p.v < me.v : p.v > me.v)).length : null;
+    const tag = me == null ? '<span class="qp-r">no data</span>' : dir ? `<span class="qp-r">better than ${better} of ${pts.length - 1}</span>` : `<span class="qp-r">median ${pct(md)}</span>`;
+    return `<div class="qp"><span class="qp-l">${lab}</span><div class="qp-t"><i class="qp-md" style="left:${x(md)}%" title="Median ${pct(md)}"></i>${pts.map(p => `<i class="qp-d${p.k === meK ? ' me' : ''}" style="left:${x(p.v)}%;${p.k === meK ? `background:var(${colOf(p.k)})` : ''}" title="${escA(p.name)}: ${pct(p.v)}"></i>`).join('')}</div><span class="qp-v">${me ? pct(me.v) : '—'}</span>${tag}</div>`;
+  }).join('');
+}
+// side-by-side quality read for several companies (Compare and Sectors pages)
+function qualityTable(snaps, meK) {
+  const rows = snaps.map(s => { let q = null; try { q = qualityRead(s); } catch (e) { console.error(e); } return {s, q}; }).filter(r => r.q);
+  if (!rows.length) return '';
+  const lv = {good: 0, watch: 1, bad: 2}; rows.sort((a, b) => lv[a.q.lvl] - lv[b.q.lvl] || ((b.s.D.avgPt ?? -9) - (a.s.D.avgPt ?? -9)));
+  const c = ([st, t]) => `<td>${qchip(st, t)}</td>`;
+  return `<h2>Quality read, side by side</h2><div class="scroll cmp qtab"><table><thead><tr><th>Company</th><th>Verdict</th><th title="Post-tax ROCE, 5-year average, against your cost of capital">Returns</th><th>Trend</th><th title="Return on capital added recently">New capital</th><th title="Biggest driver of the change in ROE">ROE driver</th><th title="How expansion was paid for">Funding</th><th title="Operating profit CAGR, 5 years">Growth</th></tr></thead><tbody>` +
+    rows.map(({s, q}) => `<tr${s.k === meK ? ' class="me"' : ''}><td><span class="nm2" data-open="${escA(s.k)}" role="button" tabindex="0"><i style="background:var(${colOf(s.k)})"></i>${niceName(s.k)}</span></td><td class="qv-c"><span class="qdot" style="--q:var(${QL[q.lvl][1]})"></span>${q.head}</td>${['ret', 'trend', 'inc', 'drv', 'fund', 'grow'].map(k => c(q.short[k])).join('')}</tr>`).join('') +
+    `</tbody></table></div><p class="note">Green is good, amber is worth watching, red is weak, grey means the number isn't meaningful (for example, growth measured from a loss year). Cost of capital ${pct(COC)}; change it on the Quality page. Click a name to open it.</p>`;
+}
+
 function renderQuality() {
   const F = flagsCalc(), red = F.filter(f => f.lvl === 'red'), amb = F.filter(f => f.lvl === 'amber'), ok = F.filter(f => f.lvl === 'ok');
   const LBL = {red: 'Red flag', amber: 'Watch', ok: 'Passed'};
@@ -1379,26 +1501,56 @@ function renderQuality() {
   $('#q-flags').innerHTML = `<div class="ch"><h3>Red flags</h3><span>${red.length} red · ${amb.length} watch · ${ok.length} passed</span></div>` +
     (red.length + amb.length ? red.concat(amb).map(item).join('') : '<p class="note">No red flags or watch items in these checks.</p>') +
     `<details class="passed"><summary>${ok.length} checks passed</summary>${ok.map(item).join('')}</details>`;
-  const D = driversCalc(), Y = M.secs.pl.dates.map(fy), L = C.n - 1;
-  if (D.i0 >= 0) {
-    const r = a => `×${(a[L] / a[D.i0]).toFixed(2)}`;
-    $('#q-dup-note').textContent = `${Y[D.i0]} to ${Y[L]}: ROE went from ${pct(D.roe[D.i0])} to ${pct(D.roe[L])}. Over the same years net margin changed ${r(D.mg)}, asset turnover ${r(D.tu)} and leverage ${r(D.lev)}. ROE = margin × turnover × leverage, so the factor that moved most is what drove it.`;
-  }
+  const D = driversCalc(), Y = M.secs.pl.dates.map(fy), L = C.n - 1, me = {k: M.name, M, C, D}, Q = qualityRead(me), T = Q.T, W = Q.why;
+  // verdict
+  const g1 = parseFloat($('#d-g1') && $('#d-g1').value);
+  const link = isFinite(g1) && Q.ownG != null ? `<p class="qlink"><b>For valuation:</b> your DCF assumes <b>${g1.toFixed(1)}%</b> growth in years 1–5. From its own profit the business can fund about <b>${pct(Q.ownG)}</b> a year if returns hold${Q.ownGinc != null ? (Q.ownGinc > 0 ? `, or about <b>${pct(Q.ownGinc)}</b> at its recent return on new capital` : `, but nothing at its recent return on new capital, which was negative`) : ''}. ${g1 / 100 > Q.ownG + .02 ? 'Anything above that needs better returns, more borrowing or new shares.' : 'Your assumption is within what the business can fund.'}</p>`
+    : Q.ownG != null ? `<p class="qlink"><b>For valuation:</b> from its own profit the business can fund about <b>${pct(Q.ownG)}</b> growth a year if returns hold${Q.ownGinc != null ? (Q.ownGinc > 0 ? `, or about <b>${pct(Q.ownGinc)}</b> at its recent return on new capital` : `, but nothing at its recent return on new capital, which was negative`) : ''}. Compare this with the growth you use in the DCF.</p>` : '';
+  $('#q-verdict').style.setProperty('--q', `var(${QL[Q.lvl][1]})`);
+  $('#q-verdict').innerHTML = `<div class="ch" style="margin-bottom:4px"><h3>${qchip(Q.lvl, Q.lvl === 'good' ? 'Strong' : Q.lvl === 'bad' ? 'Weak' : 'Mixed')} ${Q.head}</h3></div><ul>${Q.lines.map(l => `<li>${l}</li>`).join('')}</ul>${link}
+    <div class="qset"><label class="mini-f">Cost of capital %<input id="q-coc" inputmode="decimal" value="${+(COC * 100).toFixed(1)}"></label><span>Used for every company. Indian large caps are often taken at 11–13%, small caps higher.</span></div>`;
+  // cards, grouped as a story
+  const tile = (k, v, n, key, st) => { st = st || T[key]; const nm = st === 'nm';
+    return `<div class="kpi${nm ? ' nm' : ''}"><div class="kh"><span>${k}</span>${qchip(st)}</div><b>${v}</b><div class="kf"><span>${n}</span></div>${W[key] ? `<p class="qwhy">${W[key]}</p>` : ''}</div>`; };
+  const grp = (t, items) => `<div class="qgrp"><h3>${t}</h3><div class="qt">${items.join('')}</div></div>`;
+  $('#q-tiles').innerHTML =
+    grp('1. How good is the business?', [tile('Post-tax ROCE', pct(D.avgPt), `${D.k5}-year average`, 'pt'), tile('ROCE, latest', pct(C.R.find(r => r.k === 'ROCE').v[L]), `pre-tax, ${Y[L]}`, 'roce'), tile('Trend in returns', ({fading: 'Fading', improving: 'Improving', steady: 'Steady', nm: '—'})[Q.trend], 'ROCE now vs recent years', 'trend')]) +
+    grp('2. Is new money earning well?', [tile(`Incremental ROCE, ${Q.k3}y`, pct(D.inc3), 'extra operating profit ÷ extra capital', 'inc3'), tile(`Incremental ROCE, ${Q.k5}y`, pct(D.inc5), 'same, over 5 years', 'inc5')]) +
+    grp('3. How fast can it grow on its own?', [tile('Reinvestment rate', pct(D.reinv), 'growth in capital ÷ after-tax profit', 'reinv'), tile('Growth it can fund', pct(D.selfG), 'post-tax ROCE × reinvestment', 'self'), tile('Sustainable growth', pct(D.susG), 'ROE × share of profit kept', 'sus'), tile('Actual EBIT growth', pct(D.ebitG), `${D.k5}-year CAGR`, 'ebitg')]);
+  // ROE bridge (waterfall)
+  if (Q.wf) {
+    const w = Q.wf, cols = [css('--c1'), ...w.c.map((v, i) => i === 2 && v > 0 ? css('--warn') : v >= 0 ? css('--c3') : css('--neg')), css('--c1')];
+    let run = w.start; const data = [[0, w.start]]; w.c.forEach(v => { data.push([run, run + v]); run += v; }); data.push([0, w.end]);
+    const cfg = base('bar', w.labels, [{label: 'ROE, pts', data, backgroundColor: cols, borderRadius: 6, borderSkipped: false, maxBarThickness: 46}], 'pct');
+    cfg.options.plugins.legend.display = false;
+    cfg.options.plugins.tooltip.callbacks.label = c => { const [a0, b0] = c.raw; return c.dataIndex === 0 || c.dataIndex === 4 ? ` ROE ${pct(b0)}` : ` ${b0 - a0 >= 0 ? '+' : '−'}${(Math.abs(b0 - a0) * 100).toFixed(1)} percentage points`; };
+    cfg.options.scales.y.min = Math.min(0, ...data.flat()) ; cfg.options.interaction = {mode: 'nearest', intersect: true};
+    draw('ch-dup', cfg); $('#q-wf-sub').textContent = `${Y[w.a]} to ${Y[L]}, percentage points`;
+    $('#q-dup-note').textContent = `Each bar is how much that factor added to or took from ROE. Leverage gains are shown in amber: ROE lifted by borrowing is lower-quality than ROE lifted by margins or turnover.`;
+  } else { if (charts['ch-dup']) { charts['ch-dup'].destroy(); delete charts['ch-dup']; } $('#q-dup-note').textContent = 'ROE was negative at the start or end, so it cannot be split into drivers. See the year-by-year view.'; }
   const l = (lab, a, c, dash) => Object.assign(line(lab, D.ix(a), css(c), dash), {fill: false});
   const roeL = l('ROE', D.roe, '--c1'); roeL.borderWidth = 3;
-  draw('ch-dup', base('line', Y, [roeL, l('Net margin', D.mg, '--c3', [5, 4]), l('Asset turnover', D.tu, '--c6', [5, 4]), l('Leverage (assets / equity)', D.lev, '--c4', [5, 4])], 'days'));
-  const ib = bar('Incremental ROCE, 3-year', D.roll, css('--c3')), neg = css('--neg'), c3 = css('--c3'); ib.backgroundColor = ctx => ctx.raw < 0 ? neg : grad(c3)(ctx);
-  const rl = Object.assign(line('ROCE', C.R.find(r => r.k === 'ROCE').v, css('--c1')), {type: 'line', fill: false, order: 0}); ib.order = 1;
-  draw('ch-inc', base('bar', Y, [ib, rl], 'pct'));
-  const tile = (k, v, n) => `<div class="kpi"><div class="kh"><span>${k}</span></div><b>${v}</b><div class="kf"><span>${n}</span></div></div>`;
-  $('#q-tiles').innerHTML = [
-    tile('Incremental ROCE, 3y', pct(D.inc3), 'extra operating profit ÷ extra capital'),
-    tile('Incremental ROCE, 5y', pct(D.inc5), 'same, over 5 years'),
-    tile('Post-tax ROCE', pct(D.avgPt), `${D.k5}-year average`),
-    tile('Reinvestment rate', pct(D.reinv), 'growth in capital ÷ after-tax profit'),
-    tile('Growth it can fund', pct(D.selfG), 'post-tax ROCE × reinvestment'),
-    tile('Sustainable growth', pct(D.susG), 'ROE × share of profit kept'),
-    tile('Actual EBIT growth', pct(D.ebitG), `${D.k5}-year CAGR`)].join('');
+  const dup2 = () => draw('ch-dup2', base('line', Y, [roeL, l('Net margin', D.mg, '--c3', [5, 4]), l('Asset turnover', D.tu, '--c6', [5, 4]), l('Leverage (assets / equity)', D.lev, '--c4', [5, 4])], 'days'));
+  const det = $('#q-dup-det'); det.ontoggle = () => { if (det.open) dup2(); }; if (det.open || !Q.wf) { det.open = true; dup2(); }
+  // incremental ROCE: meaningless years left out, bars coloured against ROCE and the hurdle, axis capped
+  const roceA = C.R.find(r => r.k === 'ROCE').v, CE = D.CE, skip = [];
+  const inc = D.roll.map((v, i) => { if (v == null) return null; if (!(CE[i - 3] > 0) || CE[i] - CE[i - 3] <= .1 * CE[i - 3]) { skip.push(Y[i]); return null; } return v; });
+  const vis = inc.filter(v => v != null), top = Math.max(.6, ...roceA.filter(v => v != null).map(v => v * 1.8)), lo = Math.max(-.4, Math.min(0, ...vis));
+  const ib = bar('Incremental ROCE, 3-year', inc.map(v => v == null ? null : Math.max(lo, Math.min(top, v))), css('--c3'));
+  const pos = css('--c3'), warn = css('--warn'), neg = css('--neg');
+  ib.backgroundColor = ctx => { const v = inc[ctx.dataIndex], r = roceA[ctx.dataIndex]; return v == null ? 'transparent' : v >= r ? pos : v >= Q.hurdle ? warn : neg; };
+  ib.hoverBackgroundColor = ib.backgroundColor; ib.borderColor = 'transparent'; ib.order = 1;
+  const rl = Object.assign(line('ROCE', roceA, css('--c1')), {type: 'line', fill: false, order: 0});
+  const hl = Object.assign(line(`Pre-tax hurdle (${pct(Q.hurdle)})`, Y.map(() => Q.hurdle), css('--muted'), [6, 5]), {type: 'line', fill: false, pointRadius: 0, pointHoverRadius: 0, borderWidth: 1.5, order: 0});
+  const ic = base('bar', Y, [ib, rl, hl], 'pct'); ic.options.scales.y.min = lo; ic.options.scales.y.max = top;
+  ic.options.plugins.tooltip.callbacks.label = c => c.datasetIndex === 0 ? ` Incremental ROCE: ${pct(inc[c.dataIndex])}` : ` ${c.dataset.label}: ${fmt(c.parsed.y, 'pct')}`;
+  draw('ch-inc', ic);
+  $('#q-inc-note').textContent = `Change in operating profit ÷ change in capital employed over 3 years. Teal: above that year's ROCE (new money earns more than the old). Amber: above the ${pct(Q.hurdle)} pre-tax hurdle but below ROCE. Red: below the hurdle.` + (skip.length ? ` Left out because capital barely changed, which makes the ratio swing wildly: ${skip.join(', ')}.` : '') + ` Bars beyond the axis are cut off; hover for the real value.`;
+  // peers in the same sector
+  const sec = LIB[M.name] && LIB[M.name].sector, mates = sec ? libKeys().filter(k => LIB[k].sector === sec) : [];
+  if (mates.length >= 3) { $('#q-peer-card').hidden = false; $('#q-peer-sub').textContent = `${sec} · ${mates.length} companies · large dot is ${niceName(M.name)}, line is the median`;
+    $('#q-peer').innerHTML = peerStrip(mates.map(k => k === M.name ? me : snapC(k)).filter(Boolean), M.name); }
+  else { $('#q-peer-card').hidden = false; $('#q-peer-sub').textContent = ''; $('#q-peer').innerHTML = `<p class="note" style="margin:0">Tag this company and at least two others with the same sector on the Companies page to see where it stands on each measure.</p>`; }
   const CS = cashStory();
   $('#q-cash-t').textContent = `Where the cash went, ${CS.from}–${CS.to}`;
   const cols = {src: css('--c3'), use: css('--c2'), oth: css('--muted')};
@@ -1414,6 +1566,9 @@ function renderQuality() {
   $('#q-cash-note').textContent = `Operations generated ₹${inr(CS.cfo)} Cr. As a share of that: ${use.join(', ')}. Teal bars are sources of cash, orange bars are uses.`;
 }
 
+
+document.addEventListener('change', e => { if (e.target.id !== 'q-coc') return; const v = parseFloat(e.target.value); if (!(v > 0 && v < 40)) { e.target.value = +(COC * 100).toFixed(1); return; }
+  COC = v / 100; try { localStorage.setItem('fx-coc', String(v)); } catch (er) {} renderQuality(); toast(`Cost of capital set to ${v}%`); });
 
 // ---- Scenario valuation: projected EPS x justified P/E, three cases ----
 const SCN = [['bear', 'Pessimistic', '--c2'], ['base', 'Base case', '--c1'], ['bull', 'Optimistic', '--c3']];
@@ -1560,11 +1715,11 @@ function colOf(k) {
 const niceName = n => String(n).replace(/\b(LTD|LIMITED)\b\.?/i, '').trim().toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
 const initials = n => niceName(n).split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 function snap(k) {
-  if (k === M.name) return {k, name: title(), M, C, S: soicScore(), T: TECH};
+  if (k === M.name) return {k, name: title(), M, C, S: soicScore(), T: TECH, D: driversCalc()};
   const keep = {M, C, SANS, TECH, PX, EDITS, aoa, orig};
   try {
     orig = LIB[k].rows; M = parse(orig); loadEdits(); applyEdits(); M = parse(aoa); C = calc(); loadSoic(); loadPx();
-    return {k, name: title(), M, C, S: soicScore(), T: TECH};
+    return {k, name: title(), M, C, S: soicScore(), T: TECH, D: driversCalc()};
   } catch (e) { console.error(e); return null; }
   finally { ({M, C, SANS, TECH, PX, EDITS, aoa, orig} = keep); }
 }
@@ -1596,7 +1751,7 @@ function renderCompare() {
   const tbl = `<div class="scroll cmp"><table><thead><tr><th>Company</th>${cols.map(([k, l]) => `<th data-sort="${k}" class="${CSORT.k === k ? 'sorted' : ''}">${l}${CSORT.k === k ? (CSORT.d > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr><td><span class="who"><i style="background:var(${colOf(r.s.k)})"></i><span>${r.s.name}<small style="display:block;font-weight:400;font-size:11px;color:var(--muted)">${(() => { const d = dataDates(r.s.M); return (d.q ? 'Qtr to ' + ql(d.q) : 'FY to ' + fy(d.a)) + (LIB[r.s.k]?.mod ? ' · Excel ' + dfmt(LIB[r.s.k].mod) : ''); })()}</small></span></span></td>${cols.map(([k]) => cell(r, k)).join('')}</tr>`).join('')}</tbody></table></div>`;
   const ccard = (id, t, u) => `<div class="card"><div class="ch"><h3>${t}</h3><span>${u}</span></div><div class="fig"><canvas id="${id}"></canvas></div></div>`;
   $('#cmp-body').innerHTML = pick + `<p class="note" style="margin:-4px 0 14px">Best value in each column is highlighted. Click a column heading to sort. Latest financial year unless marked.</p>` + tbl +
-    `<h2>Side by side</h2><div class="grid">${ccard('cc-soic', 'SOIC score by section', 'points')}${ccard('cc-roe', 'Return on equity', 'year-end')}${ccard('cc-opm', 'Operating margin', '% of sales')}${ccard('cc-sales', 'Sales, indexed', 'first year shown = 100')}${ccard('cc-pe', 'Price to earnings', 'year-end')}${ccard('cc-de', 'Debt / equity', 'year-end')}</div>`;
+    qualityTable(S, M.name) + `<h2>Side by side</h2><div class="grid">${ccard('cc-soic', 'SOIC score by section', 'points')}${ccard('cc-roe', 'Return on equity', 'year-end')}${ccard('cc-opm', 'Operating margin', '% of sales')}${ccard('cc-sales', 'Sales, indexed', 'first year shown = 100')}${ccard('cc-pe', 'Price to earnings', 'year-end')}${ccard('cc-de', 'Debt / equity', 'year-end')}</div>`;
   if (S.length < 1) return;
   // align years
   const lab = new Map(); S.forEach(s => s.M.secs.pl.dates.forEach(d => lab.set(fy(d), +d)));
@@ -1612,6 +1767,7 @@ function renderCompare() {
   draw('cc-soic', base('bar', SOIC.map(g => g.s.replace(' analysis', '').replace(' checks', '')), S.map(s => bar(s.name, s.S.secs.map(x => x.pts), css(colOf(s.k)))), 'days'));
 }
 $('#cmp-body').addEventListener('click', e => {
+  const o = e.target.closest('[data-open]'); if (o) { openLib(o.dataset.open); location.hash = 'quality'; return; }
   const b = e.target.closest('[data-cmp]'); if (b) { const k = b.dataset.cmp; if (CMP.has(k)) { if (CMP.size > 1) CMP.delete(k); } else if (CMP.size < 6) CMP.add(k); else toast('Compare up to 6 companies at a time'); renderCompare(); return; }
   const h = e.target.closest('[data-sort]'); if (h) { const k = h.dataset.sort; CSORT = CSORT.k === k ? {k, d: -CSORT.d} : {k, d: ['pe', 'pb', 'ev', 'de'].includes(k) ? 1 : -1}; renderCompare(); }
 });
@@ -2244,7 +2400,7 @@ function renderSectors() {
   $('#sx-body').innerHTML = `${stand}<h2>${escA(SXS === '__all' ? 'All saved companies' : SXS)}: medians</h2><div class="qt">${SXM.map(tile).join('')}</div>
     <h2>Ranked within ${escA(label)}</h2>
     <div class="scroll cmp sxt"><table><thead><tr><th>Company</th>${SXM.map(([k, l]) => `<th data-sxs="${k}" class="${SXSORT.k === k ? 'sorted' : ''}">${l}${SXSORT.k === k ? (SXSORT.d > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>${rows.map(m => `<tr class="${m.k === M.name ? 'cur' : ''}"><td><span class="who"><i style="background:var(${colOf(m.k)})"></i><button class="lnk2" data-open="${escA(m.k)}">${m.name}</button></span></td>${SXM.map(([k, , , f]) => { const r = rank[m.k]?.[k]; return `<td style="${heat(r)}" title="${r == null ? '' : 'Better than ' + Math.round(r * 100) + '% of the group'}">${sxFmt(m[k], f)}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>
-    <p class="note">Each cell is coloured by rank within the group: teal is better, orange is worse, uncoloured is middle of the pack. For P/E, EV/EBITDA and debt to equity, lower counts as better. Hover a cell to see its percentile.</p>`;
+    <p class="note">Each cell is coloured by rank within the group: teal is better, orange is worse, uncoloured is middle of the pack. For P/E, EV/EBITDA and debt to equity, lower counts as better. Hover a cell to see its percentile.</p>` + qualityTable(members.map(m => snapC(m.k)).filter(Boolean), M.name);
   if (members.length >= 2) renderSectorExtras(members, label); else $('#sx-extra').innerHTML = '';
 }
 $('#sx-pick').addEventListener('click', e => { const b = e.target.closest('[data-sx]'); if (!b) return; SXS = b.dataset.sx; QYI = null; renderSectors(); });
