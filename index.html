@@ -343,7 +343,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 16 Nov 2026, 07:10 IST</p>
+    <p class="tiny" id="build">Version: 16 Nov 2026, 07:18 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -1956,7 +1956,7 @@ function renderSectorExtras(members, label) {
   drawQuadrant(members);
 }
 function drawQuadrant(members) {
-  clearInterval(QPLAY); QPLAY = null;
+  clearTimeout(QPLAY); QPLAY = null; cancelAnimationFrame(QRAF);
   const [xl, xf, xq] = QAX[QX], [yl, yf, yq] = QAX[QY], sc = (v, f) => v == null || !isFinite(v) ? null : f === 'pct' ? v * 100 : v;
   // every company's value of a measure in each year; growth uses a rolling CAGR (5 years, or 3-4 early on)
   const roll = (a, i) => { const w = Math.min(5, i); if (w < 3 || !(a[i] > 0) || !(a[i - w] > 0)) return null; return Math.pow(a[i] / a[i - w], 1 / w) - 1; };
@@ -2015,24 +2015,34 @@ function drawQuadrant(members) {
       else { x.textAlign = 'left'; x.fillStyle = css('--ink'); x.fillText(d._ini, bx + r + 3, by); } });
     x.textBaseline = 'alphabetic';
     // year stamp
-    x.font = `800 28px ${FONT}`; x.textAlign = 'right'; x.fillStyle = rgba(mut, .35); x.fillText(years[QYI], a.right - 10, a.bottom - 34);
+    x.font = `800 28px ${FONT}`; x.textAlign = 'right'; x.fillStyle = rgba(mut, .35); x.fillText(years[Math.round(QT)], a.right - 10, a.bottom - 34);
     x.restore(); }};
   const fx = (v, f) => f === 'pct' ? v.toFixed(1) + '%' : f === 'x' ? v.toFixed(1) + '×' : Math.round(v);
-  const datasetsAt = yi => {
-    const y = years[yi], ds = [], allTr = $('#q-tr') ? $('#q-tr').checked : false;
-    rows.forEach(r => { const p = r.at[y], col = css(colOf(r.m.k));
-      if (allTr || r.m.k === M.name || rows.length <= 4) { const path = years.slice(0, yi + 1).map(yy => r.at[yy]).filter(q => q && q.x != null && q.y != null).map(q => ({x: q.x, y: q.y}));
-        if (path.length > 1) ds.push({type: 'line', label: r.m.name + ' path', _trail: true, data: path, borderColor: rgba(col, .45), borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: rgba(col, .45), pointBorderWidth: 0, fill: false, tension: 0, cubicInterpolationMode: 'default', order: 2}); }
-      ds.push({label: r.m.name, _k: r.m.k, data: p && p.x != null && p.y != null ? [{x: p.x, y: p.y, r: 5 + rMax * Math.min(1.25, Math.sqrt((p.cap || 0) / maxCap)), cap: p.cap}] : [], _ini: tag[r.m.k],
-        backgroundColor: rgba(col, .6), borderColor: col, borderWidth: r.m.k === M.name ? 3 : 1.5, hoverBorderWidth: 3, order: 1}); });
-    const pts = rows.map(r => r.at[y]).filter(p => p && p.x != null && p.y != null);
-    st.mx = median(pts.map(p => p.x)); st.my = median(pts.map(p => p.y));
-    return ds;
-  };
-  const cfg = {_fmt: 'x', _bg: bgc, _ink: css('--ink'), _mut: mut, type: 'bubble', plugins: [quad], data: {labels: [], datasets: datasetsAt(QYI)},
-    options: {responsive: true, maintainAspectRatio: false, animation: ANIM ? {duration: 650, easing: 'easeInOutCubic'} : false, layout: {padding: 8},
+  // smooth motion: every company keeps the same dataset slot; positions, axes and medians are interpolated between years
+  const lerp = (a, b, f) => a + (b - a) * f;
+  const posAt = (r, t) => { t = Math.max(0, Math.min(years.length - 1, t)); const i = Math.floor(t), f = t - i, a = r.at[years[i]], b = r.at[years[Math.min(i + 1, years.length - 1)]];
+    if (f < 1e-6 || !ok(b)) return ok(a) && (f < .5 || !ok(b)) ? a : (ok(b) ? b : null); if (!ok(a)) return f >= .5 ? b : null;
+    return {x: lerp(a.x, b.x, f), y: lerp(a.y, b.y, f), cap: lerp(a.cap || 0, b.cap || 0, f)}; };
+  const medAt = t => { const m = yi => { const pts = rows.map(r => r.at[years[yi]]).filter(ok); return [median(pts.map(p => p.x)), median(pts.map(p => p.y))]; };
+    const i = Math.floor(t), f = t - i, A = m(i); if (f < 1e-6 || i + 1 >= years.length) return A; const B = m(i + 1); return [lerp(A[0], B[0], f), lerp(A[1], B[1], f)]; };
+  const axesAt = t => { const i = Math.floor(t), f = t - i, A = axesFor(i); if (f < 1e-6 || i + 1 >= years.length) return A; const B = axesFor(i + 1);
+    return [[lerp(A[0][0], B[0][0], f), lerp(A[0][1], B[0][1], f)], [lerp(A[1][0], B[1][0], f), lerp(A[1][1], B[1][1], f)]]; };
+  const bub = p => ({x: p.x, y: p.y, r: 5 + rMax * Math.min(1.25, Math.sqrt((p.cap || 0) / maxCap)), cap: p.cap});
+  const fillAt = (ds, t) => { const allTr = $('#q-tr') ? $('#q-tr').checked : false;
+    rows.forEach((r, i) => { const p = posAt(r, t); ds[i].data = p ? [bub(p)] : [];
+      const full = allTr || r.m.k === M.name || rows.length <= 4, pts = [];
+      if (full) { for (let yi = 0; yi <= Math.floor(t); yi++) { const q = r.at[years[yi]]; if (ok(q)) pts.push({x: q.x, y: q.y}); } if (p && t % 1 > 1e-6) pts.push({x: p.x, y: p.y}); }
+      else if (p) { for (let k = 6; k >= 0; k--) { const q = posAt(r, t - k * .15); if (q) pts.push({x: q.x, y: q.y}); } }   // short tail: where it came from in the last year
+      const tr = ds[rows.length + i]; tr.data = pts.length > 1 ? pts : []; tr.pointRadius = full ? 2 : 0; tr.borderColor = rgba(css(colOf(r.m.k)), full ? .45 : .35); tr.borderWidth = full ? 1.5 : 3; });
+    [st.mx, st.my] = medAt(t); };
+  const makeDs = () => { const ds = rows.map(r => { const col = css(colOf(r.m.k)); return {label: r.m.name, _k: r.m.k, data: [], _ini: tag[r.m.k], backgroundColor: rgba(col, .6), borderColor: col, borderWidth: r.m.k === M.name ? 3 : 1.5, hoverBorderWidth: 3, order: 1}; })
+      .concat(rows.map(r => ({type: 'line', label: r.m.name + ' path', _trail: true, data: [], borderColor: 'transparent', borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: rgba(css(colOf(r.m.k)), .45), pointBorderWidth: 0, fill: false, tension: 0, borderCapStyle: 'round', order: 2})));
+    fillAt(ds, QT); return ds; };
+  QT = QYI;
+  const cfg = {_fmt: 'x', _bg: bgc, _ink: css('--ink'), _mut: mut, type: 'bubble', plugins: [quad], data: {labels: [], datasets: makeDs()},
+    options: {responsive: true, maintainAspectRatio: false, animation: false, layout: {padding: 8},
       plugins: {legend: {position: 'top', align: 'end', labels: {color: css('--ink'), usePointStyle: true, pointStyle: 'circle', boxWidth: 7, boxHeight: 7, padding: 12, font: {family: FONT, size: 12}, filter: i => !(cfg.data.datasets[i.datasetIndex] || {})._trail}},
-        tooltip: {backgroundColor: css('--tip'), padding: 10, cornerRadius: 8, filter: i => !i.dataset._trail, callbacks: {label: c => { const d = c.raw; return ` ${c.dataset.label} (${years[QYI]}): ${xl} ${fx(d.x, xf)}, ${yl} ${fx(d.y, yf)}${d.cap ? `, market cap ₹${inr(d.cap)} Cr` : ''}`; }}}},
+        tooltip: {backgroundColor: css('--tip'), padding: 10, cornerRadius: 8, filter: i => !i.dataset._trail, callbacks: {label: c => { const d = c.raw; return ` ${c.dataset.label} (${years[Math.round(QT)]}): ${xl} ${fx(d.x, xf)}, ${yl} ${fx(d.y, yf)}${d.cap ? `, market cap ₹${inr(d.cap)} Cr` : ''}`; }}}},
       scales: {x: {min: x0, max: x1, title: {display: true, text: xl + (xf === 'pct' ? ', %' : ''), color: ink, font: {family: FONT, size: 12}}, grid: {color: line_}, border: {display: false, dash: [4, 4]}, ticks: {color: ink, font: {family: FONT, size: 11}, callback: v => fx(+v, xf)}},
         y: {min: y0, max: y1, title: {display: true, text: yl + (yf === 'pct' ? ', %' : ''), color: ink, font: {family: FONT, size: 12}}, grid: {color: line_}, border: {display: false, dash: [4, 4]}, ticks: {color: ink, font: {family: FONT, size: 11}, callback: v => fx(+v, yf)}}}}};
   draw('ch-sx', cfg);
@@ -2050,20 +2060,28 @@ function drawQuadrant(members) {
       (QX === 'soic' || QY === 'soic' ? ' SOIC has no history, so only the latest position is shown.' : '') + (QX === 'sg' || QX === 'pg' || QY === 'sg' || QY === 'pg' ? ' Growth in past years is the CAGR over the 5 years before (3–4 in the earliest years).' : '') +
       (xq !== yq ? ' For P/E and EV/EBITDA, lower is cheaper.' : '') + (off.length ? ` Off the chart this year: ${off.join('; ')}. Choose View: Fit this year to include them.` : '');
   };
-  QSTEP = yi => { QYI = Math.max(0, Math.min(years.length - 1, yi)); $('#q-yr').value = QYI; const ch = charts['ch-sx']; if (!ch) return; ch.data.datasets = datasetsAt(QYI);
-    const [[a0, a1], [b0, b1]] = axesFor(QYI); Object.assign(ch.options.scales.x, {min: a0, max: a1}); Object.assign(ch.options.scales.y, {min: b0, max: b1});
-    ch.update(); note(); };
+  const render = t => { const ch = charts['ch-sx']; if (!ch) return; QT = t; fillAt(ch.data.datasets, t);
+    const [[a0, a1], [b0, b1]] = axesAt(t); Object.assign(ch.options.scales.x, {min: a0, max: a1}); Object.assign(ch.options.scales.y, {min: b0, max: b1}); ch.update('none'); };
+  // glide from the current position to year yi; done() fires when it arrives
+  QSTEP = (yi, dur, done) => { QYI = Math.max(0, Math.min(years.length - 1, yi)); $('#q-yr').value = QYI; cancelAnimationFrame(QRAF);
+    const from = QT, to = QYI, d = !ANIM ? 0 : dur != null ? dur : Math.min(1400, 350 + 450 * Math.abs(to - from)), t0 = performance.now(), ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+    const tick = now => { const u = d ? Math.min(1, (now - t0) / d) : 1; render(from + (to - from) * ease(u)); if (u < 1) QRAF = requestAnimationFrame(tick); else { note(); done && done(); } };
+    $('#q-yl').textContent = years[QYI]; QRAF = requestAnimationFrame(tick); };
   $('#q-z').value = QZ;
   QLEN = years.length;
   note();
 }
-let QYI = null, QPLAY = null, QSTEP = () => {}, QLEN = 0, QZ = 'year';
+let QYI = null, QT = 0, QRAF = 0, QPLAY = null, QSTEP = () => {}, QLEN = 0, QZ = 'year';
 function qPlay() {
   const b = $('#q-play');
-  if (QPLAY) { clearInterval(QPLAY); QPLAY = null; b.textContent = '▶ Play'; return; }
-  if (QYI >= QLEN - 1) QSTEP(0);
+  if (QPLAY) { clearTimeout(QPLAY); QPLAY = null; b.textContent = '▶ Play'; return; }
   b.textContent = '❚❚ Pause';
-  QPLAY = setInterval(() => { if (!$('#q-play') || $('#sectors').hidden) { clearInterval(QPLAY); QPLAY = null; return; } if (QYI >= QLEN - 1) { clearInterval(QPLAY); QPLAY = null; $('#q-play').textContent = '▶ Play'; return; } QSTEP(QYI + 1); }, ANIM ? 1100 : 1500);
+  const stop = () => { clearTimeout(QPLAY); QPLAY = null; const pb = $('#q-play'); if (pb) pb.textContent = '▶ Play'; };
+  // one year per step: glide ~1.2 s, then hold ~0.6 s so you can read the positions
+  const next = () => { if (!QPLAY) return; if (!$('#q-play') || $('#sectors').hidden || QYI >= QLEN - 1) return stop();
+    QSTEP(QYI + 1, ANIM ? 1200 : 0, () => { if (QPLAY) QPLAY = setTimeout(next, ANIM ? 600 : 1500); }); };
+  QPLAY = 1;
+  if (QYI >= QLEN - 1) QSTEP(0, 0, () => { if (QPLAY) QPLAY = setTimeout(next, ANIM ? 700 : 1500); }); else next();
 }
 $('#sx-extra').addEventListener('change', e => { const id = e.target.id;
   if (id === 'q-tr') { QSTEP(QYI); return; }
