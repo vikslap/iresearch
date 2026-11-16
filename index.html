@@ -343,7 +343,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 16 Nov 2026, 07:05 IST</p>
+    <p class="tiny" id="build">Version: 16 Nov 2026, 07:10 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -1947,7 +1947,7 @@ function renderSectorExtras(members, label) {
     <h2>Quadrant</h2>
     <div class="card"><div class="ch"><h3 id="q-h">${QAX[QX][0]} vs ${QAX[QY][0]}</h3><span>bubble size = market cap · dashed lines = medians of this group</span></div>
       <div class="qsel"><label>Across<select id="qx">${opt(QX)}</select></label><label>Up<select id="qy">${opt(QY)}</select></label></div>
-      <div class="qyr" id="q-ctl"><button class="sm" id="q-play">▶ Play</button><input type="range" id="q-yr" min="0" max="0" step="1" value="0" aria-label="Year"><b id="q-yl">Now</b><label class="chk"><input type="checkbox" id="q-tr" checked>Trails</label></div>
+      <div class="qyr" id="q-ctl"><button class="sm" id="q-play">▶ Play</button><input type="range" id="q-yr" min="0" max="0" step="1" value="0" aria-label="Year"><b id="q-yl">Now</b><label class="chk" title="Otherwise only the open company's path is drawn"><input type="checkbox" id="q-tr">All trails</label><label class="mini-f">View<select id="q-z"><option value="year">Fit this year</option><option value="all">Same scale, all years</option></select></label></div>
       <div class="fig big" style="height:420px"><canvas id="ch-sx"></canvas></div><p class="note" id="q-note"></p></div>`;
   // premium chart
   const ys = X.years.concat('Now');
@@ -1971,9 +1971,21 @@ function drawQuadrant(members) {
   const years = [...lab.entries()].sort((a, b) => a[1] - b[1]).map(e => e[0]).filter(y => rows.filter(r => r.at[y] && r.at[y].x != null && r.at[y].y != null).length >= 2).concat('Now');
   if (QYI == null || QYI >= years.length) QYI = years.length - 1;
   // fixed axes and bubble scale across all years, so movement is real
-  const all = years.flatMap(y => rows.map(r => r.at[y]).filter(p => p && p.x != null && p.y != null));
-  const ext = k => { const v = all.map(p => p[k]); const lo = Math.min(...v), hi = Math.max(...v), pad = (hi - lo || Math.abs(hi) || 1) * .12; return [lo >= 0 ? Math.max(0, lo - pad) : lo - pad, hi + pad]; };
-  const [x0, x1] = ext('x'), [y0, y1] = ext('y'), maxCap = Math.max(...all.map(p => p.cap || 0), 1);
+  const ok = p => p && p.x != null && p.y != null;
+  const all = years.flatMap(y => rows.map(r => r.at[y]).filter(ok)), nowPts = rows.map(r => r.at.Now).filter(ok);
+  // typical range: ignore the most extreme 5% of past points at each end, but always keep today's positions in view
+  const ext = (k, pts, keep) => { const v = pts.map(p => p[k]).sort((a, b) => a - b); if (!v.length) return [0, 1];
+    const q = f => v[Math.min(v.length - 1, Math.max(0, Math.round((v.length - 1) * f)))];
+    let lo = v.length >= 12 ? q(.05) : v[0], hi = v.length >= 12 ? q(.95) : v[v.length - 1];
+    (keep || []).forEach(p => { lo = Math.min(lo, p[k]); hi = Math.max(hi, p[k]); });
+    const pad = (hi - lo || Math.abs(hi) || 1) * .08; lo = lo >= 0 ? Math.max(0, lo - pad) : lo - pad; hi += pad;
+    const raw = (hi - lo) / 6, mag = Math.pow(10, Math.floor(Math.log10(raw || 1))), step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(st => st >= raw) || raw;
+    return [Math.floor(lo / step) * step, Math.ceil(hi / step) * step]; };
+  const axesFor = yi => { const pts = QZ === 'year' ? rows.map(r => r.at[years[yi]]).filter(ok) : all, keep = QZ === 'year' ? pts : nowPts; return [ext('x', pts, keep), ext('y', pts, keep)]; };
+  const caps = all.map(p => p.cap || 0).sort((a, b) => a - b), maxCap = Math.max(caps[Math.round((caps.length - 1) * .9)] || 0, ...nowPts.map(p => p.cap || 0), 1);
+  const [[x0, x1], [y0, y1]] = axesFor(QYI);
+  const rMax = rows.length <= 4 ? 22 : rows.length <= 8 ? 17 : 13;
+  const ini = rows.map(r => initials(r.m.k)), tag = {}; rows.forEach((r, i) => { tag[r.m.k] = ini.filter(x => x === ini[i]).length > 1 ? niceName(r.m.k).split(/\s+/)[0].slice(0, 4) : ini[i]; });
   const st = {mx: null, my: null};
   // quadrant names: quality axis vs price axis gets the classic labels
   const names = {};
@@ -1994,17 +2006,25 @@ function drawQuadrant(members) {
       const t = names[k]; if (!t) return; x.textAlign = al; const w = x.measureText(t).width, bx = al === 'right' ? tx - w - 6 : tx - 6;
       x.fillStyle = rgba(bgc, .85); x.beginPath(); x.roundRect ? x.roundRect(bx, ty - 13, w + 12, 18, 6) : x.rect(bx, ty - 13, w + 12, 18); x.fill();
       x.fillStyle = good[t] > 0 ? pos : good[t] < 0 ? neg : mut; x.fillText(t, tx, ty); });
+    // initials on each bubble, so companies stay identifiable even when colours repeat
+    c.data.datasets.forEach((d, di) => { if (d._trail || !d._ini) return; const el = c.getDatasetMeta(di).data[0]; if (!el || c.getDatasetMeta(di).hidden) return;
+      const {x: bx, y: by} = el.getProps(['x', 'y'], true), r = el.options.radius;
+      if (bx < a.left || bx > a.right || by < a.top || by > a.bottom) return;
+      x.font = `700 ${r >= 12 ? 11 : 10}px ${FONT}`; x.textBaseline = 'middle';
+      if (r >= 11 && d._ini.length <= 2) { x.textAlign = 'center'; x.fillStyle = '#fff'; x.fillText(d._ini, bx, by); }
+      else { x.textAlign = 'left'; x.fillStyle = css('--ink'); x.fillText(d._ini, bx + r + 3, by); } });
+    x.textBaseline = 'alphabetic';
     // year stamp
     x.font = `800 28px ${FONT}`; x.textAlign = 'right'; x.fillStyle = rgba(mut, .35); x.fillText(years[QYI], a.right - 10, a.bottom - 34);
     x.restore(); }};
   const fx = (v, f) => f === 'pct' ? v.toFixed(1) + '%' : f === 'x' ? v.toFixed(1) + '×' : Math.round(v);
   const datasetsAt = yi => {
-    const y = years[yi], ds = [], trails = $('#q-tr') ? $('#q-tr').checked : true;
+    const y = years[yi], ds = [], allTr = $('#q-tr') ? $('#q-tr').checked : false;
     rows.forEach(r => { const p = r.at[y], col = css(colOf(r.m.k));
-      if (trails) { const path = years.slice(0, yi + 1).map(yy => r.at[yy]).filter(q => q && q.x != null && q.y != null).map(q => ({x: q.x, y: q.y}));
+      if (allTr || r.m.k === M.name || rows.length <= 4) { const path = years.slice(0, yi + 1).map(yy => r.at[yy]).filter(q => q && q.x != null && q.y != null).map(q => ({x: q.x, y: q.y}));
         if (path.length > 1) ds.push({type: 'line', label: r.m.name + ' path', _trail: true, data: path, borderColor: rgba(col, .45), borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: rgba(col, .45), pointBorderWidth: 0, fill: false, tension: 0, cubicInterpolationMode: 'default', order: 2}); }
-      ds.push({label: r.m.name, _k: r.m.k, data: p && p.x != null && p.y != null ? [{x: p.x, y: p.y, r: 5 + 22 * Math.sqrt((p.cap || 0) / maxCap), cap: p.cap}] : [],
-        backgroundColor: rgba(col, .72), borderColor: col, borderWidth: r.m.k === M.name ? 3 : 1.5, hoverBorderWidth: 3, order: 1}); });
+      ds.push({label: r.m.name, _k: r.m.k, data: p && p.x != null && p.y != null ? [{x: p.x, y: p.y, r: 5 + rMax * Math.min(1.25, Math.sqrt((p.cap || 0) / maxCap)), cap: p.cap}] : [], _ini: tag[r.m.k],
+        backgroundColor: rgba(col, .6), borderColor: col, borderWidth: r.m.k === M.name ? 3 : 1.5, hoverBorderWidth: 3, order: 1}); });
     const pts = rows.map(r => r.at[y]).filter(p => p && p.x != null && p.y != null);
     st.mx = median(pts.map(p => p.x)); st.my = median(pts.map(p => p.y));
     return ds;
@@ -2013,8 +2033,8 @@ function drawQuadrant(members) {
     options: {responsive: true, maintainAspectRatio: false, animation: ANIM ? {duration: 650, easing: 'easeInOutCubic'} : false, layout: {padding: 8},
       plugins: {legend: {position: 'top', align: 'end', labels: {color: css('--ink'), usePointStyle: true, pointStyle: 'circle', boxWidth: 7, boxHeight: 7, padding: 12, font: {family: FONT, size: 12}, filter: i => !(cfg.data.datasets[i.datasetIndex] || {})._trail}},
         tooltip: {backgroundColor: css('--tip'), padding: 10, cornerRadius: 8, filter: i => !i.dataset._trail, callbacks: {label: c => { const d = c.raw; return ` ${c.dataset.label} (${years[QYI]}): ${xl} ${fx(d.x, xf)}, ${yl} ${fx(d.y, yf)}${d.cap ? `, market cap ₹${inr(d.cap)} Cr` : ''}`; }}}},
-      scales: {x: {suggestedMin: x0, suggestedMax: x1, title: {display: true, text: xl + (xf === 'pct' ? ', %' : ''), color: ink, font: {family: FONT, size: 12}}, grid: {color: line_}, border: {display: false, dash: [4, 4]}, ticks: {color: ink, font: {family: FONT, size: 11}, callback: v => fx(+v, xf)}},
-        y: {suggestedMin: y0, suggestedMax: y1, title: {display: true, text: yl + (yf === 'pct' ? ', %' : ''), color: ink, font: {family: FONT, size: 12}}, grid: {color: line_}, border: {display: false, dash: [4, 4]}, ticks: {color: ink, font: {family: FONT, size: 11}, callback: v => fx(+v, yf)}}}}};
+      scales: {x: {min: x0, max: x1, title: {display: true, text: xl + (xf === 'pct' ? ', %' : ''), color: ink, font: {family: FONT, size: 12}}, grid: {color: line_}, border: {display: false, dash: [4, 4]}, ticks: {color: ink, font: {family: FONT, size: 11}, callback: v => fx(+v, xf)}},
+        y: {min: y0, max: y1, title: {display: true, text: yl + (yf === 'pct' ? ', %' : ''), color: ink, font: {family: FONT, size: 12}}, grid: {color: line_}, border: {display: false, dash: [4, 4]}, ticks: {color: ink, font: {family: FONT, size: 11}, callback: v => fx(+v, yf)}}}}};
   draw('ch-sx', cfg);
   const sl = $('#q-yr'); sl.max = years.length - 1; sl.value = QYI;
   const single = years.length < 2 || QX === 'soic' || QY === 'soic';
@@ -2024,16 +2044,20 @@ function drawQuadrant(members) {
     const inQ = k => pts.filter(r => ((r.at[y].x >= st.mx) ? '1' : '0') + ((r.at[y].y >= st.my) ? '1' : '0') === k).map(r => r.m.name);
     const order = Object.keys(names).sort((a, b) => (good[names[b]] || 0) - (good[names[a]] || 0));
     $('#q-yl').textContent = y; $('#q-h').textContent = `${xl} vs ${yl} · ${y}`;
+    const ch = charts['ch-sx'], sx = ch && ch.scales, off = sx ? pts.filter(r => { const p = r.at[y]; return p.x < sx.x.min || p.x > sx.x.max || p.y < sx.y.min || p.y > sx.y.max; }).map(r => `${r.m.name} (${xl} ${fx(r.at[y].x, xf)}, ${yl} ${fx(r.at[y].y, yf)})`) : [];
     $('#q-note').textContent = pts.length < 2 ? 'Needs at least two companies with both values in this year.' :
       `${y}: ` + order.filter(k => inQ(k).length).map(k => `${names[k]}: ${inQ(k).join(', ')}. `).join('') + `Medians: ${xl} ${fx(st.mx, xf)}, ${yl} ${fx(st.my, yf)}.` +
       (QX === 'soic' || QY === 'soic' ? ' SOIC has no history, so only the latest position is shown.' : '') + (QX === 'sg' || QX === 'pg' || QY === 'sg' || QY === 'pg' ? ' Growth in past years is the CAGR over the 5 years before (3–4 in the earliest years).' : '') +
-      (xq !== yq ? ' For P/E and EV/EBITDA, lower is cheaper.' : '');
+      (xq !== yq ? ' For P/E and EV/EBITDA, lower is cheaper.' : '') + (off.length ? ` Off the chart this year: ${off.join('; ')}. Choose View: Fit this year to include them.` : '');
   };
-  QSTEP = yi => { QYI = Math.max(0, Math.min(years.length - 1, yi)); $('#q-yr').value = QYI; const ch = charts['ch-sx']; if (!ch) return; ch.data.datasets = datasetsAt(QYI); ch.update(); note(); };
+  QSTEP = yi => { QYI = Math.max(0, Math.min(years.length - 1, yi)); $('#q-yr').value = QYI; const ch = charts['ch-sx']; if (!ch) return; ch.data.datasets = datasetsAt(QYI);
+    const [[a0, a1], [b0, b1]] = axesFor(QYI); Object.assign(ch.options.scales.x, {min: a0, max: a1}); Object.assign(ch.options.scales.y, {min: b0, max: b1});
+    ch.update(); note(); };
+  $('#q-z').value = QZ;
   QLEN = years.length;
   note();
 }
-let QYI = null, QPLAY = null, QSTEP = () => {}, QLEN = 0;
+let QYI = null, QPLAY = null, QSTEP = () => {}, QLEN = 0, QZ = 'year';
 function qPlay() {
   const b = $('#q-play');
   if (QPLAY) { clearInterval(QPLAY); QPLAY = null; b.textContent = '▶ Play'; return; }
@@ -2043,6 +2067,7 @@ function qPlay() {
 }
 $('#sx-extra').addEventListener('change', e => { const id = e.target.id;
   if (id === 'q-tr') { QSTEP(QYI); return; }
+  if (id === 'q-z') { QZ = e.target.value; QSTEP(QYI); return; }
   if (id === 'qx') QX = e.target.value; else if (id === 'qy') QY = e.target.value; else return; QYI = null; renderSectors(); });
 $('#sx-extra').addEventListener('input', e => { if (e.target.id !== 'q-yr') return; if (QPLAY) qPlay(); QSTEP(+e.target.value); });
 $('#sx-extra').addEventListener('click', e => { if (e.target.closest('#q-play')) qPlay(); });
