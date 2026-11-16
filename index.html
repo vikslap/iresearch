@@ -270,6 +270,8 @@ button:disabled{opacity:.45;cursor:not-allowed}
 #qs-tab td:first-child{font-weight:500}
 .qsel{display:flex;flex-wrap:wrap;gap:12px;margin:-2px 0 8px}.qsel label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
 .qsel select{font:14px Inter,sans-serif;min-height:40px;padding:0 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+.qyr{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 6px}.qyr input[type=range]{flex:1 1 200px;accent-color:var(--c1);min-height:32px}
+.qyr b{min-width:46px;font-size:15px}.qyr .sm{min-width:92px}
 #drop{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(4px);display:none;place-items:center;font-size:20px;font-weight:700;z-index:9;border:3px dashed var(--c1);border-radius:16px;margin:10px}
 #drop.on{display:grid}
 #toast{position:fixed;bottom:20px;left:50%;max-width:min(560px,92vw);text-align:center;transform:translate(-50%,8px);background:var(--tip);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:10;box-shadow:0 8px 24px rgb(0 0 0/.18)}
@@ -341,7 +343,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 16 Nov 2026, 06:55 IST</p>
+    <p class="tiny" id="build">Version: 16 Nov 2026, 07:05 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -1943,8 +1945,9 @@ function renderSectorExtras(members, label) {
       <div class="scroll cmp" style="align-self:start"><table><thead><tr><th>Company</th><th>${X.common[0] || 'First'}</th><th>${X.common[X.common.length - 1] || 'Latest'}</th><th>Change</th></tr></thead><tbody>${sh.map(s => `<tr class="${s.m.k === M.name ? 'cur' : ''}"><td><span class="who"><i style="background:var(${colOf(s.m.k)})"></i>${s.m.name}</span></td><td>${pct(s.a)}</td><td>${pct(s.b)}</td><td>${s.d == null ? '—' : `<span class="${s.d >= 0 ? 'up' : 'down'}">${s.d >= 0 ? '+' : '−'}${Math.abs(s.d * 100).toFixed(1)} pp</span>`}</td></tr>`).join('')}</tbody></table></div>
     </div>
     <h2>Quadrant</h2>
-    <div class="card"><div class="ch"><h3>${QAX[QX][0]} vs ${QAX[QY][0]}</h3><span>bubble size = market cap · dashed lines = medians of this group</span></div>
+    <div class="card"><div class="ch"><h3 id="q-h">${QAX[QX][0]} vs ${QAX[QY][0]}</h3><span>bubble size = market cap · dashed lines = medians of this group</span></div>
       <div class="qsel"><label>Across<select id="qx">${opt(QX)}</select></label><label>Up<select id="qy">${opt(QY)}</select></label></div>
+      <div class="qyr" id="q-ctl"><button class="sm" id="q-play">▶ Play</button><input type="range" id="q-yr" min="0" max="0" step="1" value="0" aria-label="Year"><b id="q-yl">Now</b><label class="chk"><input type="checkbox" id="q-tr" checked>Trails</label></div>
       <div class="fig big" style="height:420px"><canvas id="ch-sx"></canvas></div><p class="note" id="q-note"></p></div>`;
   // premium chart
   const ys = X.years.concat('Now');
@@ -1953,22 +1956,36 @@ function renderSectorExtras(members, label) {
   drawQuadrant(members);
 }
 function drawQuadrant(members) {
+  clearInterval(QPLAY); QPLAY = null;
   const [xl, xf, xq] = QAX[QX], [yl, yf, yq] = QAX[QY], sc = (v, f) => v == null || !isFinite(v) ? null : f === 'pct' ? v * 100 : v;
-  const pts = members.map(m => ({m, x: sc(m[QX], xf), y: sc(m[QY], yf), cap: snapC(m.k).C.now.mcap})).filter(p => p.x != null && p.y != null && !(yf === 'x' && p.y > 300) && !(xf === 'x' && p.x > 300));
-  const maxCap = Math.max(...pts.map(p => p.cap || 0), 1), mx = median(pts.map(p => p.x)), my = median(pts.map(p => p.y));
+  // every company's value of a measure in each year; growth uses a rolling CAGR (5 years, or 3-4 early on)
+  const roll = (a, i) => { const w = Math.min(5, i); if (w < 3 || !(a[i] > 0) || !(a[i - w] > 0)) return null; return Math.pow(a[i] / a[i - w], 1 / w) - 1; };
+  const yearly = (s, key) => { const R = n => s.C.R.find(r => r.k === n).v, cap = v => v > 0 && v < 300 ? v : null;
+    return key === 'roce' ? R('ROCE') : key === 'opm' ? R('Operating margin (EBITDA)') : key === 'pe' ? R('P/E').map(cap) : key === 'ev' ? R('EV / EBITDA').map(cap)
+      : key === 'sg' ? s.C.S.map((_, i) => roll(s.C.S, i)) : key === 'pg' ? s.C.PAT.map((_, i) => roll(s.C.PAT, i)) : s.C.S.map(() => null); };
+  const rows = members.map(m => { const s = snapC(m.k), ys = s.M.secs.pl.dates.map(fy), xs = yearly(s, QX), yv = yearly(s, QY);
+    const at = {}; ys.forEach((y, i) => at[y] = {x: sc(xs[i], xf), y: sc(yv[i], yf), cap: s.C.MC[i]});
+    at.Now = {x: sc(m[QX], xf), y: sc(m[QY], yf), cap: s.C.now.mcap};
+    return {m, at, dates: s.M.secs.pl.dates}; });
+  const lab = new Map(); rows.forEach(r => r.dates.forEach(d => lab.set(fy(d), +d)));
+  const years = [...lab.entries()].sort((a, b) => a[1] - b[1]).map(e => e[0]).filter(y => rows.filter(r => r.at[y] && r.at[y].x != null && r.at[y].y != null).length >= 2).concat('Now');
+  if (QYI == null || QYI >= years.length) QYI = years.length - 1;
+  // fixed axes and bubble scale across all years, so movement is real
+  const all = years.flatMap(y => rows.map(r => r.at[y]).filter(p => p && p.x != null && p.y != null));
+  const ext = k => { const v = all.map(p => p[k]); const lo = Math.min(...v), hi = Math.max(...v), pad = (hi - lo || Math.abs(hi) || 1) * .12; return [lo >= 0 ? Math.max(0, lo - pad) : lo - pad, hi + pad]; };
+  const [x0, x1] = ext('x'), [y0, y1] = ext('y'), maxCap = Math.max(...all.map(p => p.cap || 0), 1);
+  const st = {mx: null, my: null};
   // quadrant names: quality axis vs price axis gets the classic labels
-  const hiX = 'right', names = {};
-  if (xq !== yq) {
-    const qAxis = xq > 0 ? 'x' : 'y';
-    const lab = (qHigh, pHigh) => qHigh ? (pHigh ? 'Expensive quality' : 'Quality at a fair price') : (pHigh ? 'Avoid' : 'Value traps?');
-    [[1, 1], [1, 0], [0, 1], [0, 0]].forEach(([xh, yh]) => { names[`${xh}${yh}`] = qAxis === 'x' ? lab(xh, yh) : lab(yh, xh); });
-  } else if (xq > 0) Object.assign(names, {'11': 'Strong on both', '10': `High ${xl}, low ${yl}`, '01': `Low ${xl}, high ${yl}`, '00': 'Weak on both'});
+  const names = {};
+  if (xq !== yq) { const qAxis = xq > 0 ? 'x' : 'y', lb = (qH, pH) => qH ? (pH ? 'Expensive quality' : 'Quality at a fair price') : (pH ? 'Avoid' : 'Value traps?');
+    [[1, 1], [1, 0], [0, 1], [0, 0]].forEach(([xh, yh]) => { names[`${xh}${yh}`] = qAxis === 'x' ? lb(xh, yh) : lb(yh, xh); }); }
+  else if (xq > 0) Object.assign(names, {'11': 'Strong on both', '10': `High ${xl}, low ${yl}`, '01': `Low ${xl}, high ${yl}`, '00': 'Weak on both'});
   else Object.assign(names, {'00': 'Cheap on both', '11': 'Expensive on both', '10': `Pricier on ${xl}`, '01': `Pricier on ${yl}`});
   const good = {'Quality at a fair price': 1, 'Strong on both': 1, 'Cheap on both': 1, 'Avoid': -1, 'Weak on both': -1, 'Expensive on both': -1};
-  const pos = css('--pos'), neg = css('--neg'), mut = css('--muted'), line_ = css('--line'), bgc = css('--card');
+  const pos = css('--pos'), neg = css('--neg'), mut = css('--muted'), line_ = css('--line'), bgc = css('--card'), ink = mut;
   const quad = {id: 'quad', afterDraw(c) {
-    const {ctx: x, chartArea: a, scales: {x: X, y: Y}} = c; if (!a || mx == null || my == null) return;
-    const px = X.getPixelForValue(mx), py = Y.getPixelForValue(my);
+    const {ctx: x, chartArea: a, scales: {x: X, y: Y}} = c; if (!a || st.mx == null || st.my == null) return;
+    const px = X.getPixelForValue(st.mx), py = Y.getPixelForValue(st.my);
     x.save(); x.strokeStyle = mut; x.setLineDash([5, 5]); x.lineWidth = 1;
     if (px > a.left && px < a.right) { x.beginPath(); x.moveTo(px, a.top); x.lineTo(px, a.bottom); x.stroke(); }
     if (py > a.top && py < a.bottom) { x.beginPath(); x.moveTo(a.left, py); x.lineTo(a.right, py); x.stroke(); }
@@ -1977,23 +1994,58 @@ function drawQuadrant(members) {
       const t = names[k]; if (!t) return; x.textAlign = al; const w = x.measureText(t).width, bx = al === 'right' ? tx - w - 6 : tx - 6;
       x.fillStyle = rgba(bgc, .85); x.beginPath(); x.roundRect ? x.roundRect(bx, ty - 13, w + 12, 18, 6) : x.rect(bx, ty - 13, w + 12, 18); x.fill();
       x.fillStyle = good[t] > 0 ? pos : good[t] < 0 ? neg : mut; x.fillText(t, tx, ty); });
+    // year stamp
+    x.font = `800 28px ${FONT}`; x.textAlign = 'right'; x.fillStyle = rgba(mut, .35); x.fillText(years[QYI], a.right - 10, a.bottom - 34);
     x.restore(); }};
-  const ink = css('--muted'), fx = (v, f) => f === 'pct' ? v.toFixed(1) + '%' : f === 'x' ? v.toFixed(1) + '×' : Math.round(v);
-  const cfg = {_fmt: 'x', _bg: css('--card'), _ink: css('--ink'), _mut: mut, type: 'bubble', plugins: [quad],
-    data: {labels: [], datasets: pts.map(p => ({label: p.m.name, data: [{x: p.x, y: p.y, r: 6 + 22 * Math.sqrt((p.cap || 0) / maxCap)}], backgroundColor: rgba(css(colOf(p.m.k)), .7), borderColor: css(colOf(p.m.k)), borderWidth: p.m.k === M.name ? 3 : 1.5, hoverBorderWidth: 3}))},
-    options: {responsive: true, maintainAspectRatio: false, animation: ANIM, layout: {padding: 8},
-      plugins: {legend: {position: 'top', align: 'end', labels: {color: css('--ink'), usePointStyle: true, pointStyle: 'circle', boxWidth: 7, boxHeight: 7, padding: 12, font: {family: FONT, size: 12}}},
-        tooltip: {backgroundColor: css('--tip'), padding: 10, cornerRadius: 8, callbacks: {label: c => { const p = pts[c.datasetIndex]; return ` ${p.m.name}: ${xl} ${fx(p.x, xf)}, ${yl} ${fx(p.y, yf)}, market cap ₹${inr(p.cap)} Cr`; }}}},
-      scales: {x: {title: {display: true, text: xl + (xf === 'pct' ? ', %' : ''), color: ink, font: {family: FONT, size: 12}}, grid: {color: line_}, border: {display: false, dash: [4, 4]}, grace: '18%', ticks: {color: ink, font: {family: FONT, size: 11}, callback: v => fx(+v, xf)}},
-        y: {title: {display: true, text: yl + (yf === 'pct' ? ', %' : ''), color: ink, font: {family: FONT, size: 12}}, grid: {color: line_}, border: {display: false, dash: [4, 4]}, grace: '18%', ticks: {color: ink, font: {family: FONT, size: 11}, callback: v => fx(+v, yf)}}}}};
+  const fx = (v, f) => f === 'pct' ? v.toFixed(1) + '%' : f === 'x' ? v.toFixed(1) + '×' : Math.round(v);
+  const datasetsAt = yi => {
+    const y = years[yi], ds = [], trails = $('#q-tr') ? $('#q-tr').checked : true;
+    rows.forEach(r => { const p = r.at[y], col = css(colOf(r.m.k));
+      if (trails) { const path = years.slice(0, yi + 1).map(yy => r.at[yy]).filter(q => q && q.x != null && q.y != null).map(q => ({x: q.x, y: q.y}));
+        if (path.length > 1) ds.push({type: 'line', label: r.m.name + ' path', _trail: true, data: path, borderColor: rgba(col, .45), borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: rgba(col, .45), pointBorderWidth: 0, fill: false, tension: 0, cubicInterpolationMode: 'default', order: 2}); }
+      ds.push({label: r.m.name, _k: r.m.k, data: p && p.x != null && p.y != null ? [{x: p.x, y: p.y, r: 5 + 22 * Math.sqrt((p.cap || 0) / maxCap), cap: p.cap}] : [],
+        backgroundColor: rgba(col, .72), borderColor: col, borderWidth: r.m.k === M.name ? 3 : 1.5, hoverBorderWidth: 3, order: 1}); });
+    const pts = rows.map(r => r.at[y]).filter(p => p && p.x != null && p.y != null);
+    st.mx = median(pts.map(p => p.x)); st.my = median(pts.map(p => p.y));
+    return ds;
+  };
+  const cfg = {_fmt: 'x', _bg: bgc, _ink: css('--ink'), _mut: mut, type: 'bubble', plugins: [quad], data: {labels: [], datasets: datasetsAt(QYI)},
+    options: {responsive: true, maintainAspectRatio: false, animation: ANIM ? {duration: 650, easing: 'easeInOutCubic'} : false, layout: {padding: 8},
+      plugins: {legend: {position: 'top', align: 'end', labels: {color: css('--ink'), usePointStyle: true, pointStyle: 'circle', boxWidth: 7, boxHeight: 7, padding: 12, font: {family: FONT, size: 12}, filter: i => !(cfg.data.datasets[i.datasetIndex] || {})._trail}},
+        tooltip: {backgroundColor: css('--tip'), padding: 10, cornerRadius: 8, filter: i => !i.dataset._trail, callbacks: {label: c => { const d = c.raw; return ` ${c.dataset.label} (${years[QYI]}): ${xl} ${fx(d.x, xf)}, ${yl} ${fx(d.y, yf)}${d.cap ? `, market cap ₹${inr(d.cap)} Cr` : ''}`; }}}},
+      scales: {x: {suggestedMin: x0, suggestedMax: x1, title: {display: true, text: xl + (xf === 'pct' ? ', %' : ''), color: ink, font: {family: FONT, size: 12}}, grid: {color: line_}, border: {display: false, dash: [4, 4]}, ticks: {color: ink, font: {family: FONT, size: 11}, callback: v => fx(+v, xf)}},
+        y: {suggestedMin: y0, suggestedMax: y1, title: {display: true, text: yl + (yf === 'pct' ? ', %' : ''), color: ink, font: {family: FONT, size: 12}}, grid: {color: line_}, border: {display: false, dash: [4, 4]}, ticks: {color: ink, font: {family: FONT, size: 11}, callback: v => fx(+v, yf)}}}}};
   draw('ch-sx', cfg);
-  const inQ = k => pts.filter(p => ((p.x >= mx) ? '1' : '0') + ((p.y >= my) ? '1' : '0') === k).map(p => p.m.name);
-  const order = Object.keys(names).sort((a, b) => (good[names[b]] || 0) - (good[names[a]] || 0));
-  $('#q-note').textContent = pts.length < 2 ? 'Needs at least two companies with both values.' :
-    order.filter(k => inQ(k).length).map(k => `${names[k]}: ${inQ(k).join(', ')}. `).join('') +
-    `Medians: ${xl} ${fx(mx, xf)}, ${yl} ${fx(my, yf)}.` + (xq !== yq ? ' For P/E and EV/EBITDA, lower is cheaper.' : '');
+  const sl = $('#q-yr'); sl.max = years.length - 1; sl.value = QYI;
+  const single = years.length < 2 || QX === 'soic' || QY === 'soic';
+  $('#q-ctl').hidden = single;
+  const note = () => {
+    const y = years[QYI], pts = rows.filter(r => r.at[y] && r.at[y].x != null && r.at[y].y != null);
+    const inQ = k => pts.filter(r => ((r.at[y].x >= st.mx) ? '1' : '0') + ((r.at[y].y >= st.my) ? '1' : '0') === k).map(r => r.m.name);
+    const order = Object.keys(names).sort((a, b) => (good[names[b]] || 0) - (good[names[a]] || 0));
+    $('#q-yl').textContent = y; $('#q-h').textContent = `${xl} vs ${yl} · ${y}`;
+    $('#q-note').textContent = pts.length < 2 ? 'Needs at least two companies with both values in this year.' :
+      `${y}: ` + order.filter(k => inQ(k).length).map(k => `${names[k]}: ${inQ(k).join(', ')}. `).join('') + `Medians: ${xl} ${fx(st.mx, xf)}, ${yl} ${fx(st.my, yf)}.` +
+      (QX === 'soic' || QY === 'soic' ? ' SOIC has no history, so only the latest position is shown.' : '') + (QX === 'sg' || QX === 'pg' || QY === 'sg' || QY === 'pg' ? ' Growth in past years is the CAGR over the 5 years before (3–4 in the earliest years).' : '') +
+      (xq !== yq ? ' For P/E and EV/EBITDA, lower is cheaper.' : '');
+  };
+  QSTEP = yi => { QYI = Math.max(0, Math.min(years.length - 1, yi)); $('#q-yr').value = QYI; const ch = charts['ch-sx']; if (!ch) return; ch.data.datasets = datasetsAt(QYI); ch.update(); note(); };
+  QLEN = years.length;
+  note();
 }
-$('#sx-extra').addEventListener('change', e => { if (e.target.id === 'qx') QX = e.target.value; else if (e.target.id === 'qy') QY = e.target.value; else return; renderSectors(); });
+let QYI = null, QPLAY = null, QSTEP = () => {}, QLEN = 0;
+function qPlay() {
+  const b = $('#q-play');
+  if (QPLAY) { clearInterval(QPLAY); QPLAY = null; b.textContent = '▶ Play'; return; }
+  if (QYI >= QLEN - 1) QSTEP(0);
+  b.textContent = '❚❚ Pause';
+  QPLAY = setInterval(() => { if (!$('#q-play') || $('#sectors').hidden) { clearInterval(QPLAY); QPLAY = null; return; } if (QYI >= QLEN - 1) { clearInterval(QPLAY); QPLAY = null; $('#q-play').textContent = '▶ Play'; return; } QSTEP(QYI + 1); }, ANIM ? 1100 : 1500);
+}
+$('#sx-extra').addEventListener('change', e => { const id = e.target.id;
+  if (id === 'q-tr') { QSTEP(QYI); return; }
+  if (id === 'qx') QX = e.target.value; else if (id === 'qy') QY = e.target.value; else return; QYI = null; renderSectors(); });
+$('#sx-extra').addEventListener('input', e => { if (e.target.id !== 'q-yr') return; if (QPLAY) qPlay(); QSTEP(+e.target.value); });
+$('#sx-extra').addEventListener('click', e => { if (e.target.closest('#q-play')) qPlay(); });
 $('#sx-extra').addEventListener('click', e => { const o = e.target.closest('[data-open]'); if (o) { openLib(o.dataset.open); location.hash = 'overview'; } });
 
 // ---- Company switcher (Ctrl/Cmd + K) and Companies page ----
@@ -2152,7 +2204,7 @@ function renderSectors() {
     <p class="note">Each cell is coloured by rank within the group: teal is better, orange is worse, uncoloured is middle of the pack. For P/E, EV/EBITDA and debt to equity, lower counts as better. Hover a cell to see its percentile.</p>`;
   if (members.length >= 2) renderSectorExtras(members, label); else $('#sx-extra').innerHTML = '';
 }
-$('#sx-pick').addEventListener('click', e => { const b = e.target.closest('[data-sx]'); if (!b) return; SXS = b.dataset.sx; renderSectors(); });
+$('#sx-pick').addEventListener('click', e => { const b = e.target.closest('[data-sx]'); if (!b) return; SXS = b.dataset.sx; QYI = null; renderSectors(); });
 $('#sx-body').addEventListener('click', e => {
   const h = e.target.closest('[data-sxs]'); if (h) { const k = h.dataset.sxs; SXSORT = SXSORT.k === k ? {k, d: -SXSORT.d} : {k, d: ['pe', 'ev', 'de'].includes(k) ? 1 : -1}; renderSectors(); return; }
   const o = e.target.closest('[data-open]'); if (o) { openLib(o.dataset.open); location.hash = 'overview'; }
