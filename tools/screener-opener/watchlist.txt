@@ -1,0 +1,12 @@
+# Your shortlist: one NSE symbol (or BSE code for BSE-only companies) per line.
+# Lines starting with # are ignored. Edit freely.
+
+# Hospitals
+APOLLOHOSP
+MAXHEALTH
+FORTIS
+NH
+MEDANTA      # Global Health
+ASTERDM
+YATHARTH
+MANIPALHOS
