@@ -13,7 +13,8 @@ Live: https://vikslap.github.io/iresearch/
 - **Quality** – automatic red-flag checks, ROE drivers, incremental ROCE, self-funded growth and ten-year sources and uses of cash.
 - **SOIC score** – the 30-question SOIC ranking sheet (out of 310). Fundamentals answer themselves from the data; technicals answer themselves from a price CSV (NSE, BSE, Investing.com, TradingView, AmiBroker or Yahoo).
 - **Compare** – rank up to 6 saved companies side by side.
-- **Companies and Sectors** – a sortable, filterable list of saved companies with pins and sector tags (Ctrl + K to jump to one), and a sector view with medians, a rank heatmap and a quality-vs-price chart.
+- **Results season** – re-upload a fresh export and see what changed (new quarters and years, TTM sales and profit, price, P/E, ROCE, SOIC, red flags, revised past figures); latest-quarter scorecard vs a year ago, last quarter and the four-quarter average.
+- **Companies and Sectors** – a sortable, filterable list of saved companies with pins and sector tags (Ctrl + K to jump to one), and a sector view with medians, a rank heatmap, premium/discount to the sector vs each company's usual level, market-share shifts, and a labelled quadrant chart (bubble size = market cap, choice of axes).
 - **Scenario valuation** – pessimistic, base and optimistic cases: projected EPS × justified P/E (from long-run growth, sustainable ROE and required return), discounted to today and probability-weighted.
 - **Valuation extras** – DCF sensitivity grid (discount rate × growth) and a reverse-DCF slider showing the growth priced in.
 - **Install as an app** – add Plumb to your phone's home screen or your computer's app list; it works offline with the data already on the device.
