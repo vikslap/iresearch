@@ -355,7 +355,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 17 Nov 2026, 09:04 IST</p>
+    <p class="tiny" id="build">Version: 17 Nov 2026, 10:11 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -1604,6 +1604,9 @@ function qualityTable(snaps, meK) {
 
 // ---- Segments: imported from the NSE segment script (plumb-segments.json) ----
 let SGP = 'Q';
+const sgClean = n => String(n || '').replace(/^\s*\(?(?:[a-zA-Z]|[ivxIVX]{1,4}|\d{1,2})[).:]\s*/, '').replace(/\s+/g, ' ').trim();
+const sgType = n => { n = n.toLowerCase(); return /inter[\s-]*segment|elimination/.test(n) ? 'elimination' : /discontinued/.test(n) ? 'discontinued' : /unallocat/.test(n) ? 'unallocated' : 'operating'; };
+const SGT = {elimination: 'eliminations', discontinued: 'discontinued', unallocated: 'not a business'};
 const sgNorm = n => String(n || '').toUpperCase().replace(/&/g, ' AND ').replace(/[^A-Z0-9 ]/g, ' ').replace(/\bLIMITED\b/g, 'LTD').replace(/\s+/g, ' ').trim().replace(/\s+LTD$/, '');
 async function importSegments(f) {
   let d; try { d = JSON.parse(await f.text()); } catch (e) { toast(`${f.name}: not a valid file`); return; }
@@ -1634,12 +1637,15 @@ function renderSegments() {
   if (!has(SGP)) SGP = has('Q') ? 'Q' : has('FY') ? 'FY' : 'H';
   $('#sg-per').hidden = false;
   $('#sg-per').innerHTML = ['Q', 'H', 'FY'].filter(has).map(k => `<button data-sgp="${k}" aria-pressed="${SGP === k}">${{Q: 'Quarterly', H: 'Half-yearly', FY: 'Annual'}[k]}</button>`).join('');
-  const P = d.periods.filter(p => p.kind === SGP).sort((a, b) => a.end < b.end ? -1 : 1);
+  // tidy names (drop "a)" style prefixes, empty placeholder rows) and tag lines that are not businesses
+  const P = d.periods.filter(p => p.kind === SGP).sort((a, b) => a.end < b.end ? -1 : 1).map(p => ({...p, segments: p.segments.map(x => { const nm = sgClean(x.name); return {...x, name: nm, type: x.type || sgType(nm)}; })
+    .filter(x => !['', '0', '-', 'na', 'n/a', 'nil'].includes(x.name.toLowerCase()) && ['revenue', 'result', 'assets', 'liabilities'].some(m => Math.abs(x[m] || 0) > .005))}));
   const lab = p => { const t = new Date(p.end + 'T00:00:00'); return SGP === 'FY' ? 'FY' + String(t.getFullYear() + (t.getMonth() >= 3 ? 1 : 0)).slice(2) : ql(t); };
   const labels = P.map(lab), last = P[P.length - 1];
   // segments in order of latest revenue; names are matched case-insensitively so small spelling changes still line up
   const key = n => n.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const names = []; P.slice().reverse().forEach(p => p.segments.forEach(s => { if (!names.some(n => key(n) === key(s.name))) names.push(s.name); }));
+  const names = [], extra = []; P.slice().reverse().forEach(p => p.segments.forEach(s => { const L2 = s.type === 'operating' ? names : extra; if (!names.concat(extra).some(n => key(n) === key(s.name))) L2.push(s.name); }));
+  const typeOf = n => { for (const p of P) { const x = p.segments.find(y => key(y.name) === key(n)); if (x) return x.type; } return 'operating'; };
   const lastRev = n => (last.segments.find(s => key(s.name) === key(n)) || {}).revenue ?? -Infinity;
   names.sort((a, b) => lastRev(b) - lastRev(a));
   const val = (p, n, m) => { const s = p.segments.find(x => key(x.name) === key(n)); return s && s[m] != null ? s[m] : null; };
@@ -1647,7 +1653,7 @@ function renderSegments() {
   const ann = SGP === 'Q' ? 4 : SGP === 'H' ? 2 : 1;
   const cap = (p, n) => { const a = val(p, n, 'assets'), l = val(p, n, 'liabilities'); return a != null ? a - (l || 0) : null; };
   const yoy = (p, n) => { const t = new Date(p.end + 'T00:00:00'); t.setFullYear(t.getFullYear() - 1); const q = P.find(x => Math.abs(new Date(x.end + 'T00:00:00') - t) < 20 * 864e5); const a = val(p, n, 'revenue'), b = q && val(q, n, 'revenue'); return a != null && b > 0 ? a / b - 1 : null; };
-  const totRev = last.segments.reduce((x, s) => x + Math.max(0, s.revenue || 0), 0), totRes = last.segments.reduce((x, s) => x + Math.max(0, s.result || 0), 0);
+  const op = last.segments.filter(s => s.type === 'operating'), totRev = op.reduce((x, s) => x + Math.max(0, s.revenue || 0), 0), totRes = op.reduce((x, s) => x + Math.max(0, s.result || 0), 0);
   const hasCap = names.some(n => cap(last, n) != null);
   const tiles = names.map((n, i) => { const r = val(last, n, 'revenue'), e = val(last, n, 'result'), c = cap(last, n), g = yoy(last, n);
     return `<div class="kpi" style="border-top:3px solid ${pal[i]}"><div class="kh"><span>${escA(n)}</span></div><b>₹${inr(r)} Cr</b><div class="kf"><span>${pct(div(r, totRev))} of revenue${g != null ? ` · ${g >= 0 ? '+' : ''}${pct(g)} YoY` : ''}</span></div>
@@ -1660,10 +1666,10 @@ function renderSegments() {
       <div class="card"><div class="ch"><h3>Share of revenue vs share of profit</h3><span>${labels[labels.length - 1]}</span></div><div class="fig"><canvas id="ch-sg-mix"></canvas></div><p class="note">A segment with a bigger share of profit than of revenue earns above-average margins. Loss-making segments show as zero profit share.</p></div>
       ${hasCap ? `<div class="card"><div class="ch"><h3>Return on segment capital</h3><span>EBIT${ann > 1 ? ' annualised' : ''} ÷ (segment assets − liabilities)</span></div><div class="fig"><canvas id="ch-sg-roc"></canvas></div><p class="note">Shows where each rupee tied up in the business earns most. Compare with the company's ROCE and your cost of capital (${pct(COC)}).</p></div>` : ''}
       <div class="card wide"><div class="ch"><h3>Segment figures</h3><span>₹ crore</span></div><div class="scroll"><table class="sgt"><thead><tr><th>Segment</th><th>Item</th>${labels.map(l => `<th>${l}</th>`).join('')}</tr></thead><tbody>
-        ${names.map(n => [['revenue', 'Revenue'], ['result', 'EBIT'], ['assets', 'Assets'], ['liabilities', 'Liabilities']].filter(([m]) => P.some(p => val(p, n, m) != null)).map(([m, l], j) => `<tr${j === 0 ? ' class="sgf"' : ''}><td>${j === 0 ? escA(n) : ''}</td><td>${l}</td>${P.map(p => `<td>${inr(val(p, n, m))}</td>`).join('')}</tr>`).join('')).join('')}
+        ${names.concat(extra).map(n => [['revenue', 'Revenue'], ['result', 'EBIT'], ['assets', 'Assets'], ['liabilities', 'Liabilities']].filter(([m]) => P.some(p => val(p, n, m) != null)).map(([m, l], j) => `<tr${j === 0 ? ' class="sgf"' : ''}><td>${j === 0 ? escA(n) + (SGT[typeOf(n)] ? ` <span class="qchip" style="--q:var(--muted)">${SGT[typeOf(n)]}</span>` : '') : ''}</td><td>${l}</td>${P.map(p => `<td>${inr(val(p, n, m))}</td>`).join('')}</tr>`).join('')).join('')}
         <tr class="sgf"><td>Check</td><td>Sum vs reported revenue</td>${P.map(p => `<td title="${p.check ? `segments ${inr(p.check.segment_sum)} vs reported ${inr(p.check.total)}` : ''}">${!p.check || p.check.ok == null ? '—' : p.check.ok ? '✓' : '⚠'}</td>`).join('')}</tr>
       </tbody></table></div>
-      <p class="note">${mism.length ? `⚠ In ${mism.map(lab).join(', ')}, segment revenues don't add up to reported revenue within 3%: usually inter-segment sales or an "unallocated" line; check the filing. ` : ''}${warn.length ? `Notes from the script: ${warn.map(escA).join(' · ')}. ` : ''}Source: each quarter's filing with NSE (XBRL)${last.filing ? `; <a href="${escA(last.filing)}" target="_blank" rel="noopener">latest filing</a>` : ''}. History starts with the March 2025 quarter, when NSE moved to the current filing format.</p></div>
+      <p class="note">${mism.length ? `⚠ In ${mism.map(lab).join(', ')}, segment revenues don't add up to reported revenue within 3%: usually inter-segment sales or an "unallocated" line; check the filing. ` : ''}${warn.length ? `Notes from the script: ${warn.map(escA).join(' · ')}. ` : ''}${extra.length ? `Cards and charts show business segments only; ${extra.map(escA).join(', ')} ${extra.length > 1 ? 'are' : 'is'} listed in the table but left out because ${extra.length > 1 ? 'they are' : 'it is'} not an operating business. ` : ''}Source: each quarter's filing with NSE (XBRL)${last.filing ? `; <a href="${escA(last.filing)}" target="_blank" rel="noopener">latest filing</a>` : ''}. History starts with the March 2025 quarter, when NSE moved to the current filing format.</p></div>
     </div>`;
   const stack = c => { c.options.scales.x.stacked = true; c.options.scales.y.stacked = true; return c; };
   draw('ch-sg-rev', stack(base('bar', labels, names.map((n, i) => Object.assign(bar(n, P.map(p => val(p, n, 'revenue')), pal[i]), {borderRadius: 3})), 'inr')));

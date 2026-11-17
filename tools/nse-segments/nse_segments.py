@@ -60,6 +60,23 @@ SEG_MEASURES = {
     "SegmentLiabilities": "liabilities",
 }
 SEG_MEMBER = re.compile(r"ReportableSegments?(\d+)Member$")
+SEG_PREFIX = re.compile(r"^\s*\(?(?:[a-zA-Z]|[ivxIVX]{1,4}|\d{1,2})[\).:]\s*")
+SEG_EMPTY = {"", "0", "-", "na", "n/a", "nil", "none"}
+
+
+def seg_type(name: str) -> str:
+    n = name.lower()
+    if re.search(r"inter[\s-]*segment|elimination", n):
+        return "elimination"
+    if "discontinued" in n:
+        return "discontinued"
+    if "unallocat" in n:
+        return "unallocated"
+    return "operating"
+
+
+def clean_seg_name(name: str) -> str:
+    return re.sub(r"\s+", " ", SEG_PREFIX.sub("", name or "")).strip()
 NS_XBRLI = "{http://www.xbrl.org/2003/instance}"
 NS_DIM = "{http://xbrl.org/2006/xbrldi}"
 
@@ -146,7 +163,7 @@ def load_companies(args) -> list[dict]:
 
 
 def norm_name(n: str) -> str:
-    n = n.upper().replace("&", " AND ")
+    n = re.sub(r"['\u2019`]", "", n.upper()).replace("&", " AND ")
     n = re.sub(r"[^A-Z0-9 ]", " ", n)
     n = re.sub(r"\bLIMITED\b", "LTD", n)
     n = re.sub(r"^THE\s+", "", n)
@@ -181,7 +198,7 @@ def resolve_symbols(companies: list[dict], nse: NSE) -> list[dict]:
     for c in companies:
         if c["symbol"]:
             continue
-        if c["name"] in saved and saved[c["name"]].get("symbol"):
+        if c["name"] in saved and saved[c["name"]].get("symbol") and "please confirm" not in saved[c["name"]].get("how", ""):
             c["symbol"] = saved[c["name"]]["symbol"]
             continue
         table = table if table is not None else equity_list(nse)
@@ -190,14 +207,15 @@ def resolve_symbols(companies: list[dict], nse: NSE) -> list[dict]:
             c["symbol"] = table[key]
             saved[c["name"]] = {"symbol": c["symbol"], "how": "exact name match"}
             continue
-        guess = difflib.get_close_matches(key, list(table), n=1, cutoff=0.82)
+        first = key.split(" ")[0]
+        guess = [g for g in difflib.get_close_matches(key, list(table), n=3, cutoff=0.82) if g.split(" ")[0] == first][:1]
         if guess:
             c["symbol"] = table[guess[0]]
-            saved[c["name"]] = {"symbol": c["symbol"], "how": f"closest name: {guess[0]} - please confirm"}
+            saved[c["name"]] = {"symbol": c["symbol"], "how": f"closest name: {guess[0]} - please confirm (change this text to keep it)"}
             print(f"  ? {c['name']} -> {c['symbol']} (closest name match; check symbols.json)")
         else:
             saved[c["name"]] = {"symbol": "", "how": "not found - type the NSE symbol here"}
-            print(f"  ! {c['name']}: no NSE symbol found. Add it in Plumb or in symbols.json")
+            print(f"  ! {c['name']}: not found on NSE (BSE-only companies are not covered). If it is on NSE, type its symbol in Plumb.")
     SYMBOLS_FILE.write_text(json.dumps(saved, indent=2, ensure_ascii=False), encoding="utf-8")
     return companies
 
@@ -362,7 +380,15 @@ def segments_from_xbrl(content: bytes, qe: date) -> dict:
     for k in ("Q", "H", "FY"):
         if k not in vals or not any("revenue" in s or "result" in s for s in vals[k].values()):
             continue
-        segs = [{"name": names.get(n, f"Segment {n}"), **{m: round(v, 2) for m, v in vals[k][n].items()}} for n in sorted(vals[k])]
+        segs = []
+        for n in sorted(vals[k]):
+            nm = clean_seg_name(names.get(n, f"Segment {n}"))
+            row = {m: round(v, 2) for m, v in vals[k][n].items()}
+            if nm.lower() in SEG_EMPTY or not any(abs(v) > 0.005 for v in row.values()):
+                continue  # empty placeholder rows some companies leave in the template
+            segs.append({"name": nm, "type": seg_type(nm), **row})
+        if not segs:
+            continue
         tot = totals.get(k, {})
         total = tot.get("SegmentRevenueFromOperations") or tot.get("RevenueFromOperations")
         ssum = sum(s.get("revenue", 0) or 0 for s in segs)
