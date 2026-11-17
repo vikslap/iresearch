@@ -190,6 +190,7 @@ td svg{display:block}
 .flagbar:hover{border-color:var(--c1)}.flagbar .go{margin-left:auto;font-size:13px;color:var(--c1);font-weight:600}
 .qv{border-left:4px solid var(--q,var(--c1))}.qv h3{margin:0 0 8px;font-size:18px;line-height:1.35}.qv ul{margin:6px 0 0;padding-left:18px;color:var(--ink);font-size:14px;line-height:1.6}.qv li{margin:2px 0}.qv .qlink{margin:12px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:14px;color:var(--ink)}.qv .qset{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)}.qv .qset input{width:64px}
 .guide{margin-top:12px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--c1) 8%,transparent);border:1px solid color-mix(in srgb,var(--c1) 25%,transparent);font-size:13px;line-height:1.55;color:var(--ink)}.guide b{color:var(--c1)}.guide ol{margin:6px 0 0;padding-left:18px}
+.sgt td:first-child{font-weight:600;white-space:nowrap}.sgt tr.sgf td{border-top:2px solid var(--line)}.sgt td,.sgt th{text-align:right}.sgt td:first-child,.sgt td:nth-child(2),.sgt th:first-child,.sgt th:nth-child(2){text-align:left}
 .qchip{font-style:normal;font-size:11px;font-weight:700;color:var(--q);background:color-mix(in srgb,var(--q) 13%,transparent);padding:2px 8px;border-radius:999px;white-space:nowrap}
 .qdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--q);margin-right:7px;vertical-align:1px}
 .qgrp h3{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px}.qgrp .kpi .kh{display:flex;justify-content:space-between;gap:6px;align-items:flex-start}.qgrp .kpi.nm>b{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}.qwhy{margin:2px 0 0;font-size:12px;line-height:1.45;color:var(--ink);opacity:.85}
@@ -341,6 +342,7 @@ section{animation:fade .25s ease}
     <a href="#quarterly"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Quarterly</a>
     <a href="#ratios"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>Ratios</a>
     <a href="#quality"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>Quality</a>
+    <a href="#segments"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3v9h9"/><path d="M21 12a9 9 0 1 1-9-9"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg>Segments</a>
     <a href="#valuation"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Valuation</a>
     <a href="#score"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>SOIC score</a>
     <a href="#compare"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 20V10M12 20V4M18 20v-7"/></svg>Compare</a>
@@ -353,7 +355,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 16 Nov 2026, 09:59 IST</p>
+    <p class="tiny" id="build">Version: 17 Nov 2026, 09:04 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -399,6 +401,11 @@ section{animation:fade .25s ease}
   <section id="ratios" hidden>
     <div class="rbar"><p>Open a group to see a chart for every ratio in it. Each chart can be copied as an image or as data.</p><div style="display:flex;gap:8px"><button class="sm" id="r-open">Expand all</button><button class="sm" id="r-close">Collapse all</button></div></div>
     <div id="rgroups"></div>
+  </section>
+
+  <section id="segments" hidden>
+    <div class="card cobar" style="justify-content:space-between"><p class="note" id="sg-src" style="margin:0"></p><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><div class="seg" id="sg-per" role="group" aria-label="Period"></div><label class="btn sm" for="sg-file" style="cursor:pointer">Import segment file</label><input type="file" id="sg-file" accept=".json,application/json" hidden></div></div>
+    <div id="sg-body"></div>
   </section>
 
   <section id="quality" hidden>
@@ -521,7 +528,7 @@ section{animation:fade .25s ease}
       <label class="chk"><input type="checkbox" id="co-old">Hide out-of-date</label>
       <button class="sm" id="co-clear">Clear filters</button>
     </div>
-    <div class="cohead"><p class="note" id="co-count" style="margin:0"></p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="sm" id="co-cmp" disabled>Compare selected</button><button class="sm" id="co-rm" disabled>Remove selected</button></div></div>
+    <div class="cohead"><p class="note" id="co-count" style="margin:0"></p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="sm" id="co-exp" title="Saves plumb-companies.json for the segment script">Export list for scripts</button><button class="sm" id="co-cmp" disabled>Compare selected</button><button class="sm" id="co-rm" disabled>Remove selected</button></div></div>
     <datalist id="co-secs"></datalist>
     <div class="scroll cmp cotab"><table id="co-tab"></table></div>
     <p class="note">☆ pins a company to the sidebar. Type a sector (for example “Hospitals”) to group and filter. Pins and sectors sync across your devices. Press Ctrl + K anywhere to jump to a company.</p>
@@ -1061,8 +1068,8 @@ function load(rows, name, srcText, meta = {}) {
   recompute();
 }
 
-const VIEWS = ['overview', 'quarterly', 'ratios', 'quality', 'valuation', 'score', 'compare', 'companies', 'sectors', 'data'];
-const VNAME = {overview: 'Overview', quarterly: 'Quarterly results', ratios: 'Ratio analysis', quality: 'Quality and returns', valuation: 'Valuation', score: 'SOIC score', compare: 'Compare companies', companies: 'Saved companies', sectors: 'Sector view', data: 'Edit data'};
+const VIEWS = ['overview', 'quarterly', 'ratios', 'quality', 'segments', 'valuation', 'score', 'compare', 'companies', 'sectors', 'data'];
+const VNAME = {overview: 'Overview', quarterly: 'Quarterly results', ratios: 'Ratio analysis', quality: 'Quality and returns', segments: 'Segments', valuation: 'Valuation', score: 'SOIC score', compare: 'Compare companies', companies: 'Saved companies', sectors: 'Sector view', data: 'Edit data'};
 let lastView = null;
 function renderView() {
   if (!M) return;
@@ -1071,7 +1078,7 @@ function renderView() {
   document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + v));
   $('#crumb').textContent = VNAME[v]; $('#tb-view').textContent = VNAME[v]; $('#tb-name').textContent = title(); $('#tb-av').textContent = $('#av').textContent; $('#tb-av').style.background = $('#av').style.background || ''; closeDrawer(); $('#kpis').hidden = v !== 'overview';
   if (lastView !== v && lastView !== null) scrollTo(0, 0); lastView = v;
-  ({overview: renderOverview, quarterly: renderQuarterly, ratios: renderRatios, quality: renderQuality, valuation: renderValuation, score: renderScore, compare: renderCompare, companies: renderCompanies, sectors: renderSectors, data: renderData})[v]();
+  ({overview: renderOverview, quarterly: renderQuarterly, ratios: renderRatios, quality: renderQuality, segments: renderSegments, valuation: renderValuation, score: renderScore, compare: renderCompare, companies: renderCompanies, sectors: renderSectors, data: renderData})[v]();
 }
 
 async function sheetRows(f) {
@@ -1087,7 +1094,8 @@ async function sheetRows(f) {
   return {rows, mod: isFinite(pm) ? pm : (f.lastModified || null)};
 }
 async function readFiles(files) {
-  files = [...files].filter(f => !/\.(csv|txt)$/i.test(f.name));
+  const js = [...files].filter(f => /\.json$/i.test(f.name)); if (js.length) js.forEach(importSegments);
+  files = [...files].filter(f => !/\.(csv|txt|json)$/i.test(f.name));
   if (!files.length) return;
   const ok = [], bad = [];
   for (const f of files) {
@@ -1097,7 +1105,7 @@ async function readFiles(files) {
   // save every company except the last straight into the library, then open the last one
   ok.slice(0, -1).forEach(({rows, f, mod}) => {
     const k = parse(rows).name, isNew = !LIB[k], chg = changeFor(k, rows);
-    LIB[k] = {chg: chg || LIB[k]?.chg, rows: packRows(rows), file: f.name.replace(/\.\w+$/, ''), ts: LIB[k]?.ts || Date.now(), seen: Date.now(), mod, up: Date.now(), pin: LIB[k]?.pin, sector: LIB[k]?.sector, col: LIB[k]?.col}; markDirty(k);
+    LIB[k] = {chg: chg || LIB[k]?.chg, rows: packRows(rows), file: f.name.replace(/\.\w+$/, ''), ts: LIB[k]?.ts || Date.now(), seen: Date.now(), mod, up: Date.now(), pin: LIB[k]?.pin, sector: LIB[k]?.sector, sym: LIB[k]?.sym, col: LIB[k]?.col}; markDirty(k);
     if (isNew && CMP.size && CMP.size < 6) CMP.add(k);
   });
   if (ok.length > 1) libStore();
@@ -1594,6 +1602,79 @@ function qualityTable(snaps, meK) {
     `</tbody></table></div><p class="note">Green is good, amber is worth watching, red is weak, grey means the number isn't meaningful (for example, growth measured from a loss year). Cost of capital ${pct(COC)}; change it on the Quality page. Click a name to open it.</p>`;
 }
 
+// ---- Segments: imported from the NSE segment script (plumb-segments.json) ----
+let SGP = 'Q';
+const sgNorm = n => String(n || '').toUpperCase().replace(/&/g, ' AND ').replace(/[^A-Z0-9 ]/g, ' ').replace(/\bLIMITED\b/g, 'LTD').replace(/\s+/g, ' ').trim().replace(/\s+LTD$/, '');
+async function importSegments(f) {
+  let d; try { d = JSON.parse(await f.text()); } catch (e) { toast(`${f.name}: not a valid file`); return; }
+  if (!d || d.kind !== 'plumb-segments' || !Array.isArray(d.companies)) { toast(`${f.name}: not a segment file from the Plumb segment script`, 5000); return; }
+  const keys = libKeys(), done = [], single = [], missed = [], used = new Set();
+  // match by exact name, then by normalised name, and only then by symbol; each company is filled at most once
+  const byName = c => LIB[c.name] ? c.name : keys.find(x => sgNorm(x) === sgNorm(c.name));
+  const pairs = d.companies.map(c => { const k = byName(c); if (k && !used.has(k)) { used.add(k); return [c, k]; } return [c, null]; })
+    .map(([c, k]) => { if (!k && c.symbol) { k = keys.find(x => !used.has(x) && LIB[x].sym === c.symbol); if (k) used.add(k); } return [c, k]; });
+  pairs.forEach(([c, k]) => {
+    if (!k) { missed.push(c.name); return; }
+    if (!c.periods?.length && !c.single_segment) { if (c.warnings?.length) missed.push(`${niceName(k)} (${c.warnings[0]})`); return; }
+    lsPut('fx-seg:' + k, {gen: d.generated, symbol: c.symbol, single: c.single_segment || null, basis: c.basis || null, periods: c.periods || [], warnings: c.warnings || []});
+    if (c.symbol && !LIB[k].sym) LIB[k].sym = c.symbol;
+    markDirty(k); (c.single_segment && !c.periods?.length ? single : done).push(niceName(k));
+  });
+  libStore();
+  toast([done.length ? `Segments imported for ${done.length}: ${done.join(', ')}.` : '', single.length ? `Single segment: ${single.join(', ')}.` : '', missed.length ? `Not imported: ${missed.join('; ')}.` : ''].filter(Boolean).join(' ') || 'Nothing to import', 7000);
+  if (location.hash === '#segments') renderSegments();
+}
+function renderSegments() {
+  const d = lsGet('fx-seg:' + M.name), body = $('#sg-body');
+  const how = `<ol style="margin:6px 0 0;padding-left:18px;line-height:1.7"><li><b>Companies</b> page → <b>Export list for scripts</b>.</li><li>On your PC, double-click <code>run_segments.bat</code> in the <code>nse-segments</code> tool folder. It reads the export and pulls segment data from NSE's quarterly filings.</li><li>Click <b>Import segment file</b> here (or drop <code>plumb-segments.json</code> anywhere) to load it for all your companies at once.</li></ol>`;
+  $('#sg-src').textContent = d ? `${d.basis || ''} · from NSE quarterly filings · imported ${d.gen ? dfmt(+new Date(d.gen)) : ''}${d.symbol ? ` · ${d.symbol}` : ''}` : 'No segment data yet for this company';
+  if (!d) { $('#sg-per').hidden = true; body.innerHTML = `<div class="card"><h3 style="margin:0 0 4px">Get segment data</h3><p class="note" style="margin:0">Segment revenue, profit and capital come from the results each company files with NSE every quarter.</p>${how}</div>`; return; }
+  if (d.single && !d.periods.length) { $('#sg-per').hidden = true; body.innerHTML = `<div class="card"><h3 style="margin:0 0 6px">One business segment: ${escA(d.single)}</h3><p class="note" style="margin:0">${title()} reports a single segment, so there is nothing to break down. Its quarterly figures are on the Quarterly page. For a single-segment business, operating numbers from investor presentations (volumes, capacity, pricing) are what tell you where growth comes from.</p></div>`; return; }
+  const has = k => d.periods.some(p => p.kind === k);
+  if (!has(SGP)) SGP = has('Q') ? 'Q' : has('FY') ? 'FY' : 'H';
+  $('#sg-per').hidden = false;
+  $('#sg-per').innerHTML = ['Q', 'H', 'FY'].filter(has).map(k => `<button data-sgp="${k}" aria-pressed="${SGP === k}">${{Q: 'Quarterly', H: 'Half-yearly', FY: 'Annual'}[k]}</button>`).join('');
+  const P = d.periods.filter(p => p.kind === SGP).sort((a, b) => a.end < b.end ? -1 : 1);
+  const lab = p => { const t = new Date(p.end + 'T00:00:00'); return SGP === 'FY' ? 'FY' + String(t.getFullYear() + (t.getMonth() >= 3 ? 1 : 0)).slice(2) : ql(t); };
+  const labels = P.map(lab), last = P[P.length - 1];
+  // segments in order of latest revenue; names are matched case-insensitively so small spelling changes still line up
+  const key = n => n.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const names = []; P.slice().reverse().forEach(p => p.segments.forEach(s => { if (!names.some(n => key(n) === key(s.name))) names.push(s.name); }));
+  const lastRev = n => (last.segments.find(s => key(s.name) === key(n)) || {}).revenue ?? -Infinity;
+  names.sort((a, b) => lastRev(b) - lastRev(a));
+  const val = (p, n, m) => { const s = p.segments.find(x => key(x.name) === key(n)); return s && s[m] != null ? s[m] : null; };
+  const pal = names.map((_, i) => css(`--c${(i % 7) + 1}`));
+  const ann = SGP === 'Q' ? 4 : SGP === 'H' ? 2 : 1;
+  const cap = (p, n) => { const a = val(p, n, 'assets'), l = val(p, n, 'liabilities'); return a != null ? a - (l || 0) : null; };
+  const yoy = (p, n) => { const t = new Date(p.end + 'T00:00:00'); t.setFullYear(t.getFullYear() - 1); const q = P.find(x => Math.abs(new Date(x.end + 'T00:00:00') - t) < 20 * 864e5); const a = val(p, n, 'revenue'), b = q && val(q, n, 'revenue'); return a != null && b > 0 ? a / b - 1 : null; };
+  const totRev = last.segments.reduce((x, s) => x + Math.max(0, s.revenue || 0), 0), totRes = last.segments.reduce((x, s) => x + Math.max(0, s.result || 0), 0);
+  const hasCap = names.some(n => cap(last, n) != null);
+  const tiles = names.map((n, i) => { const r = val(last, n, 'revenue'), e = val(last, n, 'result'), c = cap(last, n), g = yoy(last, n);
+    return `<div class="kpi" style="border-top:3px solid ${pal[i]}"><div class="kh"><span>${escA(n)}</span></div><b>₹${inr(r)} Cr</b><div class="kf"><span>${pct(div(r, totRev))} of revenue${g != null ? ` · ${g >= 0 ? '+' : ''}${pct(g)} YoY` : ''}</span></div>
+      <p class="qwhy">EBIT ₹${inr(e)} Cr · margin ${pct(div(e, r))}${c != null ? ` · return on capital ${pct(div(e * ann, c))}` : ''}${e != null && totRes > 0 ? ` · ${pct(Math.max(0, e) / totRes)} of profit` : ''}</p></div>`; }).join('');
+  const warn = (d.warnings || []).filter(w => !/not read yet/.test(w)), mism = P.filter(p => p.check && p.check.ok === false);
+  body.innerHTML = `<div class="qt">${tiles}</div>
+    <div class="grid">
+      <div class="card"><div class="ch"><h3>Revenue by segment</h3><span>₹ crore, ${{Q: 'quarterly', H: 'half-yearly', FY: 'annual'}[SGP]}</span></div><div class="fig"><canvas id="ch-sg-rev"></canvas></div><p class="note">Stacked: the full bar is total segment revenue before inter-segment eliminations.</p></div>
+      <div class="card"><div class="ch"><h3>Segment margin</h3><span>EBIT ÷ segment revenue</span></div><div class="fig"><canvas id="ch-sg-mg"></canvas></div><p class="note">Segment result is profit before interest and tax, before unallocated corporate costs, so segment margins add up to more than the company's.</p></div>
+      <div class="card"><div class="ch"><h3>Share of revenue vs share of profit</h3><span>${labels[labels.length - 1]}</span></div><div class="fig"><canvas id="ch-sg-mix"></canvas></div><p class="note">A segment with a bigger share of profit than of revenue earns above-average margins. Loss-making segments show as zero profit share.</p></div>
+      ${hasCap ? `<div class="card"><div class="ch"><h3>Return on segment capital</h3><span>EBIT${ann > 1 ? ' annualised' : ''} ÷ (segment assets − liabilities)</span></div><div class="fig"><canvas id="ch-sg-roc"></canvas></div><p class="note">Shows where each rupee tied up in the business earns most. Compare with the company's ROCE and your cost of capital (${pct(COC)}).</p></div>` : ''}
+      <div class="card wide"><div class="ch"><h3>Segment figures</h3><span>₹ crore</span></div><div class="scroll"><table class="sgt"><thead><tr><th>Segment</th><th>Item</th>${labels.map(l => `<th>${l}</th>`).join('')}</tr></thead><tbody>
+        ${names.map(n => [['revenue', 'Revenue'], ['result', 'EBIT'], ['assets', 'Assets'], ['liabilities', 'Liabilities']].filter(([m]) => P.some(p => val(p, n, m) != null)).map(([m, l], j) => `<tr${j === 0 ? ' class="sgf"' : ''}><td>${j === 0 ? escA(n) : ''}</td><td>${l}</td>${P.map(p => `<td>${inr(val(p, n, m))}</td>`).join('')}</tr>`).join('')).join('')}
+        <tr class="sgf"><td>Check</td><td>Sum vs reported revenue</td>${P.map(p => `<td title="${p.check ? `segments ${inr(p.check.segment_sum)} vs reported ${inr(p.check.total)}` : ''}">${!p.check || p.check.ok == null ? '—' : p.check.ok ? '✓' : '⚠'}</td>`).join('')}</tr>
+      </tbody></table></div>
+      <p class="note">${mism.length ? `⚠ In ${mism.map(lab).join(', ')}, segment revenues don't add up to reported revenue within 3%: usually inter-segment sales or an "unallocated" line; check the filing. ` : ''}${warn.length ? `Notes from the script: ${warn.map(escA).join(' · ')}. ` : ''}Source: each quarter's filing with NSE (XBRL)${last.filing ? `; <a href="${escA(last.filing)}" target="_blank" rel="noopener">latest filing</a>` : ''}. History starts with the March 2025 quarter, when NSE moved to the current filing format.</p></div>
+    </div>`;
+  const stack = c => { c.options.scales.x.stacked = true; c.options.scales.y.stacked = true; return c; };
+  draw('ch-sg-rev', stack(base('bar', labels, names.map((n, i) => Object.assign(bar(n, P.map(p => val(p, n, 'revenue')), pal[i]), {borderRadius: 3})), 'inr')));
+  draw('ch-sg-mg', base('line', labels, names.map((n, i) => Object.assign(line(n, P.map(p => { const r = val(p, n, 'revenue'); return r > 0 ? div(val(p, n, 'result'), r) : null; }), pal[i]), {fill: false, spanGaps: true})), 'pct'));
+  draw('ch-sg-mix', base('bar', names, [bar('Share of revenue', names.map(n => div(Math.max(0, val(last, n, 'revenue') || 0), totRev)), css('--c1')), bar('Share of profit', names.map(n => totRes > 0 ? Math.max(0, val(last, n, 'result') || 0) / totRes : null), css('--c3'))], 'pct'));
+  if (hasCap) draw('ch-sg-roc', base('line', labels, names.map((n, i) => Object.assign(line(n, P.map(p => { const c = cap(p, n), e = val(p, n, 'result'); return c > 0 && e != null ? e * ann / c : null; }), pal[i]), {fill: false, spanGaps: true})), 'pct'));
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-sgp]'); if (!b) return; SGP = b.dataset.sgp; renderSegments(); });
+
+$('#sg-file').addEventListener('change', e => { [...e.target.files].forEach(importSegments); e.target.value = ''; });
+
 function renderQuality() {
   const F = flagsCalc(), red = F.filter(f => f.lvl === 'red'), amb = F.filter(f => f.lvl === 'amber'), ok = F.filter(f => f.lvl === 'ok');
   const LBL = {red: 'Red flag', amber: 'Watch', ok: 'Passed'};
@@ -1797,7 +1878,7 @@ const packRows = rows => rows.map(r => (r || []).map(v => v instanceof Date ? `D
 function libStore() { try { localStorage.setItem('fx-lib', JSON.stringify(LIB)); return true; } catch (e) { toast('Browser storage is full; remove a saved company'); return false; } }
 function libSave() {
   const k = M.name, isNew = !LIB[k], rows = packRows(orig), changed = isNew || JSON.stringify(LIB[k].rows) !== JSON.stringify(rows) || LIB[k].mod !== CUR.mod;
-  LIB[k] = {rows, file: fileName, ts: LIB[k]?.ts || Date.now(), seen: Date.now(), mod: CUR.mod, up: CUR.up, pin: LIB[k]?.pin, sector: LIB[k]?.sector, col: LIB[k]?.col, chg: LIB[k]?.chg}; libStore();
+  LIB[k] = {rows, file: fileName, ts: LIB[k]?.ts || Date.now(), seen: Date.now(), mod: CUR.mod, up: CUR.up, pin: LIB[k]?.pin, sector: LIB[k]?.sector, sym: LIB[k]?.sym, col: LIB[k]?.col, chg: LIB[k]?.chg}; libStore();
   if (isNew && typeof CMP !== 'undefined' && CMP.size && CMP.size < 6) CMP.add(k);
   if (CUR.sample) { if (!SYU[k]) { SYU[k] = 1; syncSave(); } } else if (changed) markDirty(k);
 }
@@ -1920,7 +2001,7 @@ async function unseal(s) {
 }
 const lsGet = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
 const lsPut = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const bundle = name => LIB[name] ? {name, lib: LIB[name], edits: lsGet('fx-edits:' + name), soic: lsGet('fx-soic:' + name), px: lsGet('fx-px:' + name), scn: lsGet('fx-scn:' + name)} : {name, deleted: true};
+const bundle = name => LIB[name] ? {name, lib: LIB[name], edits: lsGet('fx-edits:' + name), soic: lsGet('fx-soic:' + name), px: lsGet('fx-px:' + name), scn: lsGet('fx-scn:' + name), seg: lsGet('fx-seg:' + name)} : {name, deleted: true};
 function markDirty(name, when) {
   if (syncApplying || !name) return;
   SYU[name] = when || Date.now(); syncSave();
@@ -1951,8 +2032,8 @@ async function syncPull(full) {
       remote[b.name] = it.u;
       if (it.u > (SYU[b.name] || 0)) {
         syncApplying = true;
-        if (b.deleted) { delete LIB[b.name]; ['fx-edits:', 'fx-soic:', 'fx-px:', 'fx-scn:'].forEach(p => lsPut(p + b.name, null)); }
-        else { LIB[b.name] = b.lib; lsPut('fx-edits:' + b.name, b.edits); lsPut('fx-soic:' + b.name, b.soic); lsPut('fx-px:' + b.name, b.px); if ('scn' in b) lsPut('fx-scn:' + b.name, b.scn); }
+        if (b.deleted) { delete LIB[b.name]; ['fx-edits:', 'fx-soic:', 'fx-px:', 'fx-scn:', 'fx-seg:'].forEach(p => lsPut(p + b.name, null)); }
+        else { LIB[b.name] = b.lib; lsPut('fx-edits:' + b.name, b.edits); lsPut('fx-soic:' + b.name, b.soic); lsPut('fx-px:' + b.name, b.px); if ('scn' in b) lsPut('fx-scn:' + b.name, b.scn); if ('seg' in b) lsPut('fx-seg:' + b.name, b.seg); }
         syncApplying = false; SYU[b.name] = it.u; changed.add(b.name);
       }
       SY.s = Math.max(SY.s || 0, it.s);
@@ -2357,7 +2438,7 @@ function snapC(k) {   // cached snapshot for companies other than the open one
 }
 function libRemove(k) {
   delete LIB[k]; libStore(); SNAPC.delete(k);
-  try { ['fx-edits:', 'fx-soic:', 'fx-px:', 'fx-scn:'].forEach(p => localStorage.removeItem(p + k)); } catch (er) {}
+  try { ['fx-edits:', 'fx-soic:', 'fx-px:', 'fx-scn:', 'fx-seg:'].forEach(p => localStorage.removeItem(p + k)); } catch (er) {}
   markDirty(k); CMP.delete(k);
   if (k === M.name) { const nx = libKeys()[0]; if (nx) { M.name = '__gone__'; openLib(nx); } else load(SAMPLE, 'Cenlub Industries', '', {mod: Date.parse('2026-11-15T02:45:14Z'), sample: true}); }
 }
@@ -2432,12 +2513,13 @@ function renderCompanies() {
     : k === 'mcap' ? inr(r.mcap) : k === 'pe' || k === 'de' ? fmt(r[k], 'x') : k === 'roce' || k === 'sg' ? pct(r[k])
     : k === 'q' ? (r.qd.q ? ql(r.qd.q) : fy(r.qd.a)) + (r.qd.stale ? ' <span class="stale" style="margin-left:4px">old</span>' : '') : r.mod ? dfmt(r.mod) : '—';
   const allSel = rows.length && rows.every(r => COSEL.has(r.k));
-  $('#co-tab').innerHTML = `<thead><tr><th class="cb"><input type="checkbox" id="co-all" aria-label="Select all"${allSel ? ' checked' : ''}></th><th>Company</th><th>Sector</th>${COCOL.map(([k, l]) => `<th data-cs="${k}" class="${COS.k === k ? 'sorted' : ''}">${l}${COS.k === k ? (COS.d > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>` +
+  $('#co-tab').innerHTML = `<thead><tr><th class="cb"><input type="checkbox" id="co-all" aria-label="Select all"${allSel ? ' checked' : ''}></th><th>Company</th><th>Sector</th><th title="Used by the segment script; blank = found automatically">NSE symbol</th>${COCOL.map(([k, l]) => `<th data-cs="${k}" class="${COS.k === k ? 'sorted' : ''}">${l}${COS.k === k ? (COS.d > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>` +
     rows.map(r => `<tr class="${r.k === M.name ? 'cur' : ''}"><td class="cb"><input type="checkbox" data-sel="${escA(r.k)}" aria-label="Select ${escA(r.name)}"${COSEL.has(r.k) ? ' checked' : ''}></td>
       <td><span class="who"><button class="pin${r.pin ? ' on' : ''}" data-pin="${escA(r.k)}" aria-label="${r.pin ? 'Unpin' : 'Pin'} ${escA(r.name)}" title="${r.pin ? 'Unpin from sidebar' : 'Pin to sidebar'}">${r.pin ? '★' : '☆'}</button><i style="background:var(${colOf(r.k)})"></i><button class="lnk2" data-open="${escA(r.k)}">${r.name}</button></span></td>
       <td><input class="secin" list="co-secs" data-sec="${escA(r.k)}" value="${escA(r.sector)}" placeholder="Add sector" aria-label="Sector for ${escA(r.name)}"></td>
+      <td><input class="secin symin" data-sym="${escA(r.k)}" value="${escA(LIB[r.k].sym || '')}" placeholder="auto" aria-label="NSE symbol for ${escA(r.name)}" title="NSE symbol, used by the segment script. Leave blank to let the script find it." spellcheck="false" autocapitalize="characters"></td>
       ${COCOL.map(([k]) => `<td>${cell(r, k)}</td>`).join('')}</tr>`).join('') + '</tbody>';
-  if (!rows.length) $('#co-tab').insertAdjacentHTML('beforeend', `<tbody><tr><td colspan="${COCOL.length + 3}" style="text-align:center;padding:24px;color:var(--muted)">No company matches these filters.</td></tr></tbody>`);
+  if (!rows.length) $('#co-tab').insertAdjacentHTML('beforeend', `<tbody><tr><td colspan="${COCOL.length + 4}" style="text-align:center;padding:24px;color:var(--muted)">No company matches these filters.</td></tr></tbody>`);
 }
 $('#co-bar').addEventListener('input', renderCompanies);
 $('#co-bar').addEventListener('change', renderCompanies);
@@ -2452,6 +2534,13 @@ $('#co-tab').addEventListener('change', e => {
   if (t.id === 'co-all') { const vis = [...document.querySelectorAll('#co-tab [data-sel]')].map(x => x.dataset.sel); vis.forEach(k => t.checked ? COSEL.add(k) : COSEL.delete(k)); renderCompanies(); return; }
   if (t.dataset.sel) { t.checked ? COSEL.add(t.dataset.sel) : COSEL.delete(t.dataset.sel); coRmArm = 0; renderCompanies(); return; }
   if (t.dataset.sec != null) { libMeta(t.dataset.sec, {sector: t.value.trim()}); renderCompanies(); }
+  if (t.dataset.sym != null) { const v = t.value.trim().toUpperCase().replace(/[^A-Z0-9&-]/g, ''); t.value = v; libMeta(t.dataset.sym, {sym: v || undefined}); }
+});
+function saveJSON(obj, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(obj, null, 1)], {type: 'application/json'})); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+$('#co-exp').addEventListener('click', () => {
+  const companies = libKeys().map(k => ({name: k, display: niceName(k), symbol: LIB[k].sym || '', sector: LIB[k].sector || ''}));
+  saveJSON({kind: 'plumb-companies', version: 1, exported: new Date().toISOString(), companies}, 'plumb-companies.json');
+  toast(`Exported ${companies.length} compan${companies.length === 1 ? 'y' : 'ies'}. Run the segment script, then import its file on the Segments page.`, 5000);
 });
 $('#co-cmp').addEventListener('click', () => { CMP.clear(); libKeys().filter(k => COSEL.has(k)).slice(0, 6).forEach(k => CMP.add(k)); if (COSEL.size > 6) toast('Comparing the first 6 selected'); location.hash = 'compare'; });
 $('#co-rm').addEventListener('click', () => {
