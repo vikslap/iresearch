@@ -191,6 +191,7 @@ td svg{display:block}
 .qv{border-left:4px solid var(--q,var(--c1))}.qv h3{margin:0 0 8px;font-size:18px;line-height:1.35}.qv ul{margin:6px 0 0;padding-left:18px;color:var(--ink);font-size:14px;line-height:1.6}.qv li{margin:2px 0}.qv .qlink{margin:12px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:14px;color:var(--ink)}.qv .qset{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)}.qv .qset input{width:64px}
 .guide{margin-top:12px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--c1) 8%,transparent);border:1px solid color-mix(in srgb,var(--c1) 25%,transparent);font-size:13px;line-height:1.55;color:var(--ink)}.guide b{color:var(--c1)}.guide ol{margin:6px 0 0;padding-left:18px}
 .sgt td:first-child{font-weight:600;white-space:nowrap}.sgt tr.sgf td{border-top:2px solid var(--line)}.sgt td,.sgt th{text-align:right}.sgt td:first-child,.sgt td:nth-child(2),.sgt th:first-child,.sgt th:nth-child(2){text-align:left}
+.pjt{width:100%}.pjt th,.pjt td{text-align:right;white-space:nowrap}.pjt td:first-child,.pjt th:first-child{text-align:left;position:sticky;left:0;background:var(--card)}.pjt tr.pjb td{font-weight:700}.pjt th[colspan]{text-align:center}.pjt .pjg{border-left:1px solid var(--line)}.pjt td.pj-base{background:color-mix(in srgb,var(--c1) 5%,transparent)}.pja td{padding:4px 6px}.pj-in{width:74px;text-align:right;padding:5px 7px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}.pj-in:focus{outline:2px solid var(--c1);outline-offset:1px}.pj-shared{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-top:10px;font-size:13px}.pj-shared .pj-in{width:90px;display:block;margin-top:3px}.linkish{background:none;border:0;padding:0;color:var(--c1);font:inherit;cursor:pointer;text-decoration:underline}
 .qchip{font-style:normal;font-size:11px;font-weight:700;color:var(--q);background:color-mix(in srgb,var(--q) 13%,transparent);padding:2px 8px;border-radius:999px;white-space:nowrap}
 .qdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--q);margin-right:7px;vertical-align:1px}
 .qgrp h3{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px}.qgrp .kpi .kh{display:flex;justify-content:space-between;gap:6px;align-items:flex-start}.qgrp .kpi.nm>b{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}.qwhy{margin:2px 0 0;font-size:12px;line-height:1.45;color:var(--ink);opacity:.85}
@@ -344,6 +345,7 @@ section{animation:fade .25s ease}
     <a href="#quality"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>Quality</a>
     <a href="#segments"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3v9h9"/><path d="M21 12a9 9 0 1 1-9-9"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg>Segments</a>
     <a href="#valuation"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Valuation</a>
+    <a href="#projections"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M3 20h18"/><path d="M4 16l5-5 4 3 7-8"/><path d="M15 6h5v5" stroke-dasharray="2 2"/></svg>Projections</a>
     <a href="#score"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>SOIC score</a>
     <a href="#compare"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 20V10M12 20V4M18 20v-7"/></svg>Compare</a>
     <a href="#companies"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>Companies</a>
@@ -355,7 +357,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 17 Nov 2026, 10:11 IST</p>
+    <p class="tiny" id="build">Version: 21 Nov 2026, 09:47 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -402,6 +404,8 @@ section{animation:fade .25s ease}
     <div class="rbar"><p>Open a group to see a chart for every ratio in it. Each chart can be copied as an image or as data.</p><div style="display:flex;gap:8px"><button class="sm" id="r-open">Expand all</button><button class="sm" id="r-close">Collapse all</button></div></div>
     <div id="rgroups"></div>
   </section>
+
+  <section id="projections" hidden><div id="pj-body"></div></section>
 
   <section id="segments" hidden>
     <div class="card cobar" style="justify-content:space-between"><p class="note" id="sg-src" style="margin:0"></p><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><div class="seg" id="sg-per" role="group" aria-label="Period"></div><label class="btn sm" for="sg-file" style="cursor:pointer">Import segment file</label><input type="file" id="sg-file" accept=".json,application/json" hidden></div></div>
@@ -1068,8 +1072,8 @@ function load(rows, name, srcText, meta = {}) {
   recompute();
 }
 
-const VIEWS = ['overview', 'quarterly', 'ratios', 'quality', 'segments', 'valuation', 'score', 'compare', 'companies', 'sectors', 'data'];
-const VNAME = {overview: 'Overview', quarterly: 'Quarterly results', ratios: 'Ratio analysis', quality: 'Quality and returns', segments: 'Segments', valuation: 'Valuation', score: 'SOIC score', compare: 'Compare companies', companies: 'Saved companies', sectors: 'Sector view', data: 'Edit data'};
+const VIEWS = ['overview', 'quarterly', 'ratios', 'quality', 'segments', 'valuation', 'projections', 'score', 'compare', 'companies', 'sectors', 'data'];
+const VNAME = {overview: 'Overview', quarterly: 'Quarterly results', ratios: 'Ratio analysis', quality: 'Quality and returns', segments: 'Segments', projections: 'Projections', valuation: 'Valuation', score: 'SOIC score', compare: 'Compare companies', companies: 'Saved companies', sectors: 'Sector view', data: 'Edit data'};
 let lastView = null;
 function renderView() {
   if (!M) return;
@@ -1078,7 +1082,7 @@ function renderView() {
   document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + v));
   $('#crumb').textContent = VNAME[v]; $('#tb-view').textContent = VNAME[v]; $('#tb-name').textContent = title(); $('#tb-av').textContent = $('#av').textContent; $('#tb-av').style.background = $('#av').style.background || ''; closeDrawer(); $('#kpis').hidden = v !== 'overview';
   if (lastView !== v && lastView !== null) scrollTo(0, 0); lastView = v;
-  ({overview: renderOverview, quarterly: renderQuarterly, ratios: renderRatios, quality: renderQuality, segments: renderSegments, valuation: renderValuation, score: renderScore, compare: renderCompare, companies: renderCompanies, sectors: renderSectors, data: renderData})[v]();
+  ({overview: renderOverview, quarterly: renderQuarterly, ratios: renderRatios, quality: renderQuality, segments: renderSegments, valuation: renderValuation, projections: renderProjections, score: renderScore, compare: renderCompare, companies: renderCompanies, sectors: renderSectors, data: renderData})[v]();
 }
 
 async function sheetRows(f) {
@@ -1681,6 +1685,90 @@ document.addEventListener('click', e => { const b = e.target.closest('[data-sgp]
 
 $('#sg-file').addEventListener('change', e => { [...e.target.files].forEach(importSegments); e.target.value = ''; });
 
+// ---- Projections: three-year P&L under bear, base and bull cases ----
+const PJS = [['bear', 'Bear', '--c2'], ['base', 'Base', '--c1'], ['bull', 'Bull', '--c3']];
+function projDefaults() {
+  const L = C.n - 1, S = C.S, k = Math.min(3, L);
+  const g = [...Array(k).keys()].map(j => L - j).map(i => div(S[i] - S[i - 1], S[i - 1])).filter(v => v != null && isFinite(v));
+  const m = [...Array(k).keys()].map(j => L - j).map(i => div(C.EBITDA[i], S[i])).filter(v => v != null && isFinite(v));
+  const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0, r1 = v => Math.round(v * 1000) / 10;   // as % with one decimal
+  const last3 = a => [...Array(k).keys()].map(j => a[L - j]).filter(v => v != null);
+  const tx = [...Array(k).keys()].map(j => L - j).map(i => C.PBT[i] > 0 ? div(C.TX[i], C.PBT[i]) : null).filter(v => v != null && v >= 0 && v < .6);
+  const gB = g.length ? avg(g) : 0, gL = g.length ? Math.min(...g) : 0, mB = m.length ? avg(m) : 0, mL = m.length ? Math.min(...m) : 0;
+  const three = v => [v, v, v];
+  return {
+    hist: {g, m, years: [...Array(k).keys()].map(j => L - j)},
+    sc: {bear: {g: three(r1(gL)), m: three(r1(mL))}, base: {g: three(r1(gB)), m: three(r1(mB))}, bull: {g: three(r1(gB)), m: three(r1(mB))}},
+    oi: Math.round(avg(last3(C.OI)) * 10) / 10, dep: r1(avg([...Array(k).keys()].map(j => L - j).map(i => div(C.D[i], S[i])).filter(v => v != null))),
+    int: Math.round((C.I[L] || 0) * 10) / 10, tax: tx.length ? r1(avg(tx)) : 25.2};
+}
+function projState() { const d = projDefaults(), s = lsGet('fx-prj:' + M.name); return {d, p: s ? Object.assign({}, d, s, {sc: Object.assign({}, d.sc, s.sc)}) : d, saved: !!s}; }
+function projSave(p) { const {hist, ...keep} = p; lsPut('fx-prj:' + M.name, keep); markDirty(M.name); }
+function projRun(p) {
+  const L = C.n - 1, sh = C.SH[L], out = {};
+  PJS.forEach(([s]) => { let sales = C.S[L]; out[s] = [0, 1, 2].map(y => {
+    const g = (+p.sc[s].g[y] || 0) / 100, m = (+p.sc[s].m[y] || 0) / 100; sales = sales * (1 + g);
+    const ebitda = sales * m, dep = sales * (+p.dep || 0) / 100, oi = +p.oi || 0, int = +p.int || 0, pbt = ebitda + oi - dep - int, tax = pbt > 0 ? pbt * (+p.tax || 0) / 100 : 0, pat = pbt - tax;
+    return {sales, exp: sales - ebitda, ebitda, m, oi, dep, ebit: ebitda + oi - dep, int, pbt, tax, pat, eps: div(pat, sh), g}; }); });
+  return out;
+}
+function renderProjections() {
+  const {d, p, saved} = projState(), L = C.n - 1, Y = M.secs.pl.dates.map(fy);
+  const nd = new Date(M.secs.pl.dates[L]); const lab = [1, 2, 3].map(k => { const t = new Date(nd); t.setFullYear(t.getFullYear() + k); return fy(t); });
+  const h = d.hist, histTxt = h.years.length ? h.years.slice().reverse().map((i, j) => `${Y[i]} ${pct(div(C.S[i] - C.S[i - 1], C.S[i - 1]))}`).join(', ') : '';
+  const mTxt = h.years.length ? h.years.slice().reverse().map(i => `${Y[i]} ${pct(div(C.EBITDA[i], C.S[i]))}`).join(', ') : '';
+  const inp = (s, f, y) => `<input class="pj-in" type="number" step="0.5" inputmode="decimal" data-pj="${s}.${f}.${y}" value="${p.sc[s][f][y]}" aria-label="${s} ${f === 'g' ? 'sales growth' : 'EBITDA margin'} ${lab[y]}">`;
+  const one = (f, v, unit, tip) => `<label class="mini-f" title="${tip}">${unit}<input class="pj-in" type="number" step="0.5" inputmode="decimal" data-pjx="${f}" value="${v}"></label>`;
+  $('#pj-body').innerHTML = `
+    <div class="card"><div class="ch"><h3>Assumptions</h3><span>${saved ? 'your saved figures · ' : 'from the last 3 years · '}<button class="linkish" id="pj-reset">Reset to history</button></span></div>
+      <div class="scroll"><table class="pjt pja"><thead><tr><th></th>${PJS.map(([s, n, c]) => `<th colspan="3" class="pjg" style="color:var(${c})">${n}</th>`).join('')}</tr><tr><th></th>${PJS.map(() => lab.map((l, y) => `<th${y ? '' : ' class="pjg"'}>${l}</th>`).join('')).join('')}</tr></thead><tbody>
+        <tr><td>Sales growth %</td>${PJS.map(([s]) => [0, 1, 2].map(y => `<td${y ? '' : ' class="pjg"'}>${inp(s, 'g', y)}</td>`).join('')).join('')}</tr>
+        <tr><td>EBITDA margin %</td>${PJS.map(([s]) => [0, 1, 2].map(y => `<td${y ? '' : ' class="pjg"'}>${inp(s, 'm', y)}</td>`).join('')).join('')}</tr>
+      </tbody></table></div>
+      <p class="note">Sales growth in the last 3 years: ${histTxt || '—'}. <b>Bear</b> starts at the lowest of these, <b>base</b> at their average, and <b>bull</b> is yours to set (it starts equal to base). EBITDA margins were ${mTxt || '—'}, and follow the same rule. Change any cell; it's saved for this company.</p>
+      <div class="pj-shared"><b>Same in all cases:</b>${one('oi', p.oi, 'Other income, ₹ Cr/yr', '3-year average, kept flat')}${one('dep', p.dep, 'Depreciation, % of sales', '3-year average')}${one('int', p.int, 'Interest, ₹ Cr/yr', 'Last year, kept flat')}${one('tax', p.tax, 'Tax rate, %', '3-year average effective rate')}</div></div>
+    <div class="card"><div class="ch"><h3>Projected profit and loss</h3><span>₹ crore · ${Y[L]} actual, then ${lab[0]}–${lab[2]}</span></div><div class="scroll" id="pj-tbl"></div><p class="note" id="pj-note"></p></div>
+    <div class="grid"><div class="card"><div class="ch"><h3>Net profit: history and projections</h3><span>₹ crore</span></div><div class="fig"><canvas id="ch-pj-pat"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>Sales: history and projections</h3><span>₹ crore</span></div><div class="fig"><canvas id="ch-pj-s"></canvas></div></div></div>`;
+  projDraw(p, lab);
+}
+function projDraw(p, lab) {
+  const L = C.n - 1, Y = M.secs.pl.dates.map(fy), R = projRun(p), A = {sales: C.S[L], ebitda: C.EBITDA[L], oi: C.OI[L], dep: C.D[L], int: C.I[L], pbt: C.PBT[L], tax: C.TX[L], pat: C.PAT[L], eps: C.EPS[L]};
+  A.exp = A.sales - A.ebitda; A.m = div(A.ebitda, A.sales); A.ebit = A.ebitda + A.oi - A.dep;
+  const rows = [['sales', 'Sales', 1], ['g', 'Sales growth', 0, 'pct'], ['exp', 'Operating expenses'], ['ebitda', 'EBITDA', 1], ['m', 'EBITDA margin', 0, 'pct'], ['oi', 'Other income'], ['dep', 'Depreciation'], ['ebit', 'EBIT'], ['int', 'Interest'], ['pbt', 'Profit before tax', 1], ['tax', 'Tax'], ['pat', 'Net profit', 1], ['pm', 'Net margin', 0, 'pct'], ['eps', 'EPS, ₹', 1], ['epsg', 'EPS growth', 0, 'pct']];
+  const prev = (s, y, k) => y ? R[s][y - 1][k] : A[k];
+  const cell = (s, y, k) => { const r = R[s][y]; return k === 'pm' ? div(r.pat, r.sales) : k === 'epsg' ? (prev(s, y, 'eps') > 0 ? r.eps / prev(s, y, 'eps') - 1 : null) : r[k]; };
+  const act = k => k === 'pm' ? div(A.pat, A.sales) : k === 'g' ? div(C.S[L] - C.S[L - 1], C.S[L - 1]) : k === 'epsg' ? (C.EPS[L - 1] > 0 ? C.EPS[L] / C.EPS[L - 1] - 1 : null) : A[k];
+  const f = (v, t) => v == null || !isFinite(v) ? '—' : t === 'pct' ? pct(v) : inr(v);
+  $('#pj-tbl').innerHTML = `<table class="pjt"><thead><tr><th></th><th>${Y[L]}</th>${lab.map(l => `<th colspan="3" class="pjg">${l}</th>`).join('')}</tr><tr><th></th><th>Actual</th>${lab.map(() => PJS.map(([s, n, c]) => `<th${s === 'bear' ? ' class="pjg"' : ''} style="color:var(${c})">${n}</th>`).join('')).join('')}</tr></thead><tbody>` +
+    rows.map(([k, n, b, t]) => `<tr${b ? ' class="pjb"' : ''}><td>${n}</td><td>${f(act(k), t)}</td>${[0, 1, 2].map(y => PJS.map(([s]) => `<td class="pj-${s}${s === 'bear' ? ' pjg' : ''}">${f(cell(s, y, k), t)}</td>`).join('')).join('')}</tr>`).join('') + '</tbody></table>';
+  // what each case means for the share price
+  const px = C.PR[L], peUse = C.now && C.now.mcap && C.PAT[L] > 0 ? C.now.mcap / C.PAT[L] : div(C.MC[L], C.PAT[L]);   // P/E on the same year the projections start from
+  const cagr = s => A.pat > 0 && R[s][2].pat > 0 ? Math.pow(R[s][2].pat / A.pat, 1 / 3) - 1 : null;
+  const price = C.now && C.now.price || px, pxAt = s => peUse > 0 && price && R[s][2].pat > 0 ? price * R[s][2].pat / C.PAT[L] : null;   // same P/E, same share count
+  const ret = s => pxAt(s) && price ? Math.pow(pxAt(s) / price, 1 / 3) - 1 : null;
+  $('#pj-note').innerHTML = `Net profit grows <b>${PJS.map(([s, n]) => `${pct(cagr(s))} a year (${n.toLowerCase()})`).join(', ')}</b> to ${lab[2]}.` +
+    (peUse > 0 && price ? ` If the P/E stays at today's ${peUse.toFixed(1)}× (today's price on ${Y[L]} profit), the share price would be about ${PJS.map(([s, n]) => `₹${inr(pxAt(s), 0)} (${n.toLowerCase()}, ${ret(s) != null ? pct(ret(s)) + ' a year' : '—'})`).join(', ')} by ${lab[2]}, before dividends.` : '') +
+    (DCFX && DCFX.imp != null ? ` For comparison, today's price assumes about ${pct(DCFX.imp)} growth a year in years 1–5 (reverse DCF on the Valuation page).` : '') +
+    ` Projections start from ${Y[L]}'s actual figures; ${Y[L]} interest and other income are kept flat unless you change them.`;
+  // charts: history plus the three cases
+  const H = Math.min(6, C.n), hl = Y.slice(-H), labels = hl.concat(lab), pad = Array(H - 1).fill(null);
+  const ser = (k, hist) => { const ds = [Object.assign(line('Actual', hist.slice(-H).concat([null, null, null]), css('--ink')), {fill: false, borderWidth: 2.5})];
+    PJS.forEach(([s, n, c]) => ds.push(Object.assign(line(n, pad.concat([hist[hist.length - 1]], R[s].map(r => r[k])), css(c), [6, 4]), {fill: false, spanGaps: false}))); return ds; };
+  draw('ch-pj-pat', base('line', labels, ser('pat', C.PAT), 'cr'));
+  draw('ch-pj-s', base('line', labels, ser('sales', C.S), 'cr'));
+}
+document.addEventListener('input', e => {
+  const t = e.target; if (!t.matches || !t.matches('.pj-in')) return;
+  const {p} = projState(), v = parseFloat(t.value);
+  if (t.dataset.pj) { const [s, f, y] = t.dataset.pj.split('.'); p.sc[s][f][+y] = isFinite(v) ? v : 0; }
+  else p[t.dataset.pjx] = isFinite(v) ? v : 0;
+  projSave(p);
+  const L = C.n - 1, nd = new Date(M.secs.pl.dates[L]); projDraw(p, [1, 2, 3].map(k => { const x = new Date(nd); x.setFullYear(x.getFullYear() + k); return fy(x); }));
+  const r = $('#pj-reset'); if (r) r.parentElement.firstChild.textContent = 'your saved figures · ';
+});
+document.addEventListener('click', e => { if (e.target.id !== 'pj-reset') return; lsPut('fx-prj:' + M.name, null); markDirty(M.name); renderProjections(); toast('Projections reset to the last 3 years'); });
+
 function renderQuality() {
   const F = flagsCalc(), red = F.filter(f => f.lvl === 'red'), amb = F.filter(f => f.lvl === 'amber'), ok = F.filter(f => f.lvl === 'ok');
   const LBL = {red: 'Red flag', amber: 'Watch', ok: 'Passed'};
@@ -2007,7 +2095,7 @@ async function unseal(s) {
 }
 const lsGet = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
 const lsPut = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const bundle = name => LIB[name] ? {name, lib: LIB[name], edits: lsGet('fx-edits:' + name), soic: lsGet('fx-soic:' + name), px: lsGet('fx-px:' + name), scn: lsGet('fx-scn:' + name), seg: lsGet('fx-seg:' + name)} : {name, deleted: true};
+const bundle = name => LIB[name] ? {name, lib: LIB[name], edits: lsGet('fx-edits:' + name), soic: lsGet('fx-soic:' + name), px: lsGet('fx-px:' + name), scn: lsGet('fx-scn:' + name), seg: lsGet('fx-seg:' + name), prj: lsGet('fx-prj:' + name)} : {name, deleted: true};
 function markDirty(name, when) {
   if (syncApplying || !name) return;
   SYU[name] = when || Date.now(); syncSave();
@@ -2038,8 +2126,8 @@ async function syncPull(full) {
       remote[b.name] = it.u;
       if (it.u > (SYU[b.name] || 0)) {
         syncApplying = true;
-        if (b.deleted) { delete LIB[b.name]; ['fx-edits:', 'fx-soic:', 'fx-px:', 'fx-scn:', 'fx-seg:'].forEach(p => lsPut(p + b.name, null)); }
-        else { LIB[b.name] = b.lib; lsPut('fx-edits:' + b.name, b.edits); lsPut('fx-soic:' + b.name, b.soic); lsPut('fx-px:' + b.name, b.px); if ('scn' in b) lsPut('fx-scn:' + b.name, b.scn); if ('seg' in b) lsPut('fx-seg:' + b.name, b.seg); }
+        if (b.deleted) { delete LIB[b.name]; ['fx-edits:', 'fx-soic:', 'fx-px:', 'fx-scn:', 'fx-seg:', 'fx-prj:'].forEach(p => lsPut(p + b.name, null)); }
+        else { LIB[b.name] = b.lib; lsPut('fx-edits:' + b.name, b.edits); lsPut('fx-soic:' + b.name, b.soic); lsPut('fx-px:' + b.name, b.px); if ('scn' in b) lsPut('fx-scn:' + b.name, b.scn); if ('seg' in b) lsPut('fx-seg:' + b.name, b.seg); if ('prj' in b) lsPut('fx-prj:' + b.name, b.prj); }
         syncApplying = false; SYU[b.name] = it.u; changed.add(b.name);
       }
       SY.s = Math.max(SY.s || 0, it.s);
@@ -2444,7 +2532,7 @@ function snapC(k) {   // cached snapshot for companies other than the open one
 }
 function libRemove(k) {
   delete LIB[k]; libStore(); SNAPC.delete(k);
-  try { ['fx-edits:', 'fx-soic:', 'fx-px:', 'fx-scn:', 'fx-seg:'].forEach(p => localStorage.removeItem(p + k)); } catch (er) {}
+  try { ['fx-edits:', 'fx-soic:', 'fx-px:', 'fx-scn:', 'fx-seg:', 'fx-prj:'].forEach(p => localStorage.removeItem(p + k)); } catch (er) {}
   markDirty(k); CMP.delete(k);
   if (k === M.name) { const nx = libKeys()[0]; if (nx) { M.name = '__gone__'; openLib(nx); } else load(SAMPLE, 'Cenlub Industries', '', {mod: Date.parse('2026-11-15T02:45:14Z'), sample: true}); }
 }
