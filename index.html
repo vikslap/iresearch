@@ -357,7 +357,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 21 Nov 2026, 10:09 IST</p>
+    <p class="tiny" id="build">Version: 21 Nov 2026, 13:31 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -2652,6 +2652,8 @@ function renderCompanies() {
   rows.sort((a, b) => b.pin - a.pin || (((a[COS.k] ?? -Infinity * COS.d) > (b[COS.k] ?? -Infinity * COS.d) ? 1 : (a[COS.k] ?? -Infinity * COS.d) < (b[COS.k] ?? -Infinity * COS.d) ? -1 : 0) * COS.d) || a.name.localeCompare(b.name));
   [...COSEL].forEach(k => { if (!LIB[k]) COSEL.delete(k); });
   $('#co-count').textContent = rows.length === all.length ? `${all.length} saved compan${all.length === 1 ? 'y' : 'ies'}` : `Showing ${rows.length} of ${all.length}`;
+  $('#co-exp').textContent = COSEL.size ? `Export ${COSEL.size} selected for scripts` : 'Export all for scripts';
+  $('#co-exp').title = COSEL.size ? 'Saves plumb-companies.json with only the ticked companies, for the segment script' : 'Saves plumb-companies.json with every company. Tick companies first to export only those.';
   $('#co-cmp').disabled = COSEL.size < 2; $('#co-cmp').textContent = COSEL.size >= 2 ? `Compare ${Math.min(6, COSEL.size)} selected` : 'Compare selected';
   $('#co-rm').disabled = !COSEL.size; $('#co-rm').textContent = coRmArm > Date.now() ? `Click again to remove ${COSEL.size}` : COSEL.size ? `Remove ${COSEL.size} selected` : 'Remove selected';
   const cell = (r, k) => k === 'soic' ? `<div class="sbarc">${r.soic}<div class="trk"><i style="width:${Math.max(0, r.soic) / r.max * 100}%;background:var(${colOf(r.k)})"></i></div></div>`
@@ -2683,9 +2685,9 @@ $('#co-tab').addEventListener('change', e => {
 });
 function saveJSON(obj, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(obj, null, 1)], {type: 'application/json'})); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
 $('#co-exp').addEventListener('click', () => {
-  const companies = libKeys().map(k => ({name: k, display: niceName(k), symbol: LIB[k].sym || '', sector: LIB[k].sector || ''}));
+  const companies = libKeys().filter(k => !COSEL.size || COSEL.has(k)).map(k => ({name: k, display: niceName(k), symbol: LIB[k].sym || '', sector: LIB[k].sector || ''}));
   saveJSON({kind: 'plumb-companies', version: 1, exported: new Date().toISOString(), companies}, 'plumb-companies.json');
-  toast(`Exported ${companies.length} compan${companies.length === 1 ? 'y' : 'ies'}. Run the segment script, then import its file on the Segments page.`, 5000);
+  toast(`Exported ${companies.length} ${COSEL.size ? 'selected ' : ''}compan${companies.length === 1 ? 'y' : 'ies'}. Run the segment script, then import its file on the Segments page.`, 5000);
 });
 $('#co-cmp').addEventListener('click', () => { CMP.clear(); libKeys().filter(k => COSEL.has(k)).slice(0, 6).forEach(k => CMP.add(k)); if (COSEL.size > 6) toast('Comparing the first 6 selected'); location.hash = 'compare'; });
 $('#co-rm').addEventListener('click', () => {
