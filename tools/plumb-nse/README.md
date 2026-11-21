@@ -5,7 +5,7 @@ Two scripts that fill Plumb with data from NSE for the companies you choose. Bot
 | Script | What it gets | Plumb pages it feeds |
 |---|---|---|
 | `nse_segments.py` | Segment revenue, profit, assets and liabilities from each quarterly results filing | Segments |
-| `nse_prices.py` | Daily prices (open, high, low, close, volume) | Technicals, SOIC score |
+| `nse_prices.py` | Daily prices (open, high, low, close, volume) | Technicals, Plumb Score |
 
 ## Each time
 1. **Plumb → Companies.** Tick the companies you want (or none for all), then click **Export … for scripts**. This saves `plumb-companies.json` to Downloads.

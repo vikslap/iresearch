@@ -1,7 +1,7 @@
 {
   "name": "Plumb · stock research",
   "short_name": "Plumb",
-  "description": "Get to the bottom of any stock: fundamentals, quality checks, valuation and SOIC scoring from screener.in exports.",
+  "description": "Get to the bottom of any stock: fundamentals, quality checks, valuation and the Plumb Score from screener.in exports.",
   "id": "./",
   "start_url": "./",
   "scope": "./",

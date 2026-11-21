@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Plumb">
-<meta name="description" content="Plumb: get to the bottom of any stock. Fundamentals, quality checks, valuation and SOIC scoring from screener.in exports.">
+<meta name="description" content="Plumb: get to the bottom of any stock. Fundamentals, quality checks, valuation and the Plumb Score from screener.in exports.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%228%22%20fill%3D%22%232563eb%22/%3E%3Cpath%20d%3D%22M16%204v7%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222.2%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M16%2011l6%208-6%209-6-9z%22%20fill%3D%22%23fff%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -346,7 +346,7 @@ section{animation:fade .25s ease}
     <a href="#segments"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3v9h9"/><path d="M21 12a9 9 0 1 1-9-9"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg>Segments</a>
     <a href="#valuation"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Valuation</a>
     <a href="#projections"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M3 20h18"/><path d="M4 16l5-5 4 3 7-8"/><path d="M15 6h5v5" stroke-dasharray="2 2"/></svg>Projections</a>
-    <a href="#score"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>SOIC score</a>
+    <a href="#score"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>Plumb Score</a>
     <a href="#compare"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 20V10M12 20V4M18 20v-7"/></svg>Compare</a>
     <a href="#companies"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>Companies</a>
     <a href="#sectors"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Sectors</a>
@@ -357,7 +357,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 21 Nov 2026, 13:36 IST</p>
+    <p class="tiny" id="build">Version: 21 Nov 2026, 13:55 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -526,7 +526,7 @@ section{animation:fade .25s ease}
     <div class="card cobar" id="co-bar">
       <label class="srch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="co-q" placeholder="Search companies" aria-label="Search companies"></label>
       <select id="co-sec" aria-label="Sector"></select>
-      <label class="mini-f">SOIC ≥<input id="co-soic" inputmode="decimal" placeholder="any"></label>
+      <label class="mini-f">Plumb Score ≥<input id="co-soic" inputmode="decimal" placeholder="any"></label>
       <label class="mini-f">ROCE ≥ %<input id="co-roce" inputmode="decimal" placeholder="any"></label>
       <label class="mini-f">P/E ≤<input id="co-pe" inputmode="decimal" placeholder="any"></label>
       <label class="chk"><input type="checkbox" id="co-old">Hide out-of-date</label>
@@ -545,7 +545,7 @@ section{animation:fade .25s ease}
   </section>
 
   <section id="data" hidden>
-    <p class="note" style="margin:0 0 4px;font-size:14px">Change any number and every chart, ratio and score updates. Edited cells are highlighted and kept in this browser. “Download Excel” saves a workbook with the same Data Sheet layout, plus Ratios and SOIC score sheets, so you can upload it here again.</p>
+    <p class="note" style="margin:0 0 4px;font-size:14px">Change any number and every chart, ratio and score updates. Edited cells are highlighted and kept in this browser. “Download Excel” saves a workbook with the same Data Sheet layout, plus Ratios and Plumb Score sheets, so you can upload it here again.</p>
     <div id="dtabs"></div>
   </section>
 </main>
@@ -713,7 +713,7 @@ function kpis() {
     {k: 'ROCE', v: pct(roce[L]), d: chg(roce[L] - roce[L - 1], true), n: lf, s: roce, col: 'var(--c2)'},
     {k: 'Sales growth', v: pct(g5), n: `${Math.min(5, L)}-year CAGR`, s: C.S, col: 'var(--c3)'},
     {k: 'Debt / equity', v: fmt(de[L], 'x'), n: `net debt ₹${inr(C.DEBT[L] - C.CASH[L] - C.INV[L])} Cr`, s: de, col: 'var(--c6)'},
-    {k: 'SOIC score', v: `${S.total}<small> / ${S.max}</small>`, n: `${S.answered} of ${S.count} answered`, ring: S.total / S.max, href: '#score'}];
+    {k: 'Plumb Score', v: `${S.total}<small> / ${S.max}</small>`, n: `${S.answered} of ${S.count} answered`, ring: S.total / S.max, href: '#score'}];
   $('#kpis').innerHTML = items.map(x => `<${x.href ? `a href="${x.href}"` : 'div'} class="kpi"><div class="kh"><span>${x.k}</span>${x.d || ''}</div><b>${x.v}</b><div class="kf"><span>${x.n}</span>${x.ring != null ? ring(x.ring) : sparkArea(x.s, x.col)}</div></${x.href ? 'a' : 'div'}>`).join('');
 }
 function base(type, labels, ds, yfmt, extra = {}) {
@@ -1073,7 +1073,7 @@ function load(rows, name, srcText, meta = {}) {
 }
 
 const VIEWS = ['overview', 'quarterly', 'ratios', 'quality', 'segments', 'valuation', 'projections', 'score', 'compare', 'companies', 'sectors', 'data'];
-const VNAME = {overview: 'Overview', quarterly: 'Quarterly results', ratios: 'Ratio analysis', quality: 'Quality and returns', segments: 'Segments', projections: 'Projections', valuation: 'Valuation', score: 'SOIC score', compare: 'Compare companies', companies: 'Saved companies', sectors: 'Sector view', data: 'Edit data'};
+const VNAME = {overview: 'Overview', quarterly: 'Quarterly results', ratios: 'Ratio analysis', quality: 'Quality and returns', segments: 'Segments', projections: 'Projections', valuation: 'Valuation', score: 'Plumb Score', compare: 'Compare companies', companies: 'Saved companies', sectors: 'Sector view', data: 'Edit data'};
 let lastView = null;
 function renderView() {
   if (!M) return;
@@ -2090,7 +2090,7 @@ function renderCompare() {
   const met = s => { const C2 = s.C, L = C2.n - 1, Rv = k => C2.R.find(r => r.k === k).v, sum = (a, n) => a.slice(-n).reduce((x, y) => x + (y || 0), 0);
     return {soic: s.S.total, max: s.S.max, mcap: C2.now.mcap, pe: C2.now.pe > 0 ? C2.now.pe : null, pb: C2.now.pb, ev: C2.now.evE > 0 ? C2.now.evE : null, roe: Rv('ROE')[L], roce: Rv('ROCE')[L],
       opm: Rv('Operating margin (EBITDA)')[L], sg: C2.cagr(C2.S, Math.min(5, L)), pg: C2.cagr(C2.PAT, Math.min(5, L)), de: Rv('Debt / equity')[L], ce: div(sum(C2.CFO, 3), sum(C2.EBITDA, 3))}; };
-  const cols = [['soic', 'SOIC score', 1], ['mcap', 'Market cap, ₹ Cr', 0], ['pe', 'P/E', -1], ['pb', 'P/B', -1], ['ev', 'EV / EBITDA', -1], ['roe', 'ROE', 1], ['roce', 'ROCE', 1], ['opm', 'Operating margin', 1], ['sg', 'Sales CAGR 5y', 1], ['pg', 'Profit CAGR 5y', 1], ['de', 'Debt / equity', -1], ['ce', 'CFO / EBITDA 3y', 1]];
+  const cols = [['soic', 'Plumb Score', 1], ['mcap', 'Market cap, ₹ Cr', 0], ['pe', 'P/E', -1], ['pb', 'P/B', -1], ['ev', 'EV / EBITDA', -1], ['roe', 'ROE', 1], ['roce', 'ROCE', 1], ['opm', 'Operating margin', 1], ['sg', 'Sales CAGR 5y', 1], ['pg', 'Profit CAGR 5y', 1], ['de', 'Debt / equity', -1], ['ce', 'CFO / EBITDA 3y', 1]];
   const F = {pe: 'x', pb: 'x', ev: 'x', de: 'x', roe: 'pct', roce: 'pct', opm: 'pct', sg: 'pct', pg: 'pct', ce: 'pct'};
   const rows = S.map(s => Object.assign({s}, met(s)));
   rows.sort((a, b) => ((a[CSORT.k] ?? -Infinity * CSORT.d) - (b[CSORT.k] ?? -Infinity * CSORT.d)) * CSORT.d);
@@ -2100,7 +2100,7 @@ function renderCompare() {
   const tbl = `<div class="scroll cmp"><table><thead><tr><th>Company</th>${cols.map(([k, l]) => `<th data-sort="${k}" class="${CSORT.k === k ? 'sorted' : ''}">${l}${CSORT.k === k ? (CSORT.d > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr><td><span class="who"><i style="background:var(${colOf(r.s.k)})"></i><span>${r.s.name}<small style="display:block;font-weight:400;font-size:11px;color:var(--muted)">${(() => { const d = dataDates(r.s.M); return (d.q ? 'Qtr to ' + ql(d.q) : 'FY to ' + fy(d.a)) + (LIB[r.s.k]?.mod ? ' · Excel ' + dfmt(LIB[r.s.k].mod) : ''); })()}</small></span></span></td>${cols.map(([k]) => cell(r, k)).join('')}</tr>`).join('')}</tbody></table></div>`;
   const ccard = (id, t, u) => `<div class="card"><div class="ch"><h3>${t}</h3><span>${u}</span></div><div class="fig"><canvas id="${id}"></canvas></div></div>`;
   $('#cmp-body').innerHTML = pick + `<p class="note" style="margin:-4px 0 14px">Best value in each column is highlighted. Click a column heading to sort. Latest financial year unless marked.</p>` + tbl +
-    qualityTable(S, M.name) + `<h2>Side by side</h2><div class="grid">${ccard('cc-soic', 'SOIC score by section', 'points')}${ccard('cc-roe', 'Return on equity', 'year-end')}${ccard('cc-opm', 'Operating margin', '% of sales')}${ccard('cc-sales', 'Sales, indexed', 'first year shown = 100')}${ccard('cc-pe', 'Price to earnings', 'year-end')}${ccard('cc-de', 'Debt / equity', 'year-end')}</div>`;
+    qualityTable(S, M.name) + `<h2>Side by side</h2><div class="grid">${ccard('cc-soic', 'Plumb Score by section', 'points')}${ccard('cc-roe', 'Return on equity', 'year-end')}${ccard('cc-opm', 'Operating margin', '% of sales')}${ccard('cc-sales', 'Sales, indexed', 'first year shown = 100')}${ccard('cc-pe', 'Price to earnings', 'year-end')}${ccard('cc-de', 'Debt / equity', 'year-end')}</div>`;
   if (S.length < 1) return;
   // align years
   const lab = new Map(); S.forEach(s => s.M.secs.pl.dates.forEach(d => lab.set(fy(d), +d)));
@@ -2254,7 +2254,7 @@ function renderSyncDlg(pending) {
       <label class="fl2">Sync server URL<input id="sy-url" placeholder="https://plumb-sync.you.workers.dev" inputmode="url"></label>
       <div class="dlg-a"><button class="btn pri" id="sy-saveurl">Save</button></div>`;
   } else if (!SY) {
-    h = `<p>Sync keeps your saved companies, SOIC answers, edits and price history the same on every device. Everything is encrypted on this device before it leaves; the sync code is the key, so keep it private.</p>
+    h = `<p>Sync keeps your saved companies, Plumb Score answers, edits and price history the same on every device. Everything is encrypted on this device before it leaves; the sync code is the key, so keep it private.</p>
       <div class="dlg-a"><button class="btn pri" id="sy-new">Create a sync code</button></div>
       <p class="or">Already set up on another device?</p>
       <div class="dlg-row"><input id="sy-code" placeholder="PLUMB-XXXX-XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false"><button class="btn" id="sy-link">Link</button></div>
@@ -2390,7 +2390,7 @@ function renderChg() {
   items.push(mv('Trailing 12-month sales', e.ttmS, v => '₹' + inr(v) + ' Cr'), mv('Trailing 12-month net profit', e.ttmP, v => '₹' + inr(v) + ' Cr'), mv('Share price', e.px, v => '₹' + inr(v)));
   if (e.pe[0] != null && e.pe[1] != null && Math.abs(e.pe[1] - e.pe[0]) > .05) items.push(`<li>P/E: ${fmt(e.pe[0], 'x')} → <b>${fmt(e.pe[1], 'x')}</b></li>`);
   if (e.roce[0] != null && e.roce[1] != null && Math.abs(e.roce[1] - e.roce[0]) > .0005) items.push(`<li>ROCE: ${pct(e.roce[0])} → <b>${pct(e.roce[1])}</b></li>`);
-  if (e.soic[0] !== e.soic[1]) items.push(`<li>SOIC score: ${e.soic[0]} → <b>${e.soic[1]}</b> (from the answers worked out from data)</li>`);
+  if (e.soic[0] !== e.soic[1]) items.push(`<li>Plumb Score: ${e.soic[0]} → <b>${e.soic[1]}</b> (from the answers worked out from data)</li>`);
   const LV = {red: 'red flag', amber: 'watch', ok: 'passed'}, rank = {ok: 0, amber: 1, red: 2};
   e.flags.forEach(x => items.push(`<li><span class="${rank[x.to] > rank[x.from] ? 'down' : 'up'}">${rank[x.to] > rank[x.from] ? '▼' : '▲'}</span> ${x.t}: ${LV[x.from]} → <b>${LV[x.to]}</b>. ${x.d}</li>`));
   if (e.nRev) items.push(`<li><b>${e.nRev} past figure${e.nRev > 1 ? 's were' : ' was'} revised</b> (restated or corrected): ${e.revised.slice(0, 4).map(r => `${r.label} ${r.y} ${inr(r.from)} → ${inr(r.to)}`).join('; ')}${e.nRev > 4 ? '…' : ''}.</li>`);
@@ -2403,7 +2403,7 @@ $('#chg-x').addEventListener('click', () => { const e = LIB[M.name] && LIB[M.nam
 
 
 // ---- Sector insights: premium/discount to the sector, market share, quadrant chart ----
-const QAX = {roce: ['ROCE', 'pct', 1], opm: ['Operating margin', 'pct', 1], sg: ['Sales CAGR 5y', 'pct', 1], pg: ['Profit CAGR 5y', 'pct', 1], soic: ['SOIC score', 'n', 1], pe: ['P/E', 'x', -1], ev: ['EV / EBITDA', 'x', -1]};
+const QAX = {roce: ['ROCE', 'pct', 1], opm: ['Operating margin', 'pct', 1], sg: ['Sales CAGR 5y', 'pct', 1], pg: ['Profit CAGR 5y', 'pct', 1], soic: ['Plumb Score', 'n', 1], pe: ['P/E', 'x', -1], ev: ['EV / EBITDA', 'x', -1]};
 let QX = 'roce', QY = 'pe';
 function sectorExtras(members) {
   // yearly series per company, keyed by year label
@@ -2562,7 +2562,7 @@ function drawQuadrant(members) {
     const ch = charts['ch-sx'], sx = ch && ch.scales, off = sx ? pts.filter(r => { const p = r.at[y]; return p.x < sx.x.min || p.x > sx.x.max || p.y < sx.y.min || p.y > sx.y.max; }).map(r => `${r.m.name} (${xl} ${fx(r.at[y].x, xf)}, ${yl} ${fx(r.at[y].y, yf)})`) : [];
     $('#q-note').textContent = pts.length < 2 ? 'Needs at least two companies with both values in this year.' :
       `${y}: ` + order.filter(k => inQ(k).length).map(k => `${names[k]}: ${inQ(k).join(', ')}. `).join('') + `Medians: ${xl} ${fx(st.mx, xf)}, ${yl} ${fx(st.my, yf)}.` +
-      (QX === 'soic' || QY === 'soic' ? ' SOIC has no history, so only the latest position is shown.' : '') + (QX === 'sg' || QX === 'pg' || QY === 'sg' || QY === 'pg' ? ' Growth in past years is the CAGR over the 5 years before (3–4 in the earliest years).' : '') +
+      (QX === 'soic' || QY === 'soic' ? ' The Plumb Score has no history, so only the latest position is shown.' : '') + (QX === 'sg' || QX === 'pg' || QY === 'sg' || QY === 'pg' ? ' Growth in past years is the CAGR over the 5 years before (3–4 in the earliest years).' : '') +
       (xq !== yq ? ' For P/E and EV/EBITDA, lower is cheaper.' : '') + (off.length ? ` Off the chart this year: ${off.join('; ')}. Choose View: Fit this year to include them.` : '');
   };
   const render = t => { const ch = charts['ch-sx']; if (!ch) return; QT = t; fillAt(ch.data.datasets, t);
@@ -2621,7 +2621,7 @@ function renderLib() {
   $('#libt').textContent = pinned.length ? 'Pinned' : 'Recent';
   $('#liball').textContent = `All ${ks.length} →`;
   $('#lib').innerHTML = list.map(k => { const sn = snapC(k), d = sn ? dataDates(sn.M) : null;
-    return `<div class="li btn${k === M.name ? ' on' : ''}" role="button" tabindex="0" data-lib="${escA(k)}" title="${escA(niceName(k))}${LIB[k].mod ? ' · Excel updated ' + dfmt(LIB[k].mod) : ''}"><span class="av" style="background:var(${colOf(k)})">${initials(k)}</span><span class="nm">${niceName(k)}<small>${d ? (d.q ? 'Qtr ' + ql(d.q) : fy(d.a)) + (d.stale ? ' · old' : '') : ''}</small></span><span class="sc" title="SOIC score">${sn ? sn.S.total : '—'}</span></div>`; }).join('') ||
+    return `<div class="li btn${k === M.name ? ' on' : ''}" role="button" tabindex="0" data-lib="${escA(k)}" title="${escA(niceName(k))}${LIB[k].mod ? ' · Excel updated ' + dfmt(LIB[k].mod) : ''}"><span class="av" style="background:var(${colOf(k)})">${initials(k)}</span><span class="nm">${niceName(k)}<small>${d ? (d.q ? 'Qtr ' + ql(d.q) : fy(d.a)) + (d.stale ? ' · old' : '') : ''}</small></span><span class="sc" title="Plumb Score">${sn ? sn.S.total : '—'}</span></div>`; }).join('') ||
     `<p class="tiny" style="margin:2px 6px">Upload more exports, then pin favourites on the Companies page.</p>`;
 }
 
@@ -2659,7 +2659,7 @@ $('.tb-t').addEventListener('click', openSw);
 
 // Companies page
 let COS = {k: 'soic', d: -1}; const COSEL = new Set(); let coRmArm = 0;
-const COCOL = [['soic', 'SOIC', 1], ['mcap', 'Mcap, ₹ Cr', 0], ['pe', 'P/E', -1], ['roce', 'ROCE', 1], ['de', 'Debt / equity', -1], ['sg', 'Sales CAGR 5y', 1], ['q', 'Latest quarter', 0], ['mod', 'Excel updated', 0]];
+const COCOL = [['soic', 'Score', 1], ['mcap', 'Mcap, ₹ Cr', 0], ['pe', 'P/E', -1], ['roce', 'ROCE', 1], ['de', 'Debt / equity', -1], ['sg', 'Sales CAGR 5y', 1], ['q', 'Latest quarter', 0], ['mod', 'Excel updated', 0]];
 function coRows() {
   return libKeys().map(k => { const s = snapC(k); if (!s) return null; const C2 = s.C, L = C2.n - 1, R = n => C2.R.find(r => r.k === n).v[L], d = dataDates(s.M);
     return {k, name: s.name, sector: LIB[k].sector || '', pin: !!LIB[k].pin, soic: s.S.total, max: s.S.max, mcap: C2.now.mcap, pe: C2.now.pe > 0 ? C2.now.pe : null, roce: R('ROCE'), de: R('Debt / equity'), sg: C2.cagr(C2.S, Math.min(5, L)), q: d.q ? +d.q : +d.a, qd: d, mod: LIB[k].mod || null}; }).filter(Boolean);
@@ -2723,7 +2723,7 @@ $('#co-rm').addEventListener('click', () => {
 $('#sw-open').addEventListener('click', openSw);
 
 // ---- Sectors: medians, rank heatmap and quality vs price ----
-const SXM = [['soic', 'SOIC', 1, 'n'], ['roce', 'ROCE', 1, 'pct'], ['roe', 'ROE', 1, 'pct'], ['opm', 'Operating margin', 1, 'pct'], ['sg', 'Sales CAGR 5y', 1, 'pct'], ['pg', 'Profit CAGR 5y', 1, 'pct'],
+const SXM = [['soic', 'Plumb Score', 1, 'n'], ['roce', 'ROCE', 1, 'pct'], ['roe', 'ROE', 1, 'pct'], ['opm', 'Operating margin', 1, 'pct'], ['sg', 'Sales CAGR 5y', 1, 'pct'], ['pg', 'Profit CAGR 5y', 1, 'pct'],
   ['ce', 'CFO / EBITDA 3y', 1, 'pct'], ['de', 'Debt / equity', -1, 'x'], ['pe', 'P/E', -1, 'x'], ['ev', 'EV / EBITDA', -1, 'x']];
 let SXS = null, SXSORT = {k: 'soic', d: -1};
 function sxMetrics(k) {
@@ -2808,7 +2808,7 @@ function exportBook() {
   const S = soicScore(), sa = [['Section', 'Criterion', 'Answer', 'Points', 'Max']];
   S.rows.forEach(r => sa.push([r.it.sec, r.it.q, r.a || '(not answered)', r.p, soicMax(r.it)]));
   sa.push([], ['Total', '', '', S.total, S.max]);
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sa), 'SOIC score');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sa), 'Plumb Score');
   return XLSX.write(wb, {type: 'array', bookType: 'xlsx'});
 }
 (async () => {
