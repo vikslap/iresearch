@@ -191,7 +191,7 @@ td svg{display:block}
 .qv{border-left:4px solid var(--q,var(--c1))}.qv h3{margin:0 0 8px;font-size:18px;line-height:1.35}.qv ul{margin:6px 0 0;padding-left:18px;color:var(--ink);font-size:14px;line-height:1.6}.qv li{margin:2px 0}.qv .qlink{margin:12px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:14px;color:var(--ink)}.qv .qset{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)}.qv .qset input{width:64px}
 .guide{margin-top:12px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--c1) 8%,transparent);border:1px solid color-mix(in srgb,var(--c1) 25%,transparent);font-size:13px;line-height:1.55;color:var(--ink)}.guide b{color:var(--c1)}.guide ol{margin:6px 0 0;padding-left:18px}
 .sgt td:first-child{font-weight:600;white-space:nowrap}.sgt tr.sgf td{border-top:2px solid var(--line)}.sgt td,.sgt th{text-align:right}.sgt td:first-child,.sgt td:nth-child(2),.sgt th:first-child,.sgt th:nth-child(2){text-align:left}
-.pjt{width:100%}.pjt th,.pjt td{text-align:right;white-space:nowrap}.pjt td:first-child,.pjt th:first-child{text-align:left;position:sticky;left:0;background:var(--card)}.pjt tr.pjb td{font-weight:700}.pjt th[colspan]{text-align:center}.pjt .pjg{border-left:1px solid var(--line)}.pjt td.pj-base{background:color-mix(in srgb,var(--c1) 5%,transparent)}.pja td{padding:4px 6px}.pj-in{width:74px;text-align:right;padding:5px 7px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}.pj-in:focus{outline:2px solid var(--c1);outline-offset:1px}.pj-shared{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-top:10px;font-size:13px}.pj-shared .pj-in{width:90px;display:block;margin-top:3px}.linkish{background:none;border:0;padding:0;color:var(--c1);font:inherit;cursor:pointer;text-decoration:underline}
+.pjt{width:100%}.pjt th,.pjt td{text-align:right;white-space:nowrap}.pjt td:first-child,.pjt th:first-child{text-align:left;position:sticky;left:0;background:var(--card)}.pjt tr.pjb td{font-weight:700}.pjt th[colspan]{text-align:center}.pjt .pjg{border-left:1px solid var(--line)}.pjt .pj-v{background:color-mix(in srgb,var(--q,var(--c1)) 6%,transparent)}#pj-body{--q:var(--c1)}.pj-bar{display:flex;gap:16px;align-items:center;flex-wrap:wrap;border-left:4px solid var(--q)}.pj-bar select{min-width:150px}.pja td{padding:4px 6px}.pj-in{width:74px;text-align:right;padding:5px 7px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}.pj-in:focus{outline:2px solid var(--c1);outline-offset:1px}.pj-shared{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-top:10px;font-size:13px}.pj-shared .pj-in{width:90px;display:block;margin-top:3px}.linkish{background:none;border:0;padding:0;color:var(--c1);font:inherit;cursor:pointer;text-decoration:underline}
 .qchip{font-style:normal;font-size:11px;font-weight:700;color:var(--q);background:color-mix(in srgb,var(--q) 13%,transparent);padding:2px 8px;border-radius:999px;white-space:nowrap}
 .qdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--q);margin-right:7px;vertical-align:1px}
 .qgrp h3{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px}.qgrp .kpi .kh{display:flex;justify-content:space-between;gap:6px;align-items:flex-start}.qgrp .kpi.nm>b{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}.qwhy{margin:2px 0 0;font-size:12px;line-height:1.45;color:var(--ink);opacity:.85}
@@ -357,7 +357,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 21 Nov 2026, 09:47 IST</p>
+    <p class="tiny" id="build">Version: 21 Nov 2026, 09:57 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -1687,6 +1687,8 @@ $('#sg-file').addEventListener('change', e => { [...e.target.files].forEach(impo
 
 // ---- Projections: three-year P&L under bear, base and bull cases ----
 const PJS = [['bear', 'Bear', '--c2'], ['base', 'Base', '--c1'], ['bull', 'Bull', '--c3']];
+let PJV = 'base';   // which case the tables show; the charts always show all three
+const PJRULE = {bear: 'starts at the lowest annual sales growth and EBITDA margin of the last 3 years', base: 'starts at the average sales growth and EBITDA margin of the last 3 years', bull: 'is yours to set: it starts equal to the base case'};
 function projDefaults() {
   const L = C.n - 1, S = C.S, k = Math.min(3, L);
   const g = [...Array(k).keys()].map(j => L - j).map(i => div(S[i] - S[i - 1], S[i - 1])).filter(v => v != null && isFinite(v));
@@ -1719,17 +1721,20 @@ function renderProjections() {
   const mTxt = h.years.length ? h.years.slice().reverse().map(i => `${Y[i]} ${pct(div(C.EBITDA[i], C.S[i]))}`).join(', ') : '';
   const inp = (s, f, y) => `<input class="pj-in" type="number" step="0.5" inputmode="decimal" data-pj="${s}.${f}.${y}" value="${p.sc[s][f][y]}" aria-label="${s} ${f === 'g' ? 'sales growth' : 'EBITDA margin'} ${lab[y]}">`;
   const one = (f, v, unit, tip) => `<label class="mini-f" title="${tip}">${unit}<input class="pj-in" type="number" step="0.5" inputmode="decimal" data-pjx="${f}" value="${v}"></label>`;
+  const [, vName, vCol] = PJS.find(x => x[0] === PJV);
   $('#pj-body').innerHTML = `
-    <div class="card"><div class="ch"><h3>Assumptions</h3><span>${saved ? 'your saved figures · ' : 'from the last 3 years · '}<button class="linkish" id="pj-reset">Reset to history</button></span></div>
-      <div class="scroll"><table class="pjt pja"><thead><tr><th></th>${PJS.map(([s, n, c]) => `<th colspan="3" class="pjg" style="color:var(${c})">${n}</th>`).join('')}</tr><tr><th></th>${PJS.map(() => lab.map((l, y) => `<th${y ? '' : ' class="pjg"'}>${l}</th>`).join('')).join('')}</tr></thead><tbody>
-        <tr><td>Sales growth %</td>${PJS.map(([s]) => [0, 1, 2].map(y => `<td${y ? '' : ' class="pjg"'}>${inp(s, 'g', y)}</td>`).join('')).join('')}</tr>
-        <tr><td>EBITDA margin %</td>${PJS.map(([s]) => [0, 1, 2].map(y => `<td${y ? '' : ' class="pjg"'}>${inp(s, 'm', y)}</td>`).join('')).join('')}</tr>
+    <div class="card cobar pj-bar" style="--q:var(${vCol})"><label class="mini-f">Case<select id="pj-sc" aria-label="Scenario to show">${PJS.map(([s, n]) => `<option value="${s}"${s === PJV ? ' selected' : ''}>${n} case</option>`).join('')}</select></label><p class="note" style="margin:0">The tables show the <b style="color:var(${vCol})">${vName.toLowerCase()} case</b>. The charts below compare all three.</p></div>
+    <div class="card"><div class="ch"><h3>Assumptions: <span style="color:var(${vCol})">${vName} case</span></h3><span>${saved ? 'your saved figures · ' : 'from the last 3 years · '}<button class="linkish" id="pj-reset">Reset to history</button></span></div>
+      <div class="scroll"><table class="pjt pja"><thead><tr><th></th>${lab.map(l => `<th>${l}</th>`).join('')}</tr></thead><tbody>
+        <tr><td>Sales growth %</td>${[0, 1, 2].map(y => `<td>${inp(PJV, 'g', y)}</td>`).join('')}</tr>
+        <tr><td>EBITDA margin %</td>${[0, 1, 2].map(y => `<td>${inp(PJV, 'm', y)}</td>`).join('')}</tr>
       </tbody></table></div>
-      <p class="note">Sales growth in the last 3 years: ${histTxt || '—'}. <b>Bear</b> starts at the lowest of these, <b>base</b> at their average, and <b>bull</b> is yours to set (it starts equal to base). EBITDA margins were ${mTxt || '—'}, and follow the same rule. Change any cell; it's saved for this company.</p>
+      <p class="note">The ${vName.toLowerCase()} case ${PJRULE[PJV]}. Sales growth in the last 3 years: ${histTxt || '—'}; EBITDA margins: ${mTxt || '—'}. Change any cell; it's saved for this company.</p>
       <div class="pj-shared"><b>Same in all cases:</b>${one('oi', p.oi, 'Other income, ₹ Cr/yr', '3-year average, kept flat')}${one('dep', p.dep, 'Depreciation, % of sales', '3-year average')}${one('int', p.int, 'Interest, ₹ Cr/yr', 'Last year, kept flat')}${one('tax', p.tax, 'Tax rate, %', '3-year average effective rate')}</div></div>
-    <div class="card"><div class="ch"><h3>Projected profit and loss</h3><span>₹ crore · ${Y[L]} actual, then ${lab[0]}–${lab[2]}</span></div><div class="scroll" id="pj-tbl"></div><p class="note" id="pj-note"></p></div>
+    <div class="card"><div class="ch"><h3>Projected profit and loss: <span style="color:var(${vCol})">${vName} case</span></h3><span>₹ crore · ${Y[L]} actual, then ${lab[0]}–${lab[2]}</span></div><div class="scroll" id="pj-tbl"></div><p class="note" id="pj-note"></p></div>
     <div class="grid"><div class="card"><div class="ch"><h3>Net profit: history and projections</h3><span>₹ crore</span></div><div class="fig"><canvas id="ch-pj-pat"></canvas></div></div>
       <div class="card"><div class="ch"><h3>Sales: history and projections</h3><span>₹ crore</span></div><div class="fig"><canvas id="ch-pj-s"></canvas></div></div></div>`;
+  $('#pj-body').style.setProperty('--q', `var(${vCol})`);
   projDraw(p, lab);
 }
 function projDraw(p, lab) {
@@ -1740,8 +1745,8 @@ function projDraw(p, lab) {
   const cell = (s, y, k) => { const r = R[s][y]; return k === 'pm' ? div(r.pat, r.sales) : k === 'epsg' ? (prev(s, y, 'eps') > 0 ? r.eps / prev(s, y, 'eps') - 1 : null) : r[k]; };
   const act = k => k === 'pm' ? div(A.pat, A.sales) : k === 'g' ? div(C.S[L] - C.S[L - 1], C.S[L - 1]) : k === 'epsg' ? (C.EPS[L - 1] > 0 ? C.EPS[L] / C.EPS[L - 1] - 1 : null) : A[k];
   const f = (v, t) => v == null || !isFinite(v) ? '—' : t === 'pct' ? pct(v) : inr(v);
-  $('#pj-tbl').innerHTML = `<table class="pjt"><thead><tr><th></th><th>${Y[L]}</th>${lab.map(l => `<th colspan="3" class="pjg">${l}</th>`).join('')}</tr><tr><th></th><th>Actual</th>${lab.map(() => PJS.map(([s, n, c]) => `<th${s === 'bear' ? ' class="pjg"' : ''} style="color:var(${c})">${n}</th>`).join('')).join('')}</tr></thead><tbody>` +
-    rows.map(([k, n, b, t]) => `<tr${b ? ' class="pjb"' : ''}><td>${n}</td><td>${f(act(k), t)}</td>${[0, 1, 2].map(y => PJS.map(([s]) => `<td class="pj-${s}${s === 'bear' ? ' pjg' : ''}">${f(cell(s, y, k), t)}</td>`).join('')).join('')}</tr>`).join('') + '</tbody></table>';
+  $('#pj-tbl').innerHTML = `<table class="pjt"><thead><tr><th></th><th>${Y[L]} actual</th>${lab.map(l => `<th class="pj-v">${l}</th>`).join('')}</tr></thead><tbody>` +
+    rows.map(([k, n, b, t]) => `<tr${b ? ' class="pjb"' : ''}><td>${n}</td><td>${f(act(k), t)}</td>${[0, 1, 2].map(y => `<td class="pj-v">${f(cell(PJV, y, k), t)}</td>`).join('')}</tr>`).join('') + '</tbody></table>';
   // what each case means for the share price
   const px = C.PR[L], peUse = C.now && C.now.mcap && C.PAT[L] > 0 ? C.now.mcap / C.PAT[L] : div(C.MC[L], C.PAT[L]);   // P/E on the same year the projections start from
   const cagr = s => A.pat > 0 && R[s][2].pat > 0 ? Math.pow(R[s][2].pat / A.pat, 1 / 3) - 1 : null;
@@ -1754,7 +1759,7 @@ function projDraw(p, lab) {
   // charts: history plus the three cases
   const H = Math.min(6, C.n), hl = Y.slice(-H), labels = hl.concat(lab), pad = Array(H - 1).fill(null);
   const ser = (k, hist) => { const ds = [Object.assign(line('Actual', hist.slice(-H).concat([null, null, null]), css('--ink')), {fill: false, borderWidth: 2.5})];
-    PJS.forEach(([s, n, c]) => ds.push(Object.assign(line(n, pad.concat([hist[hist.length - 1]], R[s].map(r => r[k])), css(c), [6, 4]), {fill: false, spanGaps: false}))); return ds; };
+    PJS.forEach(([s, n, c]) => ds.push(Object.assign(line(n + (s === PJV ? ' (shown in table)' : ''), pad.concat([hist[hist.length - 1]], R[s].map(r => r[k])), css(c), [6, 4]), {fill: false, spanGaps: false, borderWidth: s === PJV ? 3.5 : 1.5}))); return ds; };
   draw('ch-pj-pat', base('line', labels, ser('pat', C.PAT), 'cr'));
   draw('ch-pj-s', base('line', labels, ser('sales', C.S), 'cr'));
 }
@@ -1767,6 +1772,7 @@ document.addEventListener('input', e => {
   const L = C.n - 1, nd = new Date(M.secs.pl.dates[L]); projDraw(p, [1, 2, 3].map(k => { const x = new Date(nd); x.setFullYear(x.getFullYear() + k); return fy(x); }));
   const r = $('#pj-reset'); if (r) r.parentElement.firstChild.textContent = 'your saved figures · ';
 });
+document.addEventListener('change', e => { if (e.target.id !== 'pj-sc') return; PJV = e.target.value; renderProjections(); });
 document.addEventListener('click', e => { if (e.target.id !== 'pj-reset') return; lsPut('fx-prj:' + M.name, null); markDirty(M.name); renderProjections(); toast('Projections reset to the last 3 years'); });
 
 function renderQuality() {
