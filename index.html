@@ -191,7 +191,7 @@ td svg{display:block}
 .qv{border-left:4px solid var(--q,var(--c1))}.qv h3{margin:0 0 8px;font-size:18px;line-height:1.35}.qv ul{margin:6px 0 0;padding-left:18px;color:var(--ink);font-size:14px;line-height:1.6}.qv li{margin:2px 0}.qv .qlink{margin:12px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:14px;color:var(--ink)}.qv .qset{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)}.qv .qset input{width:64px}
 .guide{margin-top:12px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--c1) 8%,transparent);border:1px solid color-mix(in srgb,var(--c1) 25%,transparent);font-size:13px;line-height:1.55;color:var(--ink)}.guide b{color:var(--c1)}.guide ol{margin:6px 0 0;padding-left:18px}
 .sgt td:first-child{font-weight:600;white-space:nowrap}.sgt tr.sgf td{border-top:2px solid var(--line)}.sgt td,.sgt th{text-align:right}.sgt td:first-child,.sgt td:nth-child(2),.sgt th:first-child,.sgt th:nth-child(2){text-align:left}
-.pjt{width:100%}.pjt th,.pjt td{text-align:right;white-space:nowrap}.pjt td:first-child,.pjt th:first-child{text-align:left;position:sticky;left:0;background:var(--card)}.pjt tr.pjb td{font-weight:700}.pjt th[colspan]{text-align:center}.pjt .pjg{border-left:1px solid var(--line)}.pjt .pj-v{background:color-mix(in srgb,var(--q,var(--c1)) 6%,transparent)}#pj-body{--q:var(--c1)}.pj-bar{display:flex;gap:16px;align-items:center;flex-wrap:wrap;border-left:4px solid var(--q)}.pj-bar select{min-width:150px}.pja td{padding:4px 6px}.pj-in{width:74px;text-align:right;padding:5px 7px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}.pj-in:focus{outline:2px solid var(--c1);outline-offset:1px}.pj-shared{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-top:10px;font-size:13px}.pj-shared .pj-in{width:90px;display:block;margin-top:3px}.linkish{background:none;border:0;padding:0;color:var(--c1);font:inherit;cursor:pointer;text-decoration:underline}
+.pjt{width:100%}.pjt th,.pjt td{text-align:right;white-space:nowrap}.pjt td:first-child,.pjt th:first-child{text-align:left;position:sticky;left:0;background:var(--card)}.pjt tr.pjb td{font-weight:700}.pjt .pos{color:var(--pos)}.pjt .neg{color:var(--neg)}.pjt th[colspan]{text-align:center}.pjt .pjg{border-left:1px solid var(--line)}.pjt .pj-v{background:color-mix(in srgb,var(--q,var(--c1)) 6%,transparent)}#pj-body{--q:var(--c1)}.pj-bar{display:flex;gap:16px;align-items:center;flex-wrap:wrap;border-left:4px solid var(--q)}.pj-bar select{min-width:150px}.pja td{padding:4px 6px}.pj-in{width:74px;text-align:right;padding:5px 7px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}.pj-in:focus{outline:2px solid var(--c1);outline-offset:1px}.pj-shared{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-top:10px;font-size:13px}.pj-shared .pj-in{width:90px;display:block;margin-top:3px}.linkish{background:none;border:0;padding:0;color:var(--c1);font:inherit;cursor:pointer;text-decoration:underline}
 .qchip{font-style:normal;font-size:11px;font-weight:700;color:var(--q);background:color-mix(in srgb,var(--q) 13%,transparent);padding:2px 8px;border-radius:999px;white-space:nowrap}
 .qdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--q);margin-right:7px;vertical-align:1px}
 .qgrp h3{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px}.qgrp .kpi .kh{display:flex;justify-content:space-between;gap:6px;align-items:flex-start}.qgrp .kpi.nm>b{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}.qwhy{margin:2px 0 0;font-size:12px;line-height:1.45;color:var(--ink);opacity:.85}
@@ -357,7 +357,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 21 Nov 2026, 09:57 IST</p>
+    <p class="tiny" id="build">Version: 21 Nov 2026, 10:09 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -1702,9 +1702,51 @@ function projDefaults() {
     hist: {g, m, years: [...Array(k).keys()].map(j => L - j)},
     sc: {bear: {g: three(r1(gL)), m: three(r1(mL))}, base: {g: three(r1(gB)), m: three(r1(mB))}, bull: {g: three(r1(gB)), m: three(r1(mB))}},
     oi: Math.round(avg(last3(C.OI)) * 10) / 10, dep: r1(avg([...Array(k).keys()].map(j => L - j).map(i => div(C.D[i], S[i])).filter(v => v != null))),
-    int: Math.round((C.I[L] || 0) * 10) / 10, tax: tx.length ? r1(avg(tx)) : 25.2};
+    int: Math.round((C.I[L] || 0) * 10) / 10, tax: tx.length ? r1(avg(tx)) : 25.2, inv: 100000, pe: projPEDefaults()};
 }
-function projState() { const d = projDefaults(), s = lsGet('fx-prj:' + M.name); return {d, p: s ? Object.assign({}, d, s, {sc: Object.assign({}, d.sc, s.sc)}) : d, saved: !!s}; }
+function projPEDefaults() {
+  const L = C.n - 1, pe = C.R.find(r => r.k === 'P/E').v, hist = pe.slice(Math.max(0, L - 4), L + 1).filter(v => v > 0 && v < 400).sort((a, b) => a - b);
+  const now = projPrice() && C.EPS[L] > 0 ? projPrice() / C.EPS[L] : null, r = v => v == null ? null : Math.round(v * 10) / 10;
+  const med = hist.length ? hist[Math.floor((hist.length - 1) / 2)] : now;
+  return {bear: r(hist.length ? hist[0] : now), base: r(med), bull: r(Math.max(med ?? 0, now ?? 0) || null)};   // keeps bear <= base <= bull
+}
+const projPrice = () => (C.now && C.now.price) || C.PR[C.n - 1] || null;
+function projExitHTML() {
+  return `<div class="card" id="pj-exit"><div class="ch"><h3>Exit price and returns</h3><span id="pj-exit-sub"></span></div>
+    <div class="pj-shared" id="pj-exit-in"></div><div class="scroll" id="pj-exit-tbl"></div><div class="fig" style="height:230px"><canvas id="ch-pj-px"></canvas></div><p class="note" id="pj-exit-note"></p></div>`;
+}
+function projExit(p, R, lab) {
+  const L = C.n - 1, Y = M.secs.pl.dates.map(fy), price = projPrice(), peH = C.R.find(r => r.k === 'P/E').v, hp = peH.slice(Math.max(0, L - 4), L + 1).map((v, j) => v > 0 ? `${Y[Math.max(0, L - 4) + j]} ${v.toFixed(1)}×` : null).filter(Boolean);
+  const end = new Date(M.secs.pl.dates[L]); end.setFullYear(end.getFullYear() + 3);
+  const yrs = Math.max(.25, (end - Date.now()) / (365.25 * 864e5)), req = DCFX ? DCFX.r : COC, inv = +p.inv || 0;
+  const nowPE = price && C.EPS[L] > 0 ? price / C.EPS[L] : null;
+  const rows = PJS.map(([s, n, c]) => { const eps = R[s][2].eps, pe = +p.pe[s] || 0, tgt = eps > 0 && pe > 0 ? eps * pe : null;
+    const tot = tgt != null && price ? tgt / price - 1 : null, cagr = tot != null && tot > -1 ? Math.pow(1 + tot, 1 / yrs) - 1 : tot != null ? -1 : null;
+    return {s, n, c, eps, pe, tgt, gain: tgt != null && price ? tgt - price : null, tot, cagr, val: tot != null ? inv * (1 + tot) : null}; });
+  if (!$('#pj-exit-in').dataset.built) {   // build inputs once so typing keeps focus
+    $('#pj-exit-in').innerHTML = `<b>Exit P/E in ${lab[2]}:</b>` + PJS.map(([s, n, c]) => `<label class="mini-f"><span style="color:var(${c});font-weight:700">${n}</span><input class="pj-in" type="number" step="0.5" min="0" inputmode="decimal" data-pjpe="${s}" value="${p.pe[s] ?? ''}"></label>`).join('') +
+      `<label class="mini-f" title="Optional: shows what this amount would become">Amount invested, ₹<input class="pj-in" type="number" step="1000" min="0" inputmode="decimal" data-pjx="inv" value="${p.inv ?? ''}" style="width:110px"></label>`;
+    $('#pj-exit-in').dataset.built = 1; }
+  const f = (v, t) => v == null || !isFinite(v) ? '—' : t === 'pct' ? pct(v) : t === 'x' ? v.toFixed(1) + '×' : t === 'rs' ? '₹' + inr(v, 0) : inr(v);
+  const sign = v => v == null ? '' : v >= 0 ? 'pos' : 'neg';
+  const line2 = [['EPS, ' + lab[2], r => '₹' + inr(r.eps)], ['Exit P/E', r => f(r.pe, 'x')], ['Price in ' + lab[2], r => `<b>${f(r.tgt, 'rs')}</b>`],
+    ['Gain or loss per share', r => `<span class="${sign(r.gain)}">${r.gain == null ? '—' : (r.gain >= 0 ? '+' : '−') + '₹' + inr(Math.abs(r.gain), 0)}</span>`],
+    ['Total return', r => `<span class="${sign(r.tot)}">${f(r.tot, 'pct')}</span>`],
+    ['CAGR', r => `<b class="${sign(r.cagr)}">${f(r.cagr, 'pct')}</b> ${r.cagr == null ? '' : qchip(r.cagr >= req ? 'good' : r.cagr >= 0 ? 'watch' : 'bad', r.cagr >= req ? `beats ${pct(req)}` : r.cagr >= 0 ? `below ${pct(req)}` : 'loss')}`]];
+  if (inv > 0) line2.push([`₹${inr(inv, 0)} becomes`, r => f(r.val, 'rs')]);
+  $('#pj-exit-tbl').innerHTML = `<table class="pjt"><thead><tr><th>Today: ₹${inr(price, 0)}${nowPE ? ` · ${nowPE.toFixed(1)}× ${Y[L]} EPS` : ''}</th>${rows.map(r => `<th class="${r.s === PJV ? 'pj-v' : ''}" style="color:var(${r.c})">${r.n} case</th>`).join('')}</tr></thead><tbody>` +
+    line2.map(([k, fn]) => `<tr><td>${k}</td>${rows.map(r => `<td class="${r.s === PJV ? 'pj-v' : ''}">${fn(r)}</td>`).join('')}</tr>`).join('') + '</tbody></table>';
+  $('#pj-exit-sub').textContent = `holding ${yrs.toFixed(1)} years, to the end of ${lab[2]}`;
+  const cfg = base('bar', rows.map(r => r.n + ' case'), [Object.assign(bar('Price in ' + lab[2], rows.map(r => r.tgt), css('--c1')), {backgroundColor: rows.map(r => css(r.c)), borderRadius: 6, maxBarThickness: 70}),
+    Object.assign(line('Today’s price', rows.map(() => price), css('--ink'), [6, 5]), {type: 'line', fill: false, pointRadius: 0, pointHoverRadius: 0, borderWidth: 2})], 'cr');
+  cfg.options.scales.y.beginAtZero = true; draw('ch-pj-px', cfg);
+  const exp = rows.filter(r => r.cagr != null);
+  $('#pj-exit-note').innerHTML = (exp.length ? `Across the three cases the return ranges from <b>${pct(Math.min(...exp.map(r => r.cagr)))}</b> to <b>${pct(Math.max(...exp.map(r => r.cagr)))}</b> a year. ` +
+      (exp.find(r => r.s === 'base') ? (exp.find(r => r.s === 'base').cagr >= req ? `The base case beats your ${pct(req)} required return. ` : `The base case falls short of your ${pct(req)} required return, so the price leaves little margin of safety. `) : '') : '') +
+    `${hp.length ? `Year-end P/E over the last 5 years: ${hp.join(', ')}. ` : ''}Starting values: bear is the lowest of these, base the median, and bull the higher of the median and today's P/E; change them to your own. ` +
+    `Price = ${lab[2]} EPS × exit P/E. Returns ignore dividends and assume the share count stays the same. The required return is your DCF discount rate on the Valuation page${DCFX ? '' : ' (or the cost of capital from the Quality page)'}.`;
+}
+function projState() { const d = projDefaults(), s = lsGet('fx-prj:' + M.name); return {d, p: s ? Object.assign({}, d, s, {sc: Object.assign({}, d.sc, s.sc), pe: Object.assign({}, d.pe, s.pe || {})}) : d, saved: !!s}; }
 function projSave(p) { const {hist, ...keep} = p; lsPut('fx-prj:' + M.name, keep); markDirty(M.name); }
 function projRun(p) {
   const L = C.n - 1, sh = C.SH[L], out = {};
@@ -1732,6 +1774,7 @@ function renderProjections() {
       <p class="note">The ${vName.toLowerCase()} case ${PJRULE[PJV]}. Sales growth in the last 3 years: ${histTxt || '—'}; EBITDA margins: ${mTxt || '—'}. Change any cell; it's saved for this company.</p>
       <div class="pj-shared"><b>Same in all cases:</b>${one('oi', p.oi, 'Other income, ₹ Cr/yr', '3-year average, kept flat')}${one('dep', p.dep, 'Depreciation, % of sales', '3-year average')}${one('int', p.int, 'Interest, ₹ Cr/yr', 'Last year, kept flat')}${one('tax', p.tax, 'Tax rate, %', '3-year average effective rate')}</div></div>
     <div class="card"><div class="ch"><h3>Projected profit and loss: <span style="color:var(${vCol})">${vName} case</span></h3><span>₹ crore · ${Y[L]} actual, then ${lab[0]}–${lab[2]}</span></div><div class="scroll" id="pj-tbl"></div><p class="note" id="pj-note"></p></div>
+    ${projExitHTML()}
     <div class="grid"><div class="card"><div class="ch"><h3>Net profit: history and projections</h3><span>₹ crore</span></div><div class="fig"><canvas id="ch-pj-pat"></canvas></div></div>
       <div class="card"><div class="ch"><h3>Sales: history and projections</h3><span>₹ crore</span></div><div class="fig"><canvas id="ch-pj-s"></canvas></div></div></div>`;
   $('#pj-body').style.setProperty('--q', `var(${vCol})`);
@@ -1762,11 +1805,13 @@ function projDraw(p, lab) {
     PJS.forEach(([s, n, c]) => ds.push(Object.assign(line(n + (s === PJV ? ' (shown in table)' : ''), pad.concat([hist[hist.length - 1]], R[s].map(r => r[k])), css(c), [6, 4]), {fill: false, spanGaps: false, borderWidth: s === PJV ? 3.5 : 1.5}))); return ds; };
   draw('ch-pj-pat', base('line', labels, ser('pat', C.PAT), 'cr'));
   draw('ch-pj-s', base('line', labels, ser('sales', C.S), 'cr'));
+  projExit(p, R, lab);
 }
 document.addEventListener('input', e => {
   const t = e.target; if (!t.matches || !t.matches('.pj-in')) return;
   const {p} = projState(), v = parseFloat(t.value);
   if (t.dataset.pj) { const [s, f, y] = t.dataset.pj.split('.'); p.sc[s][f][+y] = isFinite(v) ? v : 0; }
+  else if (t.dataset.pjpe) p.pe = Object.assign({}, p.pe, {[t.dataset.pjpe]: isFinite(v) ? v : null});
   else p[t.dataset.pjx] = isFinite(v) ? v : 0;
   projSave(p);
   const L = C.n - 1, nd = new Date(M.secs.pl.dates[L]); projDraw(p, [1, 2, 3].map(k => { const x = new Date(nd); x.setFullYear(x.getFullYear() + k); return fy(x); }));
