@@ -102,31 +102,35 @@ def rows_from_table(records: list[dict]) -> dict[date, list]:
     return out
 
 
-def fetch_range(symbol: str, start: date, end: date, delay: float) -> dict[date, list]:
+def fetch_range(symbol: str, start: date, end: date, delay: float) -> tuple[dict[date, list], list[str]]:
+    """Download in yearly pieces. Returns the rows plus notes about any piece that failed, so one bad
+    request never throws away what was already fetched."""
     if capital_market is None:
         raise RuntimeError("the 'nselib' package is missing: pip install -r requirements.txt")
-    out, a = {}, start
+    out, notes, a = {}, [], start
     while a <= end:
         b = min(end, a + timedelta(days=CHUNK_DAYS - 1))
+        frm = a if b > a else b - timedelta(days=1)  # NSE needs to_date later than from_date; overlap a day instead
         last = None
         for attempt in range(3):
             try:
-                df = capital_market.price_volume_data(symbol=symbol, from_date=a.strftime("%d-%m-%Y"), to_date=b.strftime("%d-%m-%Y"))
+                df = capital_market.price_volume_data(symbol=symbol, from_date=frm.strftime("%d-%m-%Y"), to_date=b.strftime("%d-%m-%Y"))
                 recs = df.to_dict("records") if hasattr(df, "to_dict") else list(df or [])
                 out.update(rows_from_table(recs))
                 last = None
                 break
             except Exception as e:  # nselib raises plain exceptions for empty ranges and network trouble
                 last = e
-                if "no data" in str(e).lower() or "empty" in str(e).lower():
-                    last = None
-                    break
+                if re.search(r"no data|empty|not valid|no record", str(e), re.I):
+                    break  # nothing traded in that range (e.g. only a weekend or holiday); not worth retrying
                 time.sleep(2 * (attempt + 1))
-        if last:
-            raise RuntimeError(f"{symbol} {a}..{b}: {last}")
+        if last and not re.search(r"no data|empty|no record", str(last), re.I):
+            notes.append(f"{frm}..{b} not downloaded: {last}")
         time.sleep(delay)
         a = b + timedelta(days=1)
-    return out
+    if not out and notes:
+        raise RuntimeError("; ".join(notes))
+    return out, notes
 
 
 def cache_file(symbol: str) -> Path:
@@ -172,13 +176,13 @@ def run_company(c: dict, years: float, full: bool, delay: float) -> dict:
     have = {} if full else read_cache(c["symbol"])
     have = {d: v for d, v in have.items() if d >= first} if have else {}
     start = (max(have) + timedelta(days=1)) if have and min(have) <= first + timedelta(days=7) else first
-    new = fetch_range(c["symbol"], start, today, delay) if start <= today else {}
+    new, notes = fetch_range(c["symbol"], start, today, delay) if start <= today else ({}, [])
     rows = {**have, **new}
     write_cache(c["symbol"], rows)
     return {"name": c["name"], "symbol": c["symbol"],
             "rows": [[d.isoformat(), *[None if v is None else round(v, 4) for v in rows[d]]] for d in sorted(rows)],
             "first": min(rows).isoformat() if rows else None, "last": max(rows).isoformat() if rows else None,
-            "new_days": len(new), "warnings": split_warnings(rows)}
+            "new_days": len(new), "warnings": notes + split_warnings(rows)}
 
 
 def main():
