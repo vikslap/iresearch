@@ -192,6 +192,7 @@ td svg{display:block}
 .guide{margin-top:12px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--c1) 8%,transparent);border:1px solid color-mix(in srgb,var(--c1) 25%,transparent);font-size:13px;line-height:1.55;color:var(--ink)}.guide b{color:var(--c1)}.guide ol{margin:6px 0 0;padding-left:18px}
 .sgt td:first-child{font-weight:600;white-space:nowrap}.sgt tr.sgf td{border-top:2px solid var(--line)}.sgt td,.sgt th{text-align:right}.sgt td:first-child,.sgt td:nth-child(2),.sgt th:first-child,.sgt th:nth-child(2){text-align:left}
 .pjt{width:100%}.pjt th,.pjt td{text-align:right;white-space:nowrap}.pjt td:first-child,.pjt th:first-child{text-align:left;position:sticky;left:0;background:var(--card)}.pjt tr.pjb td{font-weight:700}.pjt .pos{color:var(--pos)}.pjt .neg{color:var(--neg)}.pjt th[colspan]{text-align:center}.pjt .pjg{border-left:1px solid var(--line)}.pjt .pj-v{background:color-mix(in srgb,var(--q,var(--c1)) 6%,transparent)}#pj-body{--q:var(--c1)}.pj-bar{display:flex;gap:16px;align-items:center;flex-wrap:wrap;border-left:4px solid var(--q)}.pj-bar select{min-width:150px}.pja td{padding:4px 6px}.pj-in{width:74px;text-align:right;padding:5px 7px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}.pj-in:focus{outline:2px solid var(--c1);outline-offset:1px}.pj-shared{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-top:10px;font-size:13px}.pj-shared .pj-in{width:90px;display:block;margin-top:3px}.linkish{background:none;border:0;padding:0;color:var(--c1);font:inherit;cursor:pointer;text-decoration:underline}
+.lbar{display:flex;gap:14px;align-items:center;justify-content:space-between;margin:0 0 16px;border-left:4px solid var(--c5);font-size:13px;line-height:1.5}.lbar button{flex:none}.lwarn{display:block;margin-top:4px;color:var(--warn)}
 .qchip{font-style:normal;font-size:11px;font-weight:700;color:var(--q);background:color-mix(in srgb,var(--q) 13%,transparent);padding:2px 8px;border-radius:999px;white-space:nowrap}
 .qdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--q);margin-right:7px;vertical-align:1px}
 .qgrp h3{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px}.qgrp .kpi .kh{display:flex;justify-content:space-between;gap:6px;align-items:flex-start}.qgrp .kpi.nm>b{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}.qwhy{margin:2px 0 0;font-size:12px;line-height:1.45;color:var(--ink);opacity:.85}
@@ -357,7 +358,7 @@ section{animation:fade .25s ease}
     <button id="sync-btn" class="syncb" aria-haspopup="dialog"><i class="sdot"></i>Sync: off</button>
     <button id="save" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Download Excel</button>
     <button id="reset" hidden>Reset edits</button>
-    <p class="tiny" id="build">Version: 21 Nov 2026, 13:55 IST</p>
+    <p class="tiny" id="build">Version: 21 Nov 2026, 15:38 IST</p>
     <p class="tiny">Select or drop several screener.in exports at once. NSE price CSVs can be dropped anywhere too.</p>
   </div>
 </aside>
@@ -373,10 +374,21 @@ section{animation:fade .25s ease}
   </header>
   <div class="kpis" id="kpis"></div>
 
+  <div class="card lbar" id="lbar" hidden></div>
+
   <section id="overview">
     <div class="card chg" id="chg" hidden><div class="ch"><h3 id="chg-t"></h3><span id="chg-s"></span><button class="xbtn2" id="chg-x" aria-label="Dismiss" title="Dismiss"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><ul id="chg-l"></ul></div>
     <a class="card flagbar" id="flagbar" href="#quality"></a>
-    <div class="grid">
+    <div class="grid" id="ov-lend" hidden>
+      <div class="card wide"><div class="ch"><h3>Interest earned, net interest income and profit</h3><span>₹ Cr</span></div><div class="fig big"><canvas id="ch-l-inc"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>Yield, cost of funds and margin</h3><span>% of average assets / funds</span></div><div class="fig"><canvas id="ch-l-mrg"></canvas></div><p class="note">Yield = interest earned ÷ assets; cost of funds = interest paid ÷ deposits and borrowings. NII ÷ assets is a proxy for net interest margin.</p></div>
+      <div class="card"><div class="ch"><h3>Costs and credit cost</h3><span>%</span></div><div class="fig"><canvas id="ch-l-cost"></canvas></div><p class="note">Credit cost uses Screener's "Other Expenses" line, where provisions sit, divided by loans and other assets.</p></div>
+      <div class="card"><div class="ch"><h3>Return on equity</h3><span>on average equity</span></div><div class="fig"><canvas id="ch-l-roe"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>Return on assets</h3><span>on average assets</span></div><div class="fig"><canvas id="ch-l-roa"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>Loans, funding and net worth</h3><span>₹ Cr</span></div><div class="fig"><canvas id="ch-l-bs"></canvas></div><p class="note">Screener combines loans with other assets, and deposits with borrowings.</p></div>
+      <div class="card"><div class="ch"><h3>Book value per share</h3><span>₹</span></div><div class="fig"><canvas id="ch-l-bv"></canvas></div></div>
+    </div>
+    <div class="grid" id="ov-std">
       <div class="card wide"><div class="ch"><h3>Sales and operating profit</h3><span>₹ Cr · EBITDA excludes other income</span></div><div class="fig big"><canvas id="ch-sales"></canvas></div></div>
       <div class="card"><div class="ch"><h3>Margins</h3><span>% of sales</span></div><div class="fig"><canvas id="ch-marg"></canvas></div></div>
       <div class="card"><div class="ch"><h3>Net profit vs operating cash flow</h3><span>₹ Cr</span></div><div class="fig"><canvas id="ch-cash"></canvas></div></div>
@@ -414,6 +426,8 @@ section{animation:fade .25s ease}
 
   <section id="quality" hidden>
     <div class="card" id="q-flags"></div>
+    <div id="q-lend" hidden></div>
+    <div id="q-std">
     <h2>What drives returns</h2>
     <div class="card qv" id="q-verdict"></div>
     <div id="q-tiles"></div>
@@ -424,15 +438,17 @@ section{animation:fade .25s ease}
       <div class="card wide" id="q-peer-card"><div class="ch"><h3>Against sector peers</h3><span id="q-peer-sub"></span></div><div id="q-peer"></div></div>
       <div class="card wide"><div class="ch"><h3 id="q-cash-t">Where the cash went</h3><span>₹ Cr, cumulative</span></div><div class="fig" style="height:300px"><canvas id="ch-cash2"></canvas></div><p class="note" id="q-cash-note"></p></div>
     </div>
+    </div>
   </section>
 
   <section id="valuation" hidden>
     <div class="grid">
       <div class="card"><div class="ch"><h3>Price to earnings</h3><span>year-end and now</span></div><div class="fig"><canvas id="ch-pe"></canvas></div></div>
-      <div class="card"><div class="ch"><h3>EV / EBITDA</h3><span>year-end and now</span></div><div class="fig"><canvas id="ch-ev"></canvas></div></div>
+      <div class="card" id="v-ev"><div class="ch"><h3>EV / EBITDA</h3><span>year-end and now</span></div><div class="fig"><canvas id="ch-ev"></canvas></div></div>
       <div class="card"><div class="ch"><h3>Price to book</h3><span>year-end and now</span></div><div class="fig"><canvas id="ch-pb"></canvas></div></div>
       <div class="card"><div class="ch"><h3>Share price vs EPS</h3><span>indexed, first year = 100</span></div><div class="fig"><canvas id="ch-px"></canvas></div></div>
     </div>
+    <div id="v-lend" hidden></div>
     <h2>Scenario valuation</h2>
     <div class="card">
       <div class="ch"><h3>Projected EPS × justified P/E</h3><button class="sm" id="scn-reset" style="margin-left:auto"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Reset</button></div>
@@ -468,6 +484,7 @@ section{animation:fade .25s ease}
       <div class="res"><div class="rh"><p class="crumb">Expected return</p><button class="sm" id="er-reset" title="Reset inputs to defaults"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Reset</button></div><div class="big" id="er-val">—</div><p id="er-sub" style="margin:8px 0 12px;font-size:14px"></p><div id="er-bars"></div>
         <p class="note">Return ≈ EPS growth + yearly change from today’s P/E (TTM) to the exit P/E + dividend yield. Defaults: 5-year profit CAGR, median historical P/E, latest dividend.</p></div>
     </div>
+    <div id="v-dcf">
     <h2>Discounted cash flow</h2>
     <div class="card dcf">
       <div class="fields" id="dcfin">
@@ -503,6 +520,7 @@ section{animation:fade .25s ease}
         <div class="seg" id="ex-rate" role="group" aria-label="Discount rate" style="margin:0 0 10px"></div><div class="rv-out" id="ex-kpi"></div>
         <div class="fig" style="height:280px"><canvas id="ch-ex"></canvas></div>
         <p class="note" id="ex-note"></p><div class="guide" id="ex-guide"></div></div>
+    </div>
     </div>
   </section>
 
@@ -645,6 +663,48 @@ function calc() {
   add('Valuation','Market cap / sales', i => div(MC[i], S[i]), 'x');
   add('Valuation','Earnings yield', i => div(PAT[i], MC[i]), 'pct');
   A.R = R;
+  // ---- lenders (banks, NBFCs). Screener's template puts interest earned in Sales, interest paid in Interest,
+  // deposits + borrowings in Borrowings, loans + other assets in Other Assets, and provisions inside Other Expenses.
+  {
+    const OME = get('pl', 'Other Mfr. Exp'), PF = get('pl', 'Power and Fuel'), SA = get('pl', 'Selling and admin'), OE = get('pl', 'Other Expenses');
+    const TOT = map(i => NW[i] + DEBT[i] + OL[i]), avg = (a, i) => i ? (a[i] + a[i - 1]) / 2 : a[i];
+    const NII = map(i => S[i] - I[i]), OPX = map(i => (EMP[i] || 0) + (OME[i] || 0) + (PF[i] || 0) + (SA[i] || 0) + (D[i] || 0));
+    const INC = map(i => NII[i] + OI[i]), PPOP = map(i => INC[i] - OPX[i]), PROV = map(i => OE[i] || 0), BV = map(i => div(NW[i], SH[i]));
+    const LR = [], ad = (g, k, f, fmt) => LR.push({g, k, v: map(f), fmt});
+    const yld = i => div(S[i], avg(TOT, i)), cof = i => div(I[i], avg(DEBT, i));
+    ad('Lending margins', 'Yield on assets', yld, 'pct');
+    ad('Lending margins', 'Cost of funds', cof, 'pct');
+    ad('Lending margins', 'Spread', i => yld(i) == null || cof(i) == null ? null : yld(i) - cof(i), 'pct');
+    ad('Lending margins', 'NII ÷ assets (NIM proxy)', i => div(NII[i], avg(TOT, i)), 'pct');
+    ad('Lending margins', 'Other income ÷ total income', i => div(OI[i], INC[i]), 'pct');
+    ad('Costs and credit', 'Cost-to-income', i => div(OPX[i], INC[i]), 'pct');
+    ad('Costs and credit', 'Operating costs ÷ assets', i => div(OPX[i], avg(TOT, i)), 'pct');
+    ad('Costs and credit', 'Provisions ÷ loans (credit cost proxy)', i => div(PROV[i], avg(OA, i)), 'pct');
+    ad('Costs and credit', 'Provisions ÷ pre-provision profit', i => div(PROV[i], PPOP[i]), 'pct');
+    ad('Costs and credit', 'Tax rate', i => div(TX[i], PBT[i]), 'pct');
+    ad('Returns', 'ROA', i => div(PAT[i], avg(TOT, i)), 'pct');
+    ad('Returns', 'ROE', i => div(PAT[i], avg(NW, i)), 'pct');
+    ad('Returns', 'Pre-provision profit ÷ assets', i => div(PPOP[i], avg(TOT, i)), 'pct');
+    ad('Growth', 'Loan book growth (loans + other assets)', i => i ? div(OA[i] - OA[i - 1], OA[i - 1]) : null, 'pct');
+    ad('Growth', 'Deposits + borrowings growth', i => i ? div(DEBT[i] - DEBT[i - 1], DEBT[i - 1]) : null, 'pct');
+    ad('Growth', 'Net interest income growth', i => i && NII[i - 1] > 0 ? div(NII[i] - NII[i - 1], NII[i - 1]) : null, 'pct');
+    ad('Growth', 'Net profit growth', i => i && PAT[i - 1] > 0 ? div(PAT[i] - PAT[i - 1], PAT[i - 1]) : null, 'pct');
+    ad('Growth', 'Book value per share growth', i => i && BV[i - 1] > 0 ? div(BV[i] - BV[i - 1], BV[i - 1]) : null, 'pct');
+    ad('Capital', 'Equity ÷ assets', i => div(NW[i], TOT[i]), 'pct');
+    ad('Capital', 'Assets ÷ equity (leverage)', i => div(TOT[i], NW[i]), 'x');
+    ad('Capital', 'Loans ÷ deposits and borrowings', i => div(OA[i], DEBT[i]), 'pct');
+    ad('Capital', 'Investments ÷ assets', i => div(INV[i], TOT[i]), 'pct');
+    ad('Capital', 'Dividend payout', i => div(DIV[i], PAT[i]), 'pct');
+    ad('Per share', 'EPS, ₹', i => EPS[i], 'cr');
+    ad('Per share', 'Book value per share, ₹', i => BV[i], 'cr');
+    ad('Valuation', 'P/B', i => div(MC[i], NW[i]), 'x');
+    ad('Valuation', 'P/E', i => div(MC[i], PAT[i]), 'x');
+    ad('Valuation', 'Earnings yield', i => div(PAT[i], MC[i]), 'pct');
+    // a lender: no materials or inventory, interest paid is a big share of income, and nearly all assets are loans and investments
+    const l = n - 1, k = Math.max(0, l - 2), sm = a => a.slice(k).reduce((x, y) => x + Math.abs(y || 0), 0);
+    const auto = sm(RM) === 0 && sm(INY) === 0 && (div(sm(I), sm(S)) ?? 0) >= .25 && (div(INV[l] + OA[l], TOT[l]) ?? 0) >= .85;
+    Object.assign(A, {LN: {TOT, NII, OPX, INC, PPOP, PROV, BV, LOAN: OA}, LR, lenderAuto: auto, lenderMix: div(OI[l], S[l]) > .3 ? div(OI[l], S[l]) : null});
+  }
   // quarterly
   const qs = M.secs.q;
   if (qs && qs.dates.length) {
@@ -682,6 +742,8 @@ function headline() {
   const g5 = C.cagr(C.S, Math.min(5, C.n - 1)), roe = C.R.find(r => r.k === 'ROE').v[C.n - 1], yrs = Math.min(5, C.n - 1), nm = title();
   let h = g5 == null ? 'Ten years of accounts' : `Sales ${g5 >= 0 ? 'grew' : 'shrank'} ${Math.abs(g5 * 100).toFixed(0)}% a year over ${yrs} years`;
   if (roe != null) h += `; return on equity is now ${(roe * 100).toFixed(0)}%.`;
+  if (LM()) { const L = C.n - 1, n5 = C.cagr(C.LN.NII, yrs), lr = LRv('ROE')[L], la = LRv('ROA')[L];
+    h = (n5 == null ? 'Lender' : `Net interest income ${n5 >= 0 ? 'grew' : 'shrank'} ${Math.abs(n5 * 100).toFixed(0)}% a year over ${yrs} years`) + (lr != null ? `; ROE ${(lr * 100).toFixed(1)}%, ROA ${(la * 100).toFixed(2)}%.` : '.'); }
   $('#title').textContent = h;
   $('#cname').textContent = nm; $('#cname2').textContent = nm;
   $('#av').textContent = nm.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
@@ -705,7 +767,7 @@ function kpis() {
   const L = C.n - 1, N = C.now, R = k => C.R.find(r => r.k === k).v, S = soicScore(), lf = fy(M.secs.pl.dates[L]);
   const roe = R('ROE'), roce = R('ROCE'), de = R('Debt / equity'), g5 = C.cagr(C.S, Math.min(5, L));
   $('#pill').innerHTML = `<div><b>₹${inr(N.price)}</b><span>Share price ${chg(div(N.price - C.PR[L], C.PR[L]))}</span></div><div class="sep"></div><div><b>₹${inr(N.mcap)} Cr</b><span>Market cap</span></div>`;
-  const items = [
+  const items = LM() ? kpisL() : [
     {k: 'P/E (TTM)', v: fmt(N.pe, 'x'), n: `median ${fmt(median(R('P/E')), 'x')}`, s: R('P/E').concat(N.pe), col: 'var(--c1)'},
     {k: 'EV / EBITDA', v: fmt(N.evE, 'x'), n: `median ${fmt(median(R('EV / EBITDA')), 'x')}`, s: R('EV / EBITDA').concat(N.evE), col: 'var(--c4)'},
     {k: 'Price / book', v: fmt(N.pb, 'x'), n: `median ${fmt(median(R('P/B')), 'x')}`, s: R('P/B').concat(N.pb), col: 'var(--c5)'},
@@ -798,6 +860,8 @@ function renderOverview() {
   renderChg();
   { const F = flagsCalc(), r = F.filter(f => f.lvl === 'red').length, a = F.filter(f => f.lvl === 'amber').length;
     $('#flagbar').innerHTML = `<span class="fl" style="color:var(${r ? '--neg' : a ? '--warn' : '--pos'});background:color-mix(in srgb,var(${r ? '--neg' : a ? '--warn' : '--pos'}) 13%,transparent)">${r ? r + ' red flag' + (r > 1 ? 's' : '') : a ? 'No red flags' : 'All clear'}</span><span>${a} watch item${a === 1 ? '' : 's'} · ${F.length - r - a} of ${F.length} quality checks passed</span><span class="go">See quality checks →</span>`; }
+  $('#ov-lend').hidden = !LM(); $('#ov-std').hidden = LM();
+  if (LM()) return renderOverviewL();
   const Y = M.secs.pl.dates.map(fy), c1 = css('--c1'), c2 = css('--c2'), c3 = css('--c3'), c4 = css('--c4'), c5 = css('--c5'), c6 = css('--c6'), c7 = css('--c7');
   const R = k => C.R.find(r => r.k === k).v;
   draw('ch-sales', base('bar', Y, [bar('Sales', C.S, c1), bar('EBITDA', C.EBITDA, c2)], 'cr'));
@@ -819,6 +883,16 @@ function renderQuarterly() {
   const Q = C.Q;
   if (!Q) { $('#qtab').innerHTML = '<tr><td>No quarterly block in this file.</td></tr>'; return; }
   const X = Q.d.map(ql), c1 = css('--c1'), c2 = css('--c2'), c3 = css('--c3'), c4 = css('--c4'), c5 = css('--c5'), c7 = css('--c7');
+  if (LM()) {   // lender: interest earned − interest paid = NII; Expenses holds operating costs and provisions
+    const yoy = a => a.map((v, i) => i >= 4 ? div(v - a[i-4], Math.abs(a[i-4])) : null), ttm = a => a.map((_, i) => i >= 3 ? a[i] + a[i-1] + a[i-2] + a[i-3] : null);
+    const NII = Q.S.map((v, i) => v - (Q.I[i] || 0)), INC = NII.map((v, i) => v + (Q.OI[i] || 0)), COST = Q.E.map((v, i) => v + (Q.D[i] || 0));
+    draw('ch-q', base('bar', X, [bar('Net interest income', NII, c3), bar('Net profit', Q.PAT, c2)], 'cr'));
+    draw('ch-qm', base('line', X, [line('Costs and provisions ÷ total income', COST.map((v, i) => div(v, INC[i])), c4), line('Net profit ÷ total income', Q.PAT.map((v, i) => div(v, INC[i])), c1)], 'pct'));
+    draw('ch-ttm', base('line', X, [line('TTM net interest income', ttm(NII), c7), line('TTM net profit', Q.tPAT, c5)], 'cr'));
+    const rows = [['Interest earned', Q.S, 'cr'], ['Interest paid', Q.I, 'cr'], ['Net interest income', NII, 'cr'], ['NII growth YoY', yoy(NII), 'pct'], ['Other income', Q.OI, 'cr'], ['Total income', INC, 'cr'], ['Operating costs and provisions', COST, 'cr'], ['Profit before tax', Q.PBT, 'cr'], ['Tax', Q.TX, 'cr'], ['Net profit', Q.PAT, 'cr'], ['Net profit growth YoY', yoy(Q.PAT), 'pct'], ['TTM net profit', Q.tPAT, 'cr']];
+    $('#qtab').innerHTML = `<thead><tr><th>₹ Cr</th>${X.map(x => `<th>${x}</th>`).join('')}</tr></thead><tbody>` + rows.map(([k, a, f]) => `<tr><td>${k}</td>${a.map(v => `<td class="${v < 0 ? 'neg' : ''}">${fmt(v, f)}</td>`).join('')}</tr>`).join('') + '</tbody>';
+    return;
+  }
   draw('ch-q', base('bar', X, [bar('Sales', Q.S, c1), bar('Net profit', Q.PAT, c2)], 'cr'));
   draw('ch-qm', base('line', X, [line('Operating margin', Q.S.map((s, i) => div(Q.OP[i], s)), c3), line('Net margin', Q.S.map((s, i) => div(Q.PAT[i], s)), c4)], 'pct'));
   draw('ch-ttm', base('line', X, [line('TTM sales', Q.tS, c7), line('TTM net profit', Q.tPAT, c5)], 'cr'));
@@ -835,19 +909,20 @@ function spark(v) {
   const d = p.map((q, i) => (i ? 'L' : 'M') + (q[0] * sx).toFixed(1) + ' ' + (H - 2 - (q[1] - lo) * sy).toFixed(1)).join('');
   return `<svg width="${W}" height="${H}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--c1)" stroke-width="1.8" stroke-linejoin="round"/></svg>`;
 }
-const GCOL = {Margins: '--c1', Returns: '--c4', Efficiency: '--c3', Leverage: '--c2', 'Cash flow': '--c7', 'Per share': '--c5', Valuation: '--c6'};
-const ROPEN = new Set(['Margins']);
+const GCOL = {'Lending margins': '--c1', 'Costs and credit': '--c2', Growth: '--c3', Capital: '--c6', Margins: '--c1', Returns: '--c4', Efficiency: '--c3', Leverage: '--c2', 'Cash flow': '--c7', 'Per share': '--c5', Valuation: '--c6'};
+const ROPEN = new Set(['Margins', 'Lending margins']);
+const RSET = () => LM() ? C.LR : C.R;
 function drawGroup(g) {
   const Y = M.secs.pl.dates.map(fy), col = css(GCOL[g] || '--c1');
-  C.R.forEach((r, i) => { if (r.g !== g) return; const isBar = r.fmt === 'cr' || r.fmt === 'days';
+  RSET().forEach((r, i) => { if (r.g !== g) return; const isBar = r.fmt === 'cr' || r.fmt === 'days';
     draw('rc-' + i, base(isBar ? 'bar' : 'line', Y, [isBar ? bar(r.k, r.v, col) : line(r.k, r.v, col)], r.fmt, {})); });
 }
 function renderRatios() {
   Object.keys(charts).forEach(k => { if (k.startsWith('rc-')) { charts[k].destroy(); delete charts[k]; } });
-  const Y = M.secs.pl.dates.map(fy), L = C.n - 1, groups = [...new Set(C.R.map(r => r.g))];
+  const Y = M.secs.pl.dates.map(fy), L = C.n - 1, RS = RSET(), groups = [...new Set(RS.map(r => r.g))];
   const chev = '<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>';
   $('#rgroups').innerHTML = groups.map(g => {
-    const rs = C.R.map((r, i) => Object.assign({i}, r)).filter(r => r.g === g), cv = `var(${GCOL[g] || '--c1'})`;
+    const rs = RS.map((r, i) => Object.assign({i}, r)).filter(r => r.g === g), cv = `var(${GCOL[g] || '--c1'})`;
     return `<details class="card rg" data-g="${g}"${ROPEN.has(g) ? ' open' : ''}><summary><span class="dot" style="background:${cv}"></span><b>${g}</b><span class="cnt">${rs.length} ratios</span>
       <span class="peek">${rs.slice(0, 3).map(r => `<span>${r.k.replace(/ \(.*\)/, '')}<b>${fmt(r.v[L], r.fmt)}</b></span>`).join('')}</span>${chev}</summary>
       <div class="rbody"><div class="rgrid">${rs.map(r => `<div class="card mini"><div class="ch"><h3>${r.k}</h3><span>${fmt(r.v[L], r.fmt)}</span></div><div class="fig"><canvas id="rc-${r.i}"></canvas></div></div>`).join('')}</div>
@@ -856,7 +931,7 @@ function renderRatios() {
   groups.forEach(g => { if (ROPEN.has(g)) drawGroup(g); });
 }
 $('#rgroups').addEventListener('toggle', e => { const d = e.target; if (!d.dataset || !d.dataset.g) return; if (d.open) { ROPEN.add(d.dataset.g); drawGroup(d.dataset.g); } else ROPEN.delete(d.dataset.g); }, true);
-$('#r-open').addEventListener('click', () => { C.R.forEach(r => ROPEN.add(r.g)); renderRatios(); });
+$('#r-open').addEventListener('click', () => { RSET().forEach(r => ROPEN.add(r.g)); renderRatios(); });
 $('#r-close').addEventListener('click', () => { ROPEN.clear(); renderRatios(); });
 
 let dcfInit = false, DMODE = 'fcf';
@@ -883,6 +958,8 @@ function renderValuation() {
   const i0 = C.PR.findIndex((p, i) => p > 0 && C.EPS[i] > 0);
   const idx = a => a.map(v => i0 < 0 || v == null ? null : v / a[i0] * 100);
   draw('ch-px', base('line', Y.slice(0, -1), [line('Share price', idx(C.PR), css('--c3')), line('EPS', idx(C.EPS), c2)], 'cr'));
+  $('#v-lend').hidden = !LM(); $('#v-dcf').hidden = LM(); $('#v-ev').hidden = LM();
+  if (LM()) { renderValuationL(); renderBands(); renderScn(); return; }
   if (!dcfInit) {
     const L = C.n - 1, f3 = C.FCF.slice(-3).filter(v => v != null), avg = f3.reduce((a, b) => a + b, 0) / (f3.length || 1);
     DMODE = avg > 0 ? 'fcf' : 'pat';
@@ -1082,6 +1159,7 @@ function renderView() {
   document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + v));
   $('#crumb').textContent = VNAME[v]; $('#tb-view').textContent = VNAME[v]; $('#tb-name').textContent = title(); $('#tb-av').textContent = $('#av').textContent; $('#tb-av').style.background = $('#av').style.background || ''; closeDrawer(); $('#kpis').hidden = v !== 'overview';
   if (lastView !== v && lastView !== null) scrollTo(0, 0); lastView = v;
+  try { renderLbar(); } catch (e) { console.error(e); }
   ({overview: renderOverview, quarterly: renderQuarterly, ratios: renderRatios, quality: renderQuality, segments: renderSegments, valuation: renderValuation, projections: renderProjections, score: renderScore, compare: renderCompare, companies: renderCompanies, sectors: renderSectors, data: renderData})[v]();
 }
 
@@ -1439,6 +1517,7 @@ function renderAsOf() {
 
 // ---- Quality: red flags ----
 function flagsCalc() {
+  if (LM()) return flagsLender();
   const L = C.n - 1, R = k => C.R.find(r => r.k === k).v, out = [], k3 = Math.min(3, L), k5 = Math.min(5, L);
   const add = (lvl, t, d) => out.push({lvl, t, d});
   const sum = (a, n) => a.slice(-n).reduce((x, y) => x + (y || 0), 0);
@@ -1584,8 +1663,8 @@ function qualityRead(s) {
 const QPM = [['ROCE (latest)', s => s.C.R.find(r => r.k === 'ROCE').v[s.C.n - 1], 1], ['Post-tax ROCE, 5y avg', s => s.D.avgPt, 1], ['Incremental ROCE, 3y', s => { const q = qualityRead(s); return q.T.inc3 === 'nm' ? null : s.D.inc3; }, 1],
   ['ROE (latest)', s => s.C.R.find(r => r.k === 'ROE').v[s.C.n - 1], 1], ['Operating margin', s => s.C.R.find(r => r.k === 'Operating margin (EBITDA)').v[s.C.n - 1], 1],
   ['Reinvestment rate', s => s.D.reinv, 0], ['Sales CAGR 5y', s => s.C.cagr(s.C.S, Math.min(5, s.C.n - 1)), 1], ['CFO ÷ EBITDA, 3y', s => { const sm = (a) => a.slice(-3).reduce((x, y) => x + (y || 0), 0); return div(sm(s.C.CFO), sm(s.C.EBITDA)); }, 1]];
-function peerStrip(snaps, meK) {
-  return QPM.map(([lab, f, dir]) => {
+function peerStrip(snaps, meK, list = QPM) {
+  return list.map(([lab, f, dir, fm]) => { const pct = v => fm === 'x' ? fmt(v, 'x') : (v == null ? '—' : (v * 100).toFixed(1) + '%');
     const pts = snaps.map(s => { let v = null; try { v = f(s); } catch (e) {} return {k: s.k, name: niceName(s.k), v: v != null && isFinite(v) ? v : null}; }).filter(p => p.v != null);
     const me = pts.find(p => p.k === meK); if (pts.length < 2) return '';
     const vs = pts.map(p => p.v).sort((a, b) => a - b), lo = vs[Math.floor(vs.length * .05)], hi = vs[Math.ceil(vs.length * .95) - 1];
@@ -1597,9 +1676,9 @@ function peerStrip(snaps, meK) {
 }
 // side-by-side quality read for several companies (Compare and Sectors pages)
 function qualityTable(snaps, meK) {
-  const rows = snaps.map(s => { let q = null; try { q = qualityRead(s); } catch (e) { console.error(e); } return {s, q}; }).filter(r => r.q);
+  const rows = snaps.map(s => { let q = null; try { q = s.C && s.C.LR && lenderMode(s.k, s.C) ? lenderRead(s) : qualityRead(s); } catch (e) { console.error(e); } return {s, q}; }).filter(r => r.q);
   if (!rows.length) return '';
-  const lv = {good: 0, watch: 1, bad: 2}; rows.sort((a, b) => lv[a.q.lvl] - lv[b.q.lvl] || ((b.s.D.avgPt ?? -9) - (a.s.D.avgPt ?? -9)));
+  const lv = {good: 0, watch: 1, bad: 2}; rows.sort((a, b) => lv[a.q.lvl] - lv[b.q.lvl] || ((b.q.roe3 ?? b.s.D?.avgPt ?? -9) - (a.q.roe3 ?? a.s.D?.avgPt ?? -9)));
   const c = ([st, t]) => `<td>${qchip(st, t)}</td>`;
   return `<h2>Quality read, side by side</h2><div class="scroll cmp qtab"><table><thead><tr><th>Company</th><th>Verdict</th><th title="Post-tax ROCE, 5-year average, against your cost of capital">Returns</th><th>Trend</th><th title="Return on capital added recently">New capital</th><th title="Biggest driver of the change in ROE">ROE driver</th><th title="How expansion was paid for">Funding</th><th title="Operating profit CAGR, 5 years">Growth</th></tr></thead><tbody>` +
     rows.map(({s, q}) => `<tr${s.k === meK ? ' class="me"' : ''}><td><span class="nm2" data-open="${escA(s.k)}" role="button" tabindex="0"><i style="background:var(${colOf(s.k)})"></i>${niceName(s.k)}</span></td><td class="qv-c"><span class="qdot" style="--q:var(${QL[q.lvl][1]})"></span>${q.head}</td>${['ret', 'trend', 'inc', 'drv', 'fund', 'grow'].map(k => c(q.short[k])).join('')}</tr>`).join('') +
@@ -1727,6 +1806,37 @@ function projDefaults() {
     oi: Math.round(avg(last3(C.OI)) * 10) / 10, dep: r1(avg([...Array(k).keys()].map(j => L - j).map(i => div(C.D[i], S[i])).filter(v => v != null))),
     int: Math.round((C.I[L] || 0) * 10) / 10, tax: tx.length ? r1(avg(tx)) : 25.2, inv: 100000, pe: projPEDefaults()};
 }
+// lenders: loans grow, assets follow loans, NII and other income are earned on assets, costs are a share of income, provisions a share of loans
+function projDefaultsL() {
+  const L = C.n - 1, k = Math.min(3, L), yrs = [...Array(k).keys()].map(j => L - j), LN = C.LN;
+  const avgA = (a, i) => i ? (a[i] + a[i - 1]) / 2 : a[i], ok = v => v != null && isFinite(v);
+  const g = yrs.map(i => div(LN.LOAN[i] - LN.LOAN[i - 1], LN.LOAN[i - 1])).filter(ok), m = yrs.map(i => div(LN.NII[i], avgA(LN.TOT, i))).filter(ok);
+  const ci = yrs.map(i => div(LN.OPX[i], LN.INC[i])).filter(ok), cc = yrs.map(i => div(LN.PROV[i], avgA(LN.LOAN, i))).filter(ok);
+  const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0, r1 = v => Math.round(v * 1000) / 10, r2 = v => Math.round(v * 10000) / 100, three = v => [v, v, v];
+  const lo = a => a.length ? Math.min(...a) : 0, hi = a => a.length ? Math.max(...a) : 0;
+  const tx = yrs.map(i => C.PBT[i] > 0 ? div(C.TX[i], C.PBT[i]) : null).filter(v => v != null && v >= 0 && v < .6), pay = yrs.map(i => div(C.DIV[i], C.PAT[i])).filter(v => v != null && v >= 0 && v <= 1);
+  return {lender: true, hist: {g, m, ci, cc, years: yrs},
+    sc: {bear: {g: three(r1(lo(g))), m: three(r2(lo(m))), ci: three(r1(hi(ci))), cc: three(r2(hi(cc)))},
+         base: {g: three(r1(avg(g))), m: three(r2(avg(m))), ci: three(r1(avg(ci))), cc: three(r2(avg(cc)))},
+         bull: {g: three(r1(avg(g))), m: three(r2(avg(m))), ci: three(r1(avg(ci))), cc: three(r2(avg(cc)))}},
+    oia: r2(avg(yrs.map(i => div(C.OI[i], avgA(LN.TOT, i))).filter(ok))), tax: tx.length ? r1(avg(tx)) : 25.2, pay: pay.length ? r1(avg(pay)) : 0,
+    inv: 100000, xb: 'pb', pe: projPEDefaults(), pb: projMultDefaults('P/B', LN.BV[L])};
+}
+function projRunL(p) {
+  const L = C.n - 1, LN = C.LN, sh = C.SH[L], mix = div(LN.TOT[L], LN.LOAN[L]) || 1, out = {};
+  PJS.forEach(([s]) => { let loan = LN.LOAN[L], tot = LN.TOT[L], bv = C.NW[L];
+    out[s] = [0, 1, 2].map(y => { const q = k => (+p.sc[s][k][y] || 0) / 100;
+      const g = q('g'), l0 = loan, t0 = tot, b0 = bv; loan = loan * (1 + g); tot = loan * mix;
+      const aT = (t0 + tot) / 2, aL = (l0 + loan) / 2, nii = q('m') * aT, oi = (+p.oia || 0) / 100 * aT, inc = nii + oi, opx = q('ci') * inc, ppop = inc - opx, prov = q('cc') * aL;
+      const pbt = ppop - prov, tax = pbt > 0 ? pbt * (+p.tax || 0) / 100 : 0, pat = pbt - tax; bv = b0 + pat * (1 - Math.min(100, Math.max(0, +p.pay || 0)) / 100);
+      return {loan, g, tot, nii, oi, inc, opx, ppop, prov, pbt, tax, pat, eps: div(pat, sh), bvps: div(bv, sh), roe: div(pat, (b0 + bv) / 2), roa: div(pat, aT)}; }); });
+  return out;
+}
+function projMultDefaults(key, per) {
+  const L = C.n - 1, h = C.R.find(r => r.k === key).v.slice(Math.max(0, L - 4), L + 1).filter(v => v > 0 && v < 400).sort((a, b) => a - b);
+  const now = projPrice() && per > 0 ? projPrice() / per : null, r = v => v == null ? null : Math.round(v * 100) / 100, med = h.length ? h[Math.floor((h.length - 1) / 2)] : now;
+  return {bear: r(h.length ? h[0] : now), base: r(med), bull: r(Math.max(med ?? 0, now ?? 0) || null)};
+}
 function projPEDefaults() {
   const L = C.n - 1, pe = C.R.find(r => r.k === 'P/E').v, hist = pe.slice(Math.max(0, L - 4), L + 1).filter(v => v > 0 && v < 400).sort((a, b) => a - b);
   const now = projPrice() && C.EPS[L] > 0 ? projPrice() / C.EPS[L] : null, r = v => v == null ? null : Math.round(v * 10) / 10;
@@ -1742,22 +1852,23 @@ function projExit(p, R, lab) {
   const L = C.n - 1, Y = M.secs.pl.dates.map(fy), price = projPrice(), peH = C.R.find(r => r.k === 'P/E').v, hp = peH.slice(Math.max(0, L - 4), L + 1).map((v, j) => v > 0 ? `${Y[Math.max(0, L - 4) + j]} ${v.toFixed(1)}×` : null).filter(Boolean);
   const end = new Date(M.secs.pl.dates[L]); end.setFullYear(end.getFullYear() + 3);
   const yrs = Math.max(.25, (end - Date.now()) / (365.25 * 864e5)), req = DCFX ? DCFX.r : COC, inv = +p.inv || 0;
-  const nowPE = price && C.EPS[L] > 0 ? price / C.EPS[L] : null;
-  const rows = PJS.map(([s, n, c]) => { const eps = R[s][2].eps, pe = +p.pe[s] || 0, tgt = eps > 0 && pe > 0 ? eps * pe : null;
+  const lm = LM(), xb = lm && p.xb !== 'pe' ? 'pb' : 'pe', M2 = xb === 'pb' ? 'P/B' : 'P/E', per0 = xb === 'pb' ? C.LN.BV[L] : C.EPS[L];
+  const nowPE = price && per0 > 0 ? price / per0 : null, hp2 = xb === 'pb' ? C.R.find(r => r.k === 'P/B').v.slice(Math.max(0, L - 4), L + 1).map((v, j) => v > 0 ? `${Y[Math.max(0, L - 4) + j]} ${v.toFixed(2)}×` : null).filter(Boolean) : hp;
+  const rows = PJS.map(([s, n, c]) => { const eps = xb === 'pb' ? R[s][2].bvps : R[s][2].eps, pe = +(p[xb] || {})[s] || 0, tgt = eps > 0 && pe > 0 ? eps * pe : null;
     const tot = tgt != null && price ? tgt / price - 1 : null, cagr = tot != null && tot > -1 ? Math.pow(1 + tot, 1 / yrs) - 1 : tot != null ? -1 : null;
     return {s, n, c, eps, pe, tgt, gain: tgt != null && price ? tgt - price : null, tot, cagr, val: tot != null ? inv * (1 + tot) : null}; });
   if (!$('#pj-exit-in').dataset.built) {   // build inputs once so typing keeps focus
-    $('#pj-exit-in').innerHTML = `<b>Exit P/E in ${lab[2]}:</b>` + PJS.map(([s, n, c]) => `<label class="mini-f"><span style="color:var(${c});font-weight:700">${n}</span><input class="pj-in" type="number" step="0.5" min="0" inputmode="decimal" data-pjpe="${s}" value="${p.pe[s] ?? ''}"></label>`).join('') +
+    $('#pj-exit-in').innerHTML = (lm ? `<label class="mini-f">Exit on<select id="pj-xb"><option value="pb"${xb === 'pb' ? ' selected' : ''}>Price to book</option><option value="pe"${xb === 'pe' ? ' selected' : ''}>Price to earnings</option></select></label>` : '') + `<b>Exit ${M2} in ${lab[2]}:</b>` + PJS.map(([s, n, c]) => `<label class="mini-f"><span style="color:var(${c});font-weight:700">${n}</span><input class="pj-in" type="number" step="${xb === 'pb' ? 0.05 : 0.5}" min="0" inputmode="decimal" data-pjpe="${s}" value="${(p[xb] || {})[s] ?? ''}"></label>`).join('') +
       `<label class="mini-f" title="Optional: shows what this amount would become">Amount invested, ₹<input class="pj-in" type="number" step="1000" min="0" inputmode="decimal" data-pjx="inv" value="${p.inv ?? ''}" style="width:110px"></label>`;
     $('#pj-exit-in').dataset.built = 1; }
   const f = (v, t) => v == null || !isFinite(v) ? '—' : t === 'pct' ? pct(v) : t === 'x' ? v.toFixed(1) + '×' : t === 'rs' ? '₹' + inr(v, 0) : inr(v);
   const sign = v => v == null ? '' : v >= 0 ? 'pos' : 'neg';
-  const line2 = [['EPS, ' + lab[2], r => '₹' + inr(r.eps)], ['Exit P/E', r => f(r.pe, 'x')], ['Price in ' + lab[2], r => `<b>${f(r.tgt, 'rs')}</b>`],
+  const line2 = [[(xb === 'pb' ? 'Book value per share, ' : 'EPS, ') + lab[2], r => '₹' + inr(r.eps)], ['Exit ' + M2, r => xb === 'pb' ? r.pe.toFixed(2) + '×' : f(r.pe, 'x')], ['Price in ' + lab[2], r => `<b>${f(r.tgt, 'rs')}</b>`],
     ['Gain or loss per share', r => `<span class="${sign(r.gain)}">${r.gain == null ? '—' : (r.gain >= 0 ? '+' : '−') + '₹' + inr(Math.abs(r.gain), 0)}</span>`],
     ['Total return', r => `<span class="${sign(r.tot)}">${f(r.tot, 'pct')}</span>`],
     ['CAGR', r => `<b class="${sign(r.cagr)}">${f(r.cagr, 'pct')}</b> ${r.cagr == null ? '' : qchip(r.cagr >= req ? 'good' : r.cagr >= 0 ? 'watch' : 'bad', r.cagr >= req ? `beats ${pct(req)}` : r.cagr >= 0 ? `below ${pct(req)}` : 'loss')}`]];
   if (inv > 0) line2.push([`₹${inr(inv, 0)} becomes`, r => f(r.val, 'rs')]);
-  $('#pj-exit-tbl').innerHTML = `<table class="pjt"><thead><tr><th>Today: ₹${inr(price, 0)}${nowPE ? ` · ${nowPE.toFixed(1)}× ${Y[L]} EPS` : ''}</th>${rows.map(r => `<th class="${r.s === PJV ? 'pj-v' : ''}" style="color:var(${r.c})">${r.n} case</th>`).join('')}</tr></thead><tbody>` +
+  $('#pj-exit-tbl').innerHTML = `<table class="pjt"><thead><tr><th>Today: ₹${inr(price, 0)}${nowPE ? ` · ${nowPE.toFixed(xb === 'pb' ? 2 : 1)}× ${Y[L]} ${xb === 'pb' ? 'book value' : 'EPS'}` : ''}</th>${rows.map(r => `<th class="${r.s === PJV ? 'pj-v' : ''}" style="color:var(${r.c})">${r.n} case</th>`).join('')}</tr></thead><tbody>` +
     line2.map(([k, fn]) => `<tr><td>${k}</td>${rows.map(r => `<td class="${r.s === PJV ? 'pj-v' : ''}">${fn(r)}</td>`).join('')}</tr>`).join('') + '</tbody></table>';
   $('#pj-exit-sub').textContent = `holding ${yrs.toFixed(1)} years, to the end of ${lab[2]}`;
   const cfg = base('bar', rows.map(r => r.n + ' case'), [Object.assign(bar('Price in ' + lab[2], rows.map(r => r.tgt), css('--c1')), {backgroundColor: rows.map(r => css(r.c)), borderRadius: 6, maxBarThickness: 70}),
@@ -1766,11 +1877,12 @@ function projExit(p, R, lab) {
   const exp = rows.filter(r => r.cagr != null);
   $('#pj-exit-note').innerHTML = (exp.length ? `Across the three cases the return ranges from <b>${pct(Math.min(...exp.map(r => r.cagr)))}</b> to <b>${pct(Math.max(...exp.map(r => r.cagr)))}</b> a year. ` +
       (exp.find(r => r.s === 'base') ? (exp.find(r => r.s === 'base').cagr >= req ? `The base case beats your ${pct(req)} required return. ` : `The base case falls short of your ${pct(req)} required return, so the price leaves little margin of safety. `) : '') : '') +
-    `${hp.length ? `Year-end P/E over the last 5 years: ${hp.join(', ')}. ` : ''}Starting values: bear is the lowest of these, base the median, and bull the higher of the median and today's P/E; change them to your own. ` +
-    `Price = ${lab[2]} EPS × exit P/E. Returns ignore dividends and assume the share count stays the same. The required return is your DCF discount rate on the Valuation page${DCFX ? '' : ' (or the cost of capital from the Quality page)'}.`;
+    `${hp2.length ? `Year-end ${M2} over the last 5 years: ${hp2.join(', ')}. ` : ''}Starting values: bear is the lowest of these, base the median, and bull the higher of the median and today's ${M2}; change them to your own. ` +
+    `Price = ${lab[2]} ${xb === 'pb' ? 'book value per share' : 'EPS'} × exit ${M2}. Returns ignore dividends and assume the share count stays the same. The required return is your DCF discount rate on the Valuation page${DCFX ? '' : ' (or the cost of capital from the Quality page)'}.`;
 }
-function projState() { const d = projDefaults(), s = lsGet('fx-prj:' + M.name); return {d, p: s ? Object.assign({}, d, s, {sc: Object.assign({}, d.sc, s.sc), pe: Object.assign({}, d.pe, s.pe || {})}) : d, saved: !!s}; }
-function projSave(p) { const {hist, ...keep} = p; lsPut('fx-prj:' + M.name, keep); markDirty(M.name); }
+function projState() { const lm = LM(), d = lm ? projDefaultsL() : projDefaults(), s0 = lsGet('fx-prj:' + M.name), s = s0 && !!s0.lender === lm ? s0 : null;
+  return {d, p: s ? Object.assign({}, d, s, {sc: Object.assign({}, d.sc, s.sc), pe: Object.assign({}, d.pe, s.pe || {}), pb: Object.assign({}, d.pb || {}, s.pb || {})}) : d, saved: !!s}; }
+function projSave(p) { const {hist, ...keep} = p; keep.lender = LM(); lsPut('fx-prj:' + M.name, keep); markDirty(M.name); }
 function projRun(p) {
   const L = C.n - 1, sh = C.SH[L], out = {};
   PJS.forEach(([s]) => { let sales = C.S[L]; out[s] = [0, 1, 2].map(y => {
@@ -1782,35 +1894,38 @@ function projRun(p) {
 function renderProjections() {
   const {d, p, saved} = projState(), L = C.n - 1, Y = M.secs.pl.dates.map(fy);
   const nd = new Date(M.secs.pl.dates[L]); const lab = [1, 2, 3].map(k => { const t = new Date(nd); t.setFullYear(t.getFullYear() + k); return fy(t); });
-  const h = d.hist, histTxt = h.years.length ? h.years.slice().reverse().map((i, j) => `${Y[i]} ${pct(div(C.S[i] - C.S[i - 1], C.S[i - 1]))}`).join(', ') : '';
-  const mTxt = h.years.length ? h.years.slice().reverse().map(i => `${Y[i]} ${pct(div(C.EBITDA[i], C.S[i]))}`).join(', ') : '';
-  const inp = (s, f, y) => `<input class="pj-in" type="number" step="0.5" inputmode="decimal" data-pj="${s}.${f}.${y}" value="${p.sc[s][f][y]}" aria-label="${s} ${f === 'g' ? 'sales growth' : 'EBITDA margin'} ${lab[y]}">`;
+  const lm = LM(), h = d.hist, yrsR = h.years.slice().reverse(), list = a => a.length ? yrsR.map((i, j) => `${Y[i]} ${a.slice().reverse()[j] != null ? (Math.abs(a.slice().reverse()[j]) < .1 && lm ? (a.slice().reverse()[j] * 100).toFixed(2) + '%' : pct(a.slice().reverse()[j])) : '—'}`).join(', ') : '—';
+  const DRV = lm ? [['g', 'Loan growth %', 0.5], ['m', 'NII ÷ assets (NIM) %', 0.05], ['ci', 'Cost-to-income %', 0.5], ['cc', 'Credit cost, % of loans', 0.05]] : [['g', 'Sales growth %', 0.5], ['m', 'EBITDA margin %', 0.5]];
+  const histTxt = lm ? `Last 3 years, loan growth: ${list(h.g)}; NII ÷ assets: ${list(h.m)}; cost-to-income: ${list(h.ci)}; credit cost: ${list(h.cc)}` : `Sales growth in the last 3 years: ${list(h.g)}; EBITDA margins: ${list(h.m)}`;
+  const RULE = lm ? {bear: 'starts at the weakest of the last 3 years: lowest loan growth and margin, highest cost-to-income and credit cost', base: 'starts at the 3-year averages', bull: PJRULE.bull} : PJRULE;
+  const inp = (s, f, y) => `<input class="pj-in" type="number" step="${(DRV.find(x => x[0] === f) || [])[2] || 0.5}" inputmode="decimal" data-pj="${s}.${f}.${y}" value="${p.sc[s][f][y]}" aria-label="${s} ${f} ${lab[y]}">`;
   const one = (f, v, unit, tip) => `<label class="mini-f" title="${tip}">${unit}<input class="pj-in" type="number" step="0.5" inputmode="decimal" data-pjx="${f}" value="${v}"></label>`;
   const [, vName, vCol] = PJS.find(x => x[0] === PJV);
   $('#pj-body').innerHTML = `
     <div class="card cobar pj-bar" style="--q:var(${vCol})"><label class="mini-f">Case<select id="pj-sc" aria-label="Scenario to show">${PJS.map(([s, n]) => `<option value="${s}"${s === PJV ? ' selected' : ''}>${n} case</option>`).join('')}</select></label><p class="note" style="margin:0">The tables show the <b style="color:var(${vCol})">${vName.toLowerCase()} case</b>. The charts below compare all three.</p></div>
     <div class="card"><div class="ch"><h3>Assumptions: <span style="color:var(${vCol})">${vName} case</span></h3><span>${saved ? 'your saved figures · ' : 'from the last 3 years · '}<button class="linkish" id="pj-reset">Reset to history</button></span></div>
       <div class="scroll"><table class="pjt pja"><thead><tr><th></th>${lab.map(l => `<th>${l}</th>`).join('')}</tr></thead><tbody>
-        <tr><td>Sales growth %</td>${[0, 1, 2].map(y => `<td>${inp(PJV, 'g', y)}</td>`).join('')}</tr>
-        <tr><td>EBITDA margin %</td>${[0, 1, 2].map(y => `<td>${inp(PJV, 'm', y)}</td>`).join('')}</tr>
+        ${DRV.map(([f, n]) => `<tr><td>${n}</td>${[0, 1, 2].map(y => `<td>${inp(PJV, f, y)}</td>`).join('')}</tr>`).join('')}
       </tbody></table></div>
-      <p class="note">The ${vName.toLowerCase()} case ${PJRULE[PJV]}. Sales growth in the last 3 years: ${histTxt || '—'}; EBITDA margins: ${mTxt || '—'}. Change any cell; it's saved for this company.</p>
-      <div class="pj-shared"><b>Same in all cases:</b>${one('oi', p.oi, 'Other income, ₹ Cr/yr', '3-year average, kept flat')}${one('dep', p.dep, 'Depreciation, % of sales', '3-year average')}${one('int', p.int, 'Interest, ₹ Cr/yr', 'Last year, kept flat')}${one('tax', p.tax, 'Tax rate, %', '3-year average effective rate')}</div></div>
-    <div class="card"><div class="ch"><h3>Projected profit and loss: <span style="color:var(${vCol})">${vName} case</span></h3><span>₹ crore · ${Y[L]} actual, then ${lab[0]}–${lab[2]}</span></div><div class="scroll" id="pj-tbl"></div><p class="note" id="pj-note"></p></div>
+      <p class="note">The ${vName.toLowerCase()} case ${RULE[PJV]}. ${histTxt}. Change any cell; it's saved for this company.</p>
+      <div class="pj-shared"><b>Same in all cases:</b>${lm ? one('oia', p.oia, 'Other income, % of assets', '3-year average') + one('tax', p.tax, 'Tax rate, %', '3-year average effective rate') + one('pay', p.pay, 'Dividend payout, %', 'Share of profit paid out; the rest adds to book value')
+        : one('oi', p.oi, 'Other income, ₹ Cr/yr', '3-year average, kept flat') + one('dep', p.dep, 'Depreciation, % of sales', '3-year average') + one('int', p.int, 'Interest, ₹ Cr/yr', 'Last year, kept flat') + one('tax', p.tax, 'Tax rate, %', '3-year average effective rate')}</div>${lm ? `<p class="note" style="margin-top:8px">Assets grow with loans (keeping today's ${fmt(div(C.LN.TOT[C.n - 1], C.LN.LOAN[C.n - 1]), 'x')} assets per rupee of loans). Net interest income and other income are earned on average assets, costs are a share of income, and provisions a share of average loans. Retained profit adds to book value.</p>` : ''}</div>
+    <div class="card"><div class="ch"><h3>Projected ${lm ? 'earnings' : 'profit and loss'}: <span style="color:var(${vCol})">${vName} case</span></h3><span>₹ crore · ${Y[L]} actual, then ${lab[0]}–${lab[2]}</span></div><div class="scroll" id="pj-tbl"></div><p class="note" id="pj-note"></p></div>
     ${projExitHTML()}
     <div class="grid"><div class="card"><div class="ch"><h3>Net profit: history and projections</h3><span>₹ crore</span></div><div class="fig"><canvas id="ch-pj-pat"></canvas></div></div>
-      <div class="card"><div class="ch"><h3>Sales: history and projections</h3><span>₹ crore</span></div><div class="fig"><canvas id="ch-pj-s"></canvas></div></div></div>`;
+      <div class="card"><div class="ch"><h3>${lm ? 'Book value per share' : 'Sales'}: history and projections</h3><span>${lm ? '₹' : '₹ crore'}</span></div><div class="fig"><canvas id="ch-pj-s"></canvas></div></div></div>`;
   $('#pj-body').style.setProperty('--q', `var(${vCol})`);
   projDraw(p, lab);
 }
 function projDraw(p, lab) {
-  const L = C.n - 1, Y = M.secs.pl.dates.map(fy), R = projRun(p), A = {sales: C.S[L], ebitda: C.EBITDA[L], oi: C.OI[L], dep: C.D[L], int: C.I[L], pbt: C.PBT[L], tax: C.TX[L], pat: C.PAT[L], eps: C.EPS[L]};
+  const lm = LM(), L = C.n - 1, Y = M.secs.pl.dates.map(fy), R = lm ? projRunL(p) : projRun(p), A = {sales: C.S[L], ebitda: C.EBITDA[L], oi: C.OI[L], dep: C.D[L], int: C.I[L], pbt: C.PBT[L], tax: C.TX[L], pat: C.PAT[L], eps: C.EPS[L]};
   A.exp = A.sales - A.ebitda; A.m = div(A.ebitda, A.sales); A.ebit = A.ebitda + A.oi - A.dep;
-  const rows = [['sales', 'Sales', 1], ['g', 'Sales growth', 0, 'pct'], ['exp', 'Operating expenses'], ['ebitda', 'EBITDA', 1], ['m', 'EBITDA margin', 0, 'pct'], ['oi', 'Other income'], ['dep', 'Depreciation'], ['ebit', 'EBIT'], ['int', 'Interest'], ['pbt', 'Profit before tax', 1], ['tax', 'Tax'], ['pat', 'Net profit', 1], ['pm', 'Net margin', 0, 'pct'], ['eps', 'EPS, ₹', 1], ['epsg', 'EPS growth', 0, 'pct']];
+  if (lm) Object.assign(A, {loan: C.LN.LOAN[L], g: LRv('Loan book growth (loans + other assets)')[L], tot: C.LN.TOT[L], nii: C.LN.NII[L], inc: C.LN.INC[L], opx: C.LN.OPX[L], ppop: C.LN.PPOP[L], prov: C.LN.PROV[L], bvps: C.LN.BV[L], roe: LRv('ROE')[L], roa: LRv('ROA')[L]});
+  const rows = lm ? [['loan', 'Loans and other assets', 1], ['g', 'Loan growth', 0, 'pct'], ['tot', 'Total assets'], ['nii', 'Net interest income', 1], ['oi', 'Other income'], ['inc', 'Total income'], ['opx', 'Operating costs'], ['ppop', 'Pre-provision profit', 1], ['prov', 'Provisions'], ['pbt', 'Profit before tax', 1], ['tax', 'Tax'], ['pat', 'Net profit', 1], ['eps', 'EPS, ₹', 1], ['epsg', 'EPS growth', 0, 'pct'], ['bvps', 'Book value per share, ₹', 1], ['roe', 'ROE', 0, 'pct'], ['roa', 'ROA', 0, 'pct']] : [['sales', 'Sales', 1], ['g', 'Sales growth', 0, 'pct'], ['exp', 'Operating expenses'], ['ebitda', 'EBITDA', 1], ['m', 'EBITDA margin', 0, 'pct'], ['oi', 'Other income'], ['dep', 'Depreciation'], ['ebit', 'EBIT'], ['int', 'Interest'], ['pbt', 'Profit before tax', 1], ['tax', 'Tax'], ['pat', 'Net profit', 1], ['pm', 'Net margin', 0, 'pct'], ['eps', 'EPS, ₹', 1], ['epsg', 'EPS growth', 0, 'pct']];
   const prev = (s, y, k) => y ? R[s][y - 1][k] : A[k];
   const cell = (s, y, k) => { const r = R[s][y]; return k === 'pm' ? div(r.pat, r.sales) : k === 'epsg' ? (prev(s, y, 'eps') > 0 ? r.eps / prev(s, y, 'eps') - 1 : null) : r[k]; };
-  const act = k => k === 'pm' ? div(A.pat, A.sales) : k === 'g' ? div(C.S[L] - C.S[L - 1], C.S[L - 1]) : k === 'epsg' ? (C.EPS[L - 1] > 0 ? C.EPS[L] / C.EPS[L - 1] - 1 : null) : A[k];
-  const f = (v, t) => v == null || !isFinite(v) ? '—' : t === 'pct' ? pct(v) : inr(v);
+  const act = k => lm && k !== 'epsg' ? A[k] : k === 'pm' ? div(A.pat, A.sales) : k === 'g' ? div(C.S[L] - C.S[L - 1], C.S[L - 1]) : k === 'epsg' ? (C.EPS[L - 1] > 0 ? C.EPS[L] / C.EPS[L - 1] - 1 : null) : A[k];
+  const f = (v, t) => v == null || !isFinite(v) ? '—' : t === 'pct' ? (lm && Math.abs(v) < .1 ? (v * 100).toFixed(2) + '%' : pct(v)) : inr(v);
   $('#pj-tbl').innerHTML = `<table class="pjt"><thead><tr><th></th><th>${Y[L]} actual</th>${lab.map(l => `<th class="pj-v">${l}</th>`).join('')}</tr></thead><tbody>` +
     rows.map(([k, n, b, t]) => `<tr${b ? ' class="pjb"' : ''}><td>${n}</td><td>${f(act(k), t)}</td>${[0, 1, 2].map(y => `<td class="pj-v">${f(cell(PJV, y, k), t)}</td>`).join('')}</tr>`).join('') + '</tbody></table>';
   // what each case means for the share price
@@ -1818,7 +1933,9 @@ function projDraw(p, lab) {
   const cagr = s => A.pat > 0 && R[s][2].pat > 0 ? Math.pow(R[s][2].pat / A.pat, 1 / 3) - 1 : null;
   const price = C.now && C.now.price || px, pxAt = s => peUse > 0 && price && R[s][2].pat > 0 ? price * R[s][2].pat / C.PAT[L] : null;   // same P/E, same share count
   const ret = s => pxAt(s) && price ? Math.pow(pxAt(s) / price, 1 / 3) - 1 : null;
-  $('#pj-note').innerHTML = `Net profit grows <b>${PJS.map(([s, n]) => `${pct(cagr(s))} a year (${n.toLowerCase()})`).join(', ')}</b> to ${lab[2]}.` +
+  if (lm) { const bvG = s => A.bvps > 0 && R[s][2].bvps > 0 ? Math.pow(R[s][2].bvps / A.bvps, 1 / 3) - 1 : null;
+    $('#pj-note').innerHTML = `Net profit grows <b>${PJS.map(([s, n]) => `${pct(cagr(s))} a year (${n.toLowerCase()})`).join(', ')}</b> and book value per share <b>${PJS.map(([s, n]) => `${pct(bvG(s))} (${n.toLowerCase()})`).join(', ')}</b> to ${lab[2]}. ROE in ${lab[2]}: ${PJS.map(([s, n]) => `${pct(R[s][2].roe)} (${n.toLowerCase()})`).join(', ')}, against ${pct(A.roe)} in ${Y[L]}.`; }
+  else $('#pj-note').innerHTML = `Net profit grows <b>${PJS.map(([s, n]) => `${pct(cagr(s))} a year (${n.toLowerCase()})`).join(', ')}</b> to ${lab[2]}.` +
     (peUse > 0 && price ? ` If the P/E stays at today's ${peUse.toFixed(1)}× (today's price on ${Y[L]} profit), the share price would be about ${PJS.map(([s, n]) => `₹${inr(pxAt(s), 0)} (${n.toLowerCase()}, ${ret(s) != null ? pct(ret(s)) + ' a year' : '—'})`).join(', ')} by ${lab[2]}, before dividends.` : '') +
     (DCFX && DCFX.imp != null ? ` For comparison, today's price assumes about ${pct(DCFX.imp)} growth a year in years 1–5 (reverse DCF on the Valuation page).` : '') +
     ` Projections start from ${Y[L]}'s actual figures; ${Y[L]} interest and other income are kept flat unless you change them.`;
@@ -1827,21 +1944,175 @@ function projDraw(p, lab) {
   const ser = (k, hist) => { const ds = [Object.assign(line('Actual', hist.slice(-H).concat([null, null, null]), css('--ink')), {fill: false, borderWidth: 2.5})];
     PJS.forEach(([s, n, c]) => ds.push(Object.assign(line(n + (s === PJV ? ' (shown in table)' : ''), pad.concat([hist[hist.length - 1]], R[s].map(r => r[k])), css(c), [6, 4]), {fill: false, spanGaps: false, borderWidth: s === PJV ? 3.5 : 1.5}))); return ds; };
   draw('ch-pj-pat', base('line', labels, ser('pat', C.PAT), 'cr'));
-  draw('ch-pj-s', base('line', labels, ser('sales', C.S), 'cr'));
+  draw('ch-pj-s', base('line', labels, lm ? ser('bvps', C.LN.BV) : ser('sales', C.S), 'cr'));
   projExit(p, R, lab);
 }
 document.addEventListener('input', e => {
   const t = e.target; if (!t.matches || !t.matches('.pj-in')) return;
   const {p} = projState(), v = parseFloat(t.value);
   if (t.dataset.pj) { const [s, f, y] = t.dataset.pj.split('.'); p.sc[s][f][+y] = isFinite(v) ? v : 0; }
-  else if (t.dataset.pjpe) p.pe = Object.assign({}, p.pe, {[t.dataset.pjpe]: isFinite(v) ? v : null});
+  else if (t.dataset.pjpe) { const xb = LM() && p.xb !== 'pe' ? 'pb' : 'pe'; p[xb] = Object.assign({}, p[xb], {[t.dataset.pjpe]: isFinite(v) ? v : null}); }
   else p[t.dataset.pjx] = isFinite(v) ? v : 0;
   projSave(p);
   const L = C.n - 1, nd = new Date(M.secs.pl.dates[L]); projDraw(p, [1, 2, 3].map(k => { const x = new Date(nd); x.setFullYear(x.getFullYear() + k); return fy(x); }));
   const r = $('#pj-reset'); if (r) r.parentElement.firstChild.textContent = 'your saved figures · ';
 });
 document.addEventListener('change', e => { if (e.target.id !== 'pj-sc') return; PJV = e.target.value; renderProjections(); });
+document.addEventListener('change', e => { if (e.target.id !== 'pj-xb') return; const {p} = projState(); p.xb = e.target.value; projSave(p); renderProjections(); });
 document.addEventListener('click', e => { if (e.target.id !== 'pj-reset') return; lsPut('fx-prj:' + M.name, null); markDirty(M.name); renderProjections(); toast('Projections reset to the last 3 years'); });
+
+// ---- Lender view (banks, NBFCs) ----
+const LSEC = /\b(banks?|banking|nbfcs?|lenders?|lending|housing finance|microfinance|gold loans?|small finance)\b/i;
+function lenderWhy(k = M.name, A = C) {
+  const m = LIB[k] && LIB[k].lender;
+  if (m === 'on') return 'switched on by you'; if (m === 'off') return null;
+  if (LSEC.test((LIB[k] && LIB[k].sector) || '')) return `sector tagged “${LIB[k].sector}”`;
+  return A && A.lenderAuto ? 'detected from the numbers' : null;
+}
+const lenderMode = (k = M.name, A = C) => !!lenderWhy(k, A);
+const LM = () => !!(C && C.LR) && lenderMode();
+const LRv = (k, A = C) => (A.LR.find(r => r.k === k) || {v: []}).v;
+function renderLbar() {
+  const b = $('#lbar'); if (!b || !C) return;
+  const why = lenderWhy(), off = LIB[M.name] && LIB[M.name].lender === 'off', show = ['overview', 'ratios', 'quality', 'valuation', 'projections', 'quarterly'].includes(currentView());
+  if (!show || (!why && !(off && C.lenderAuto))) { b.hidden = true; return; }
+  b.hidden = false;
+  b.innerHTML = why
+    ? `<div><b>Lender view</b> · ${why}. Pages show bank and NBFC measures: net interest income, ROA, ROE, book value and P/B, instead of EBITDA, ROCE and free cash flow.${C.lenderMix ? ` <span class="lwarn">Other income is ${pct(C.lenderMix)} of interest income, which usually means insurance or other subsidiaries are included (a consolidated export). Cost, provision and margin ratios will be distorted; for clean figures upload Screener's <b>standalone</b> export.</span>` : ''}</div><button class="sm" data-lender="off">Use standard view</button>`
+    : `<div><b>Standard view</b> · these numbers look like a bank or NBFC.</div><button class="sm" data-lender="on">Use lender view</button>`;
+}
+function currentView() { return (location.hash || '#overview').slice(1) || 'overview'; }
+document.addEventListener('click', e => { const b = e.target.closest('[data-lender]'); if (!b) return; libMeta(M.name, {lender: b.dataset.lender}); kpis(); renderView(); toast(b.dataset.lender === 'on' ? 'Lender view on for this company' : 'Standard view for this company'); });
+
+function kpisL() {
+  const L = C.n - 1, N = C.now, S = soicScore(), lf = fy(M.secs.pl.dates[L]);
+  const roe = LRv('ROE'), roa = LRv('ROA'), nim = LRv('NII ÷ assets (NIM proxy)'), ci = LRv('Cost-to-income'), cc = LRv('Provisions ÷ loans (credit cost proxy)'), pb = LRv('P/B'), pe = LRv('P/E');
+  const d = (a, pts) => chg(a[L] - a[L - 1], true);
+  return [
+    {k: 'Price / book', v: fmt(N.pb, 'x'), n: `median ${fmt(median(pb), 'x')}`, s: pb.concat(N.pb), col: 'var(--c5)'},
+    {k: 'P/E (TTM)', v: fmt(N.pe, 'x'), n: `median ${fmt(median(pe), 'x')}`, s: pe.concat(N.pe), col: 'var(--c1)'},
+    {k: 'ROE', v: pct(roe[L]), d: d(roe), n: lf, s: roe, col: 'var(--c4)'},
+    {k: 'ROA', v: pct(roa[L]), d: d(roa), n: lf, s: roa, col: 'var(--c2)'},
+    {k: 'NII ÷ assets', v: pct(nim[L]), d: d(nim), n: 'net interest margin proxy', s: nim, col: 'var(--c3)'},
+    {k: 'Cost-to-income', v: pct(ci[L]), n: `lower is better · ${pct(ci[L - 1])} a year earlier`, s: ci, col: 'var(--c6)'},
+    {k: 'Credit cost', v: pct(cc[L]), n: `provisions ÷ loans · ${pct(cc[L - 1])} a year earlier`, s: cc, col: 'var(--c2)'},
+    {k: 'Plumb Score', v: `${S.total}<small> / ${S.max}</small>`, n: `${S.answered} of ${S.count} answered`, ring: S.total / S.max, href: '#score'}];
+}
+function renderOverviewL() {
+  const Y = M.secs.pl.dates.map(fy), c = i => css('--c' + i), LN = C.LN, L = C.n - 1;
+  draw('ch-l-inc', base('bar', Y, [bar('Interest earned', C.S, c(1)), bar('Net interest income', LN.NII, c(3)), bar('Net profit', C.PAT, c(5))], 'cr'));
+  draw('ch-l-mrg', base('line', Y, [line('Yield on assets', LRv('Yield on assets'), c(1)), line('Cost of funds', LRv('Cost of funds'), c(2)), line('NII ÷ assets', LRv('NII ÷ assets (NIM proxy)'), c(3))], 'pct'));
+  draw('ch-l-roe', base('line', Y, [line('ROE', LRv('ROE'), c(4))], 'pct'));
+  draw('ch-l-roa', base('line', Y, [line('ROA', LRv('ROA'), c(2))], 'pct'));
+  draw('ch-l-cost', base('line', Y, [line('Cost-to-income', LRv('Cost-to-income'), c(6)), line('Provisions ÷ loans', LRv('Provisions ÷ loans (credit cost proxy)'), c(2))], 'pct'));
+  draw('ch-l-bs', base('bar', Y, [bar('Loans and other assets', LN.LOAN, c(1)), bar('Deposits and borrowings', C.DEBT, c(7)), bar('Net worth', C.NW, c(4))], 'cr'));
+  draw('ch-l-bv', base('bar', Y, [bar('Book value per share', LN.BV, c(5))], 'cr'));
+  const spans = [1, 3, 5, L].filter((v, i, a) => v > 0 && v <= L && a.indexOf(v) === i);
+  const rows = [['Interest earned', C.S], ['Net interest income', LN.NII], ['Pre-provision profit', LN.PPOP], ['Net profit', C.PAT], ['EPS', C.EPS], ['Book value per share', LN.BV], ['Loans and other assets', LN.LOAN], ['Deposits and borrowings', C.DEBT], ['Share price', C.PR]];
+  $('#growth').innerHTML = `<thead><tr><th>Measure</th>${spans.map(s => `<th>${s} yr</th>`).join('')}</tr></thead><tbody>` +
+    rows.map(([k, a]) => `<tr><td>${k}</td>${spans.map(s => { const g = C.cagr(a, s); return `<td class="${g < 0 ? 'neg' : ''}">${pct(g)}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
+}
+function flagsLender() {
+  const L = C.n - 1, out = [], k3 = Math.min(3, L), k5 = Math.min(5, L), add = (lvl, t, d) => out.push({lvl, t, d}), v = LRv;
+  { const cc = v('Provisions ÷ loans (credit cost proxy)'), m = median(cc.slice(Math.max(0, L - 4), L)); if (cc[L] != null && m != null) add(cc[L] - m > .01 ? 'red' : cc[L] - m > .004 ? 'amber' : 'ok', 'Credit cost', `Provisions were ${pct(cc[L])} of loans in ${fy(M.secs.pl.dates[L])}, against a recent median of ${pct(m)}.`); }
+  { const nm = v('NII ÷ assets (NIM proxy)'), dd = nm[L] - nm[L - k3]; if (nm[L] != null && nm[L - k3] != null) add(dd < -.005 ? 'red' : dd < -.002 ? 'amber' : 'ok', 'Margin trend', `Net interest income was ${pct(nm[L])} of assets, ${pct(nm[L - k3])} ${k3} years ago.`); }
+  { const ra = v('ROA')[L]; if (ra != null) add(ra < .005 ? 'red' : ra < .009 ? 'amber' : 'ok', 'Return on assets', `ROA ${pct(ra)}. Around 1% or more is healthy for a bank; good NBFCs earn 2% or more.`); }
+  { const ea = v('Equity ÷ assets')[L]; if (ea != null) add(ea < .05 ? 'red' : ea < .07 ? 'amber' : 'ok', 'Equity cushion', `Equity is ${pct(ea)} of assets (leverage ${fmt(div(1, ea), 'x')}). Thin equity leaves less room to absorb bad loans.`); }
+  { const lg = C.cagr(C.LN.LOAN, k3), roe = median(v('ROE').slice(-k3)), pay = median(v('Dividend payout').slice(-k3)) ?? 0, sus = roe != null ? roe * (1 - Math.min(1, Math.max(0, pay))) : null;
+    if (lg != null && sus != null) add(lg - sus > .1 ? 'amber' : 'ok', 'Growth vs capital', `Loans grew ${pct(lg)} a year over ${k3} years; retained profit supports about ${pct(sus)}${lg - sus > .1 ? ', so growth needs fresh capital or more leverage' : ''}.`); }
+  { const oi = v('Other income ÷ total income')[L]; if (oi != null) add(oi > .45 ? 'amber' : 'ok', 'Reliance on other income', `Other income is ${pct(oi)} of total income${oi > .45 ? '; treasury gains and one-offs are less dependable than lending income, unless this is fee-led or a consolidated export' : ''}.`); }
+  { const d = div(C.SH[L] - C.SH[L - k5], C.SH[L - k5]); if (d != null) add(d > .2 ? 'red' : d > .08 ? 'amber' : 'ok', 'Share dilution', `Share count changed ${d >= 0 ? '+' : ''}${pct(d)} over ${k5} years. Lenders raise equity to grow; check it was at a good price to book.`); }
+  { const tr = v('Tax rate'), t = tr[L], m = median(tr); if (t != null) add(t < .15 || t > .4 || (m != null && Math.abs(t - m) > .1) ? 'amber' : 'ok', 'Tax rate', `Tax rate ${pct(t)} vs a median of ${pct(m)}.`); }
+  return out;
+}
+
+// quality read for lenders: ROA and ROE, where returns come from, and whether growth needs capital
+function lenderRead(s) {
+  const C2 = s.C, L = C2.n - 1, v = k => LRv(k, C2), k3 = Math.min(3, L), Y = s.M.secs.pl.dates.map(fy);
+  const roe = v('ROE'), roa = v('ROA'), lev = v('Assets ÷ equity (leverage)'), avg = a => { const x = a.filter(q => q != null); return x.length ? x.reduce((p, q) => p + q, 0) / x.length : null; };
+  const roe3 = avg(roe.slice(-k3)), roa3 = avg(roa.slice(-k3)), roaP = roa[L - k3], pay = Math.min(1, Math.max(0, median(v('Dividend payout').slice(-k3)) ?? 0));
+  const lg = C2.cagr(C2.LN.LOAN, k3), sus = roe3 != null ? roe3 * (1 - pay) : null;
+  const T = {};
+  T.ret = roe3 == null ? 'nm' : roe3 >= COC ? 'good' : roe3 >= COC - .03 ? 'watch' : 'bad';
+  T.roa = roa3 == null ? 'nm' : roa3 >= .012 ? 'good' : roa3 >= .008 ? 'watch' : 'bad';
+  const trend = roa[L] == null || roaP == null ? 'nm' : roa[L] > roaP * 1.15 ? 'improving' : roa[L] < roaP * .85 ? 'fading' : 'steady';
+  T.trend = trend === 'improving' ? 'good' : trend === 'fading' ? 'watch' : trend === 'nm' ? 'nm' : 'info';
+  // what moved ROE: ROE = ROA × leverage, split in log terms
+  let drv = null; if (roe[L] > 0 && roe[L - k3] > 0 && roa[L] > 0 && roa[L - k3] > 0 && lev[L] > 0 && lev[L - k3] > 0) { const a = Math.log(roa[L] / roa[L - k3]), b = Math.log(lev[L] / lev[L - k3]); drv = Math.abs(a) >= Math.abs(b) ? 'ROA' : 'Leverage'; }
+  T.drv = !drv ? 'nm' : drv === 'Leverage' && roe[L] > roe[L - k3] ? 'watch' : 'info';
+  const capNeed = lg != null && sus != null && lg - sus > .05;
+  T.fund = lg == null || sus == null ? 'nm' : capNeed ? 'watch' : 'good';
+  const A = T.ret === 'good' ? 'Earns above its cost of equity' : T.ret === 'watch' ? 'Earns about its cost of equity' : T.ret === 'bad' ? 'Earns below its cost of equity' : 'Returns unclear';
+  const B = trend === 'fading' ? 'ROA is falling' : trend === 'improving' ? 'ROA is improving' : trend === 'steady' ? 'ROA is steady' : '';
+  const head = A + (B ? ((T.ret === 'good') === (trend !== 'fading') ? ' and ' : ', but ') + B : '') + (capNeed ? '; growth is outpacing internally generated capital' : '') + '.';
+  const score = [T.ret, T.roa, T.trend].reduce((x, t) => x + (t === 'good' ? 1 : t === 'bad' ? -2 : t === 'watch' ? -1 : 0), 0);
+  const lvl = score >= 1 ? 'good' : score <= -2 && T.ret !== 'good' ? 'bad' : 'watch';
+  const lines = [];
+  if (roe3 != null) lines.push(`ROE averaged <b>${pct(roe3)}</b> over ${k3} years, ${roe3 >= COC ? 'above' : 'below'} a ${pct(COC)} cost of equity.`);
+  if (roa3 != null) lines.push(`ROA averaged <b>${pct(roa3)}</b>${roaP != null ? `; it is ${pct(roa[L])} now against ${pct(roaP)} in ${Y[L - k3]}` : ''}. Around 1% is healthy for a bank; strong NBFCs earn 2% or more on lower leverage.`);
+  if (drv) lines.push(`ROE = ROA × leverage. Since ${Y[L - k3]} leverage went from ${fmt(lev[L - k3], 'x')} to ${fmt(lev[L], 'x')}; the bigger driver of the change in ROE was <b>${drv === 'ROA' ? 'profitability (ROA)' : 'leverage'}</b>.${drv === 'Leverage' && roe[L] > roe[L - k3] ? ' ROE lifted by leverage is lower-quality and leaves less buffer for bad loans.' : ''}`);
+  if (lg != null && sus != null) lines.push(`Loans grew <b>${pct(lg)}</b> a year; retained profit (ROE × ${pct(1 - pay)} kept) supports about <b>${pct(sus)}</b>. ${capNeed ? 'The gap has to be filled by raising equity or running with thinner capital.' : 'Growth is funded internally.'}`);
+  const short = {ret: [T.ret, roe3 == null ? '—' : `ROE ${pct(roe3)}`], trend: [T.trend, trend === 'nm' ? '—' : trend[0].toUpperCase() + trend.slice(1)], inc: [T.roa, roa3 == null ? '—' : `ROA ${pct(roa3)}`],
+    drv: [T.drv, drv || '—'], fund: [T.fund, capNeed ? 'Needs capital' : 'Own profit'], grow: ['info', lg == null ? '—' : `Loans ${pct(lg)}`]};
+  return {head, lvl, lines, T, short, lender: true, sus, lg, roe3, roa3};
+}
+const LPM = [['ROE (latest)', s => LRv('ROE', s.C)[s.C.n - 1], 1], ['ROA (latest)', s => LRv('ROA', s.C)[s.C.n - 1], 1], ['NII ÷ assets', s => LRv('NII ÷ assets (NIM proxy)', s.C)[s.C.n - 1], 1],
+  ['Cost-to-income', s => LRv('Cost-to-income', s.C)[s.C.n - 1], -1], ['Credit cost', s => LRv('Provisions ÷ loans (credit cost proxy)', s.C)[s.C.n - 1], -1], ['Loan growth, 3y', s => s.C.cagr(s.C.LN.LOAN, Math.min(3, s.C.n - 1)), 1],
+  ['Equity ÷ assets', s => LRv('Equity ÷ assets', s.C)[s.C.n - 1], 1], ['P/B (latest)', s => s.C.now.pb, -1, 'x']];
+function renderQualityL() {
+  const Y = M.secs.pl.dates.map(fy), L = C.n - 1, me = {k: M.name, M, C}, Q = lenderRead(me), LN = C.LN, k3 = Math.min(3, L);
+  const avgA = i => i ? (LN.TOT[i] + LN.TOT[i - 1]) / 2 : LN.TOT[i], per = (a, i) => div(a[i], avgA(i));
+  const parts = [['Net interest income', i => per(LN.NII, i), '--c3'], ['Other income', i => per(C.OI, i), '--c1'], ['Operating costs', i => -per(LN.OPX, i), '--c6'], ['Provisions', i => -per(LN.PROV, i), '--c2'], ['Tax', i => -per(C.TX, i), '--c7']];
+  const mates = (() => { const sec = LIB[M.name] && LIB[M.name].sector; return sec ? libKeys().filter(k => LIB[k].sector === sec) : []; })();
+  $('#q-lend').innerHTML = `<h2>What drives returns</h2>
+    <div class="card qv" style="--q:var(${QL[Q.lvl][1]})"><div class="ch" style="margin-bottom:4px"><h3>${qchip(Q.lvl, Q.lvl === 'good' ? 'Strong' : Q.lvl === 'bad' ? 'Weak' : 'Mixed')} ${Q.head}</h3></div><ul>${Q.lines.map(l => `<li>${l}</li>`).join('')}</ul>
+      <div class="qset"><label class="mini-f">Cost of equity %<input id="q-coc" inputmode="decimal" value="${+(COC * 100).toFixed(1)}"></label><span>Used for every company. Large Indian banks are often taken at 12–13%, smaller lenders higher.</span></div></div>
+    <div class="grid">
+      <div class="card"><div class="ch"><h3>Where ROA comes from</h3><span>${Y[L]}, % of average assets</span></div><div class="fig"><canvas id="ch-lq-tree"></canvas></div><p class="note">Net interest income and other income, minus operating costs, provisions and tax, add up to ROA (${pct(LRv('ROA')[L])}). "Provisions" is Screener's "Other Expenses" line, which also holds some smaller costs.</p></div>
+      <div class="card"><div class="ch"><h3>ROA building blocks over time</h3><span>% of average assets</span></div><div class="fig"><canvas id="ch-lq-parts"></canvas></div></div>
+      <div class="card"><div class="ch"><h3>ROE = ROA × leverage</h3><span>ROE and ROA, %</span></div><div class="fig"><canvas id="ch-lq-roe"></canvas></div><p class="note">Leverage (assets ÷ equity): ${LRv('Assets ÷ equity (leverage)').slice(-4).map((x, j) => `${Y[L - 3 + j] || ''} ${fmt(x, 'x')}`).join(', ')}.</p></div>
+      <div class="card"><div class="ch"><h3>Loan growth vs internally funded growth</h3><span>yearly</span></div><div class="fig"><canvas id="ch-lq-grow"></canvas></div><p class="note">Internally funded growth = ROE × share of profit kept. Loan growth above it needs new equity or more leverage.</p></div>
+      <div class="card wide"><div class="ch"><h3>Against sector peers</h3><span>${mates.length >= 3 ? `${LIB[M.name].sector} · ${mates.length} companies · large dot is ${niceName(M.name)}` : ''}</span></div><div id="q-lpeer"></div></div>
+    </div>`;
+  const tree = parts.map(([n, f]) => f(L)), bars = [], cols = []; let run = 0;
+  tree.forEach((x, j) => { bars.push([run, run + (x || 0)]); run += x || 0; cols.push(css(parts[j][2])); }); bars.push([0, run]); cols.push(css('--c4'));
+  const tc = base('bar', parts.map(p => p[0]).concat('ROA'), [{label: '% of assets', data: bars, backgroundColor: cols, borderRadius: 6, borderSkipped: false, maxBarThickness: 46}], 'pct');
+  tc.options.plugins.legend.display = false; tc.options.plugins.tooltip.callbacks.label = c => { const [a0, b0] = c.raw; return ` ${b0 - a0 >= 0 ? '+' : '−'}${(Math.abs(b0 - a0) * 100).toFixed(2)}% of assets`; };
+  draw('ch-lq-tree', tc);
+  draw('ch-lq-parts', base('line', Y, parts.map(([n, f, c]) => Object.assign(line(n, Y.map((_, i) => f(i)), css(c)), {fill: false})), 'pct'));
+  draw('ch-lq-roe', base('line', Y, [line('ROE', LRv('ROE'), css('--c4')), Object.assign(line('ROA', LRv('ROA'), css('--c2')), {fill: false})], 'pct'));
+  const roe = LRv('ROE'), pay = LRv('Dividend payout');
+  draw('ch-lq-grow', base('bar', Y, [bar('Loan growth', LRv('Loan book growth (loans + other assets)'), css('--c1')), bar('Internally funded growth', roe.map((r, i) => r == null ? null : r * (1 - Math.min(1, Math.max(0, pay[i] ?? 0)))), css('--c3'))], 'pct'));
+  $('#q-lpeer').innerHTML = mates.length >= 3 ? peerStrip(mates.map(k => k === M.name ? me : snapC(k)).filter(s => s && s.C && s.C.LR), M.name, LPM) : `<p class="note" style="margin:0">Tag this company and at least two other lenders with the same sector (for example “Banks”) on the Companies page to compare them.</p>`;
+}
+
+// valuation for lenders: P/B against ROE
+let LV = null;
+function renderValuationL() {
+  const L = C.n - 1, Y = M.secs.pl.dates.map(fy), roe = LRv('ROE'), k3 = Math.min(3, L), pay = Math.min(1, Math.max(0, median(LRv('Dividend payout').slice(-k3)) ?? 0));
+  const avg = a => { const x = a.filter(q => q != null); return x.length ? x.reduce((p, q) => p + q, 0) / x.length : null; };
+  const roe3 = avg(roe.slice(-k3)) ?? 0, bv = C.LN.BV[L], price = C.now.price, pbNow = C.now.pb;
+  if (!LV || LV.k !== M.name) LV = {k: M.name, roe: +(roe3 * 100).toFixed(1), g: +(Math.max(.03, Math.min(.08, COC - .03, roe3 * (1 - pay))) * 100).toFixed(1), coe: +(COC * 100).toFixed(1)};
+  const r = LV.roe / 100, g = LV.g / 100, ke = LV.coe / 100, ok = ke > g;
+  const jpb = ok ? (r - g) / (ke - g) : null, val = jpb != null && bv ? jpb * bv : null, impRoe = ok && pbNow ? g + pbNow * (ke - g) : null;
+  const inp = (k, lab, tip) => `<label class="mini-f" title="${tip}">${lab}<input class="pj-in" type="number" step="0.5" inputmode="decimal" data-lv="${k}" value="${LV[k]}"></label>`;
+  $('#v-lend').innerHTML = `<h2>Price to book against ROE</h2>
+    <div class="card"><div class="ch"><h3>Justified price to book</h3><span>for banks and NBFCs, book value and ROE drive value</span></div>
+      <div class="pj-shared">${inp('roe', 'Sustainable ROE %', `Average of the last ${k3} years: ${pct(roe3)}`)}${inp('g', 'Long-run growth %', 'ROE × share of profit kept, capped at 8% and kept at least 3 points below the cost of equity')}${inp('coe', 'Cost of equity %', 'Your required return')}<button class="linkish" id="lv-reset">Reset</button></div>
+      <div class="rv-out" style="margin-top:12px">
+        <div><span>Justified P/B</span><b>${jpb != null ? fmt(jpb, 'x') : '—'}</b><small style="display:block;color:var(--muted);font-size:11px">(ROE − g) ÷ (cost of equity − g)</small></div>
+        <div><span>Value per share</span><b>${val != null ? '₹' + inr(val, 0) : '—'}</b><small style="display:block;color:var(--muted);font-size:11px">× book value ₹${inr(bv, 0)}</small></div>
+        <div><span>Today</span><b>₹${inr(price, 0)}</b><small style="display:block;color:var(--muted);font-size:11px">P/B ${fmt(pbNow, 'x')}${val ? ` · ${price <= val ? 'below' : 'above'} value by ${pct(Math.abs(price / val - 1))}` : ''}</small></div>
+        <div><span>ROE the price implies</span><b>${impRoe != null ? pct(impRoe) : '—'}</b><small style="display:block;color:var(--muted);font-size:11px">at ${LV.g}% growth and ${LV.coe}% cost of equity</small></div></div>
+      <p class="note">${!ok ? 'Growth must be below the cost of equity for this formula. ' : ''}A lender earning exactly its cost of equity is worth 1× book; every point of ROE above that justifies a premium. Today's P/B of ${fmt(pbNow, 'x')} needs a lasting ROE of about <b>${impRoe != null ? pct(impRoe) : '—'}</b>; it has averaged ${pct(roe3)} over ${k3} years${impRoe != null ? (impRoe > roe3 + .02 ? ', so the price assumes returns improve' : impRoe < roe3 - .02 ? ', so the price leaves room even if returns slip a little' : ', in line with the price') : ''}.</p></div>
+    <div class="grid" style="margin-top:16px"><div class="card"><div class="ch"><h3>P/B against ROE over time</h3><span>year-end</span></div><div class="fig"><canvas id="ch-lv-pb"></canvas></div><p class="note">P/B (left) usually follows ROE: re-ratings come when returns improve.</p></div>
+      <div class="card"><div class="ch"><h3>Book value per share and price</h3><span>₹</span></div><div class="fig"><canvas id="ch-lv-bv"></canvas></div></div></div>`;
+  const pb = LRv('P/B').concat(pbNow), Yn = Y.concat('Now');
+  draw('ch-lv-pb', base('line', Yn, [line('P/B', pb, css('--c5'))], 'x'));
+  draw('ch-lv-bv', base('line', Y, [line('Share price', C.PR, css('--c1')), Object.assign(line('Book value per share', C.LN.BV, css('--c5')), {fill: false})], 'cr'));
+}
+document.addEventListener('change', e => { const t = e.target; if (!t.dataset || !t.dataset.lv || !LV) return; const v = parseFloat(t.value); if (isFinite(v)) LV[t.dataset.lv] = v; renderValuationL(); });
+document.addEventListener('click', e => { if (e.target.id !== 'lv-reset') return; LV = null; renderValuationL(); });
 
 function renderQuality() {
   const F = flagsCalc(), red = F.filter(f => f.lvl === 'red'), amb = F.filter(f => f.lvl === 'amber'), ok = F.filter(f => f.lvl === 'ok');
@@ -1850,6 +2121,8 @@ function renderQuality() {
   $('#q-flags').innerHTML = `<div class="ch"><h3>Red flags</h3><span>${red.length} red · ${amb.length} watch · ${ok.length} passed</span></div>` +
     (red.length + amb.length ? red.concat(amb).map(item).join('') : '<p class="note">No red flags or watch items in these checks.</p>') +
     `<details class="passed"><summary>${ok.length} checks passed</summary>${ok.map(item).join('')}</details>`;
+  $('#q-lend').hidden = !LM(); $('#q-std').hidden = LM();
+  if (LM()) return renderQualityL();
   const D = driversCalc(), Y = M.secs.pl.dates.map(fy), L = C.n - 1, me = {k: M.name, M, C, D}, Q = qualityRead(me), T = Q.T, W = Q.why;
   // verdict
   const g1 = parseFloat($('#d-g1') && $('#d-g1').value);

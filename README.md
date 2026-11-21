@@ -11,6 +11,7 @@ Live: https://vikslap.github.io/iresearch/
 - **Upload** any screener.in "Export to Excel" file (it reads the *Data Sheet* tab).
 - **Overview, Quarterly, Ratios, Valuation** – 10-year financials, ~35 ratios in collapsible groups, P/E bands, an expected-return calculator and a DCF (free cash flow or net profit) with reverse-DCF.
 - **Quality** – automatic red-flag checks, ROE drivers, incremental ROCE, self-funded growth and ten-year sources and uses of cash.
+- **Lender view** – banks and NBFCs switch automatically (or via a Banks/NBFC sector tag) to lender measures: net interest income, yield and cost of funds, cost-to-income, credit cost, ROA and ROE, book value, a justified P/B valuation and loan-driven projections. Standalone exports are recommended for banks.
 - **Plumb Score** – a 30-question ranking checklist (out of 310). Fundamentals answer themselves from the data; technicals answer themselves from a price CSV (NSE, BSE, Investing.com, TradingView, AmiBroker or Yahoo).
 - **Compare** – rank up to 6 saved companies side by side.
 - **Results season** – re-upload a fresh export and see what changed (new quarters and years, TTM sales and profit, price, P/E, ROCE, Plumb Score, red flags, revised past figures); latest-quarter scorecard vs a year ago, last quarter and the four-quarter average.
